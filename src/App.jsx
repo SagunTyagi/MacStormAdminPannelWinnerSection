@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { getToken } from "firebase/messaging";
 import { ToastContainer } from "react-toastify";
 import DailyDuels from "./pages/DailyDuels";
+import Ads from "./pages/Ads";
 
 // Firebase
 import { messaging } from "./firebase";
@@ -136,6 +137,7 @@ function App() {
           <Route path="/matches" element={<AllMatches />} />
           <Route path="/matches/create" element={<CreateMatch />} />
           <Route path="/admin/duels" element={<DailyDuels />} />
+          <Route path="/admin/ads" element={<Ads />} />
           {/* Catch invalid routes */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

@@ -11,32 +11,37 @@ function DailyDuels() {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
 
-
   useEffect(() => {
-    axios.get("http://localhost:5000/api/duels")
-      .then((res) => {
-        const allDuels = res.data;
-        console.log("Fetched duels:", allDuels);
-        const pending = allDuels.filter((d) => d.status?.toLowerCase() === "pending");
-        const verified = allDuels.filter((d) => d.status?.toLowerCase() === "verified");
+    const fetchDuels = async () => {
+      try {
+        const pendingRes = await axios.get("http://localhost:5000/api/duels?status=pending");
+        const verifiedRes = await axios.get("http://localhost:5000/api/duels?status=verified");
 
-
-        const webhooks = allDuels
-          .filter(d => d.status === "Pending" || d.status === "Verified")
+        const combined = [...verifiedRes.data, ...pendingRes.data];
+        const webhooks = combined
+          .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
           .map((d, i) => ({
             duelId: i + 1,
-            event: d.status === "Verified" ? "MATCH_END" : "MATCH_CREATED",
+            event: d.title,
             winner: d.winner || "N/A",
-            timestamp: d.completedAt || d.startTime
-        }));
+            timestamp: d.completedAt || d.startTime,
+            status: d.status
+          }));
 
-        setDuels({ pending, verified, webhooks }); // ✅ Not `completed`
 
-      })
-      .catch((err) => {
+        setDuels({
+          pending: pendingRes.data,
+          verified: verifiedRes.data,
+          webhooks
+        });
+      } catch (err) {
         console.error("Error fetching duels:", err);
-      });
+      }
+    };
+
+    fetchDuels();
   }, []);
+
 
 
 
@@ -45,13 +50,14 @@ function DailyDuels() {
 const renderSummaryStats = () => {
   const active = duels.pending.length;
   const completedToday = duels.verified.filter((d) =>
-    new Date(d.startTime).toDateString() === new Date().toDateString()
+    new Date(d.completedAt).toDateString() === new Date().toDateString()
   ).length;
 
   const earnings = duels.verified.reduce(
-    (sum, d) => sum + d.entryFee * d.joinedPlayers,
+    (sum, d) => sum + 0.7 * d.entryFee * d.joinedPlayers,
     0
   );
+
   const pendingVerifications = duels.pending.filter((d) => d.status?.toLowerCase() === "pending").length;
 
 
@@ -82,7 +88,7 @@ const renderCard = (duel) => {
     setLoading(true);
     try {
       const res = await axios.put(`http://localhost:5000/api/duels/${duel.id}`, {
-        status: "Verified",
+        status: "verified",
       });
       const updatedDuel = res.data;
       setDuels((prev) => {
@@ -111,7 +117,7 @@ const renderCard = (duel) => {
 
       <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300">
         <p><strong>Type:</strong> {duel.type}</p>
-        <p><strong>Players:</strong> 👥 {duel.players}</p>
+        <p><strong>Players:</strong> {duel.joinedPlayers} 👥 </p>
         <p><strong>Entry Fee:</strong> ₹{duel.entryFee}</p>
         <p><strong>Prize Pool:</strong> 🏆 ₹{duel.prizePool}</p>
         <p className="col-span-2">
@@ -135,7 +141,7 @@ const renderCard = (duel) => {
           View Details
         </button>
 
-        {duel.status === "Pending" && (
+        {duel.status?.toLowerCase() === "pending" && (
           <button
             className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
             onClick={handleVerify}
@@ -177,7 +183,7 @@ const renderCard = (duel) => {
                 </td>
                 <td
                   className={`px-4 py-2 font-semibold ${
-                    event.status === "Delivered"
+                    event.status?.toLowerCase() === "verified"
                       ? "text-green-600"
                       : "text-yellow-600"
                   }`}
@@ -194,7 +200,7 @@ const renderCard = (duel) => {
 
 );
 console.log("Tab:", tab);
-console.log("Pending duels:", duels.pending);
+console.log("pending duels:", duels.pending);
 console.log("Completed duels:", duels.verified);  
 
   return (
@@ -289,22 +295,23 @@ console.log("Completed duels:", duels.verified);
       {/* Create Duel Modal */}
        {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 transition-opacity duration-200 ease-out">
-          <div className="bg-white dark:bg-zinc-800 p-6 rounded-lg w-full max-w-md space-y-4">
+          <div className="bg-white dark:bg-zinc-800 p-6 pb-8 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto space-y-4">
             <h2 className="text-xl font-bold dark:text-gray-100">Create New Duel</h2>
               <form
                 onSubmit={async (e) => {
                   e.preventDefault();
                   setLoading(true);
                   const form = e.target;
+                  const joinedPlayers = parseInt(form.joinedPlayers.value);
                   const newDuel = {
                     title: form.title.value,
                     entryFee: parseInt(form.entryFee.value),
                     prizePool: parseInt(form.prizePool.value),
                     type: form.type.value,
                     players: `0/${form.players.value}`,
-                    joinedPlayers: 0, // ✅ Required for earnings
+                    joinedPlayers: isNaN(joinedPlayers) ? 0 : joinedPlayers,
                     startTime: new Date(form.startTime.value).toISOString(),
-                    status: "Pending",
+                    status: "pending",
                   };
 
                   try {
@@ -320,7 +327,8 @@ console.log("Completed duels:", duels.verified);
                     setShowCreateModal(false);
                   } catch (err) {
                     console.error("Failed to create duel:", err);
-                    toast.error("❌ Failed to create duel.");
+                    toast.error(`❌ ${err.response?.data?.message || "Failed to create duel."}`);
+
                   } finally {
                     setLoading(false);
                   }
@@ -359,6 +367,20 @@ console.log("Completed duels:", duels.verified);
                     className="w-full p-2 rounded bg-zinc-100 dark:bg-zinc-700"
                     />
                 </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium dark:text-gray-100">Joined Players</label>
+                  <input
+                    type="number"
+                    name="joinedPlayers"
+                    defaultValue={0}
+                    min={0}
+                    required
+                    className="w-full p-2 rounded bg-zinc-100 dark:bg-zinc-700"
+                  />
+                </div>
+
+
                 </div>
 
                 <div className="space-y-2">

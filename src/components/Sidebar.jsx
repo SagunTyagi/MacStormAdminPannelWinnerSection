@@ -5,6 +5,8 @@ import {
   Gamepad2,
   LayoutDashboard,
   Settings,
+  Sword,
+  Tv2Icon,
   User,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -34,10 +36,14 @@ const menuItems = [
   },
   {
     label: "Daily Duels",
-    icon: Settings, // or a better icon like `Sword`, `Trophy`, or `CalendarClock` if you're using Lucide
+    icon: Sword,
     path: "/admin/duels",
   },
-
+  {
+    label: "Sponsor Ads",
+    icon: Tv2Icon, 
+    path: "/admin/ads",
+  },
 ];
 
 const Sidebar = () => {
@@ -55,12 +61,19 @@ const Sidebar = () => {
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isSubmenuOpen = openMenus[item.submenuKey];
+          const isActive = item.subItems
+            ? item.subItems.some((sub) => location.pathname === sub.path)
+            : location.pathname === item.path;
+
 
           return item.subItems ? (
             <div key={item.label}>
               <button
                 onClick={() => toggleMenu(item.submenuKey)}
-                className="flex w-full items-center justify-between p-2 rounded hover:bg-zinc-300 dark:hover:bg-zinc-700 border-b dark:border-zinc-700 "
+                className={`flex w-full items-center justify-between p-2 rounded border-b dark:border-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
+                  isActive ? "bg-zinc-200 dark:bg-zinc-700 font-medium" : ""
+                }`}
+
               >
                 <span className="flex items-center space-x-2">
                   <Icon size={18} />
