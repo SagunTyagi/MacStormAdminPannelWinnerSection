@@ -4,7 +4,7 @@ import DarkModeToggle from "./DarkModeToggle";
 
 const Navbar = ({ onToggleSidebar }) => {
   return (
-    <header className="h-16 px-4 md:px-6 flex items-center justify-between bg-green-50 dark:bg-zinc-800 border-b dark:border-zinc-700">
+    <header className="h-16 px-4 md:px-6 flex items-center justify-between bg-white dark:bg-zinc-800 border-b dark:border-zinc-700">
       <div className="flex items-center gap-4">
         {/* Sidebar Toggle Button */}
         <button
