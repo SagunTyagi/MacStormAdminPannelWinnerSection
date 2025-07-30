@@ -5,20 +5,25 @@ import DarkModeToggle from "./DarkModeToggle";
 const Navbar = ({ onToggleSidebar }) => {
   return (
     <header className="h-16 px-4 md:px-6 flex items-center justify-between bg-white dark:bg-zinc-800 border-b dark:border-zinc-700">
-      <div className="flex items-center gap-4">
-        {/* Sidebar Toggle Button */}
+      {/* Left: Sidebar + Title */}
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         <button
           onClick={onToggleSidebar}
-          className=" p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700"
+          className="p-2 rounded hover:bg-zinc-100 dark:hover:bg-zinc-700"
         >
           <Menu className="w-5 h-5 text-zinc-700 dark:text-zinc-300" />
         </button>
-        <h2 className="text-lg font-semibold text-zinc-800 dark:text-white">Dashboard</h2>
+        <h2 className="text-base sm:text-lg font-semibold truncate text-zinc-800 dark:text-white">
+          Dashboard
+        </h2>
       </div>
-      {/* User */}
-      <div className="flex items-center space-x-4">
-      <DarkModeToggle />
-        <span className="text-sm text-zinc-600 dark:text-zinc-300">Admin</span>
+
+      {/* Right: Dark mode + User */}
+      <div className="flex items-center space-x-2 sm:space-x-4">
+        <DarkModeToggle />
+        <span className="hidden sm:inline text-sm text-zinc-600 dark:text-zinc-300">
+          Admin
+        </span>
         <img
           src="https://i.pravatar.cc/40"
           alt="Avatar"
