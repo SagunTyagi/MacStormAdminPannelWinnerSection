@@ -1,12 +1,39 @@
-# React + Vite
+BattleGround Admin Panel
+BattleGroundAdmin is a modern, responsive, and scalable admin dashboard built using React, Vite, and Tailwind CSS.
+It is designed to help manage game-related data, users, matches, and statistics with ease.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🚀 Tech Stack
+⚛️ React – Component-based UI development
 
-Currently, two official plugins are available:
+⚡ Vite – Lightning-fast dev server and build tool
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+🎨 Tailwind CSS – Utility-first CSS framework for styling
 
-## Expanding the ESLint configuration
+🧹 ESLint – Code linting and formatting
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+🌐 Environment Variables – Configured via .env file
+
+📁 Project Structure
+index.html – Main HTML file
+
+vite.config.js – Vite configuration
+
+tailwind.config.js – Tailwind configuration
+
+postcss.config.js – PostCSS plugins setup
+
+src/ – Source code folder (components, pages, etc.)
+
+public/ – Static assets
+
+📦 Installation & Setup
+bash
+Copy
+Edit
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+✍️ Author
+Sk Nasiruddin

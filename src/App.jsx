@@ -21,9 +21,11 @@ import AllGames from "./pages/AllGames";
 import CreateGame from "./pages/CreateGame";
 import AllMatches from "./pages/AllMatches";
 import CreateMatch from "./pages/CreateMatch";
-import Setting from "./pages/Setting";
-import Matches from "./pages/MatchManagement/match";
-
+import DailyBets from "./pages/DailyBets";
+import ProblemCenter from "./pages/ProblemCenter";
+import NotificationCenter from "./pages/NotificationCenter";
+import Report from "./pages/Report";
+import Match from "./pages/Match";
 // Auth util (you must create this hook)
 // import useAuth from "./hooks/useAuth";
 
@@ -131,13 +133,16 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/users" element={<AllUsers />} />
-          <Route path="/settings" element={<Setting/>} />
           <Route path="/games" element={<AllGames />} />
           <Route path="/games/create" element={<CreateGame />} />
           <Route path="/games/edit/:id" element={<CreateGame />} />
           <Route path="/matches" element={<AllMatches />} />
           <Route path="/matches/create" element={<CreateMatch />} />
-          <Route path="/match" element={<Matches />} />
+          <Route path="/admin/bets" element={<DailyBets />} />
+          <Route path="/admin/problemcenter" element={<ProblemCenter/>} />
+          <Route path="/admin/notificationcenter" element={<NotificationCenter/>} />
+          <Route path="/admin/reports" element={<Report/>} />
+          <Route path="/admin/matches" element={<Match/>} />
           {/* Catch invalid routes */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

@@ -6,6 +6,11 @@ import {
   LayoutDashboard,
   Settings,
   User,
+  DollarSign,
+   AlertTriangle,
+   Bell,
+   ClipboardList,
+   Headphones,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -32,17 +37,49 @@ const menuItems = [
       { label: "Matches", path: "/matches" },
     ],
   },
-{
-    label: "Matches",
-    icon: LayoutDashboard,
-    path: "/match",
-  },
-
   {
-    label: "Setting",
-    icon: LayoutDashboard,
-    path: "/settings",
-  }
+    label: "Daily Bets",
+    icon: DollarSign,
+    submenuKey: "dailyBets",
+    subItems: [
+      { label: "Overview", path: "/admin/bets" },
+      // { label: "Markets Tab", path: "/admin/bets/markets" },
+      // { label: "Live Liability", path: "/admin/bets/liability" },
+      // { label: "Settlements", path: "/admin/bets/settlements" },
+    ],
+  },
+  {
+    label : "Problem Center",
+    icon:  AlertTriangle,
+    submenuKey: "problemCenter",
+    subItems: [
+      { label: "Problems", path: "/admin/problemcenter" },
+    ],
+  },
+  {
+    label : "Notification Center",
+    icon:  Bell,
+    submenuKey: "notificationCenter",
+    subItems: [
+      { label: "Notification", path: "/admin/notificationcenter" },
+    ],
+  },
+  {
+    label : "Reports",
+    icon:  ClipboardList,
+    submenuKey: "reports",
+    subItems: [
+      { label: "CSV/PDF exports & scheduled reports", path: "/admin/reports" },
+    ],
+  },
+  {
+    label : "Matches",
+    icon:  ClipboardList,
+    submenuKey: "matches",
+    subItems: [
+      { label: "Fixture calendar, match room, autoscheduler", path: "/admin/matches" },
+    ],
+  },
 ];
 
 const Sidebar = () => {
@@ -54,8 +91,8 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-white border-r dark:border-zinc-700 min-h-screen">
-      <div className="p-4 text-2xl font-bold">MyApp</div>
+    <aside className="w-64 bg-green-50 dark:bg-zinc-800 text-zinc-800 dark:text-white border-r dark:border-zinc-700 min-h-screen">
+      <div className="p-4 text-2xl font-bold">Battle <span className="text-green-600"> Nation</span> <span className="text-green-800"> Admin</span></div>
       <nav className="px-4 space-y-3 my-2 text-sm">
         {menuItems.map((item) => {
           const Icon = item.icon;
