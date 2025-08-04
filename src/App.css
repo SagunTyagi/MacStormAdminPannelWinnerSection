@@ -1,20 +1,4 @@
-/* Custom scrollbar for roster modal */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: #a3a3a3 #f3f4f6;
-}
-
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #a3a3a3;
-  border-radius: 8px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: #f3f4f6;
-  border-radius: 8px;
-}#root {
+#root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;

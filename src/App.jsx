@@ -23,7 +23,15 @@ import AllMatches from "./pages/AllMatches";
 import CreateMatch from "./pages/CreateMatch";
 import AllVotes from "./pages/AllVotes";
 import Teams from "./pages/Teams";
-
+import UserSettings from "./pages/UserSettings";
+import UserKYC from "./pages/UserKYC";
+import UserTeams from "./pages/UserTeams";
+import Support from "./pages/Support";
+import PLOverview from "./pages/PLOverview";
+import AdminManagement from "./pages/AdminManagement"
+import SystemHealth from "./pages/SystemHealth";
+import AuditLogViewer from "./pages/AuditLogViewer";
+import ManualLedger from "./pages/ManualLedger";
 // Auth util (you must create this hook)
 // import useAuth from "./hooks/useAuth";
 
@@ -132,6 +140,14 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/users" element={<AllUsers />} />
           <Route path="/teams" element={<Teams />} />
+          <Route path="/p&l-overview" element={<PLOverview />} />
+          <Route path="/admin-management" element={<AdminManagement />} />
+          <Route path="/system-health" element={<SystemHealth />} />
+          <Route path="/audit-log" element={<AuditLogViewer />} />
+          <Route path="/manual-ledger" element={<ManualLedger />} />
+
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/users" element={<AllUsers />} />
           <Route path="/games" element={<AllGames />} />
           <Route path="/games/create" element={<CreateGame />} />
           <Route path="/games/edit/:id" element={<CreateGame />} />
@@ -140,6 +156,13 @@ function App() {
           <Route path="/voting-centre" element={<AllVotes />} />
           {/* Catch invalid routes */}
           <Route path="*" element={<Navigate to="/" />} />
+          {/* Catch invalid routes */}
+          <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/user-settings" element={<UserSettings />} />
+          <Route path="/user-kyc" element={<UserKYC />} />
+          <Route path="/user-teams" element={<UserTeams />} />
+          <Route path="/support" element={<Support />} />
+       
         </Routes>
       </div>
     </div>

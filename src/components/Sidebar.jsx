@@ -8,10 +8,26 @@ import {
   User,
   Vote,
   Users as UsersIcon,
+  Headphones,
+  Crown
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const menuItems = [
+
+  {
+    label: "Super Admin Pannel",
+    icon: Crown,
+    path: "/super-admin-pannel",
+    submenuKey: "super-admin", 
+    subItems: [
+      { label: "P&L OverView", path: "/p&l-overview" },
+      { label: "Admin Management", path: "/admin-management" },
+      { label: "System Health", path: "/system-health" },
+      { label: "Audit Log Viewer", path: "/audit-log" },
+      { label: "Manual Ledger", path: "/manual-ledger" },
+    ],
+  },
   {
     label: "Dashboard",
     icon: LayoutDashboard,
@@ -40,6 +56,9 @@ const menuItems = [
     submenuKey: "voting",
     subItems: [
       { label: "All Votes", path: "/voting-centre" },
+      { label: "User Settings", path: "/user-settings" },
+      { label: "User KYC", path: "/user-kyc" },
+      { label: "User Teams", path: "/user-teams" },
     ],
   },
   {
@@ -50,6 +69,11 @@ const menuItems = [
       { label: "All Games", path: "/games" },
       { label: "Matches", path: "/matches" },
     ],
+  },
+  {
+    label: "Support Desk",
+    icon: Headphones,
+    path :"/support"
   },
 ];
 
