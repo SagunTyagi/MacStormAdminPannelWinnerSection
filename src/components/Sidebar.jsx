@@ -79,7 +79,18 @@ const menuItems = [
     subItems: [
       { label: "Fixture calendar, match room, autoscheduler", path: "/admin/matches" },
     ],
+
   },
+  {
+    label: "Reportss",
+    icon: LayoutDashboard,
+    path: "/reportss",
+  },
+    {
+    label: "Setting",
+    icon: LayoutDashboard,
+    path: "/settings",
+  }
 ];
 
 const Sidebar = () => {

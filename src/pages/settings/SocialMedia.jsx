@@ -1,6 +1,7 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import axios from "axios"
 import {
   Box,
   Card,
@@ -12,6 +13,7 @@ import {
   Snackbar,
   Button,
   InputAdornment,
+  CircularProgress,
 } from "@mui/material"
 import {
   YouTube as YouTubeIcon,
@@ -76,18 +78,52 @@ const socialMediaPlatforms = [
 
 const SocialMedia = () => {
   const [formData, setFormData] = useState({
-    youtube: "https://youtube.com/@battlenation",
-    instagram: "https://instagram.com/battlenation",
-    facebook: "https://facebook.com/battlenation",
-    twitter: "https://twitter.com/battlenation",
-    discord: "https://discord.gg/battlenation",
+    youtube: "",
+    instagram: "",
+    facebook: "",
+    twitter: "",
+    discord: "",
   })
 
   const [formErrors, setFormErrors] = useState({})
   const [linkTestStatus, setLinkTestStatus] = useState({})
   const [showSaveAlert, setShowSaveAlert] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [hasChanges, setHasChanges] = useState(false)
+  const [apiError, setApiError] = useState(null)
+
+  // Fetch social media links on component mount
+  useEffect(() => {
+    const fetchSocialMediaLinks = async () => {
+      try {
+        setIsLoading(true)
+        const response = await axios.get("http://localhost:5000/api/socialmedialinks")
+        
+        // Transform the API response to match our formData structure
+        const linksData = {}
+        response.data.forEach(link => {
+          linksData[link.platform] = link.url || ""
+        })
+
+        // Set form data with API response or keep default empty values
+        setFormData(prevData => ({
+          ...prevData,
+          ...linksData
+        }))
+
+        setApiError(null)
+      } catch (error) {
+        console.error("Failed to fetch social media links:", error)
+        setApiError("Failed to load social media links. Using default values.")
+        // Keep the default empty values in formData
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchSocialMediaLinks()
+  }, [])
 
   const validateUrl = (platformId, url) => {
     const platform = socialMediaPlatforms.find((p) => p.id === platformId)
@@ -147,6 +183,9 @@ const SocialMedia = () => {
 
   const handleSave = async () => {
     setIsSaving(true)
+    setApiError(null)
+    
+    // Validate all URLs first
     const allErrors = {}
     Object.keys(formData).forEach((key) => {
       const error = validateUrl(key, formData[key])
@@ -161,14 +200,50 @@ const SocialMedia = () => {
       return
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setHasChanges(false)
-    setIsSaving(false)
-    setShowSaveAlert(true)
+    try {
+      // Update each platform's link using PUT API
+      const updatePromises = Object.entries(formData).map(([platform, url]) =>
+        axios.put(`http://localhost:5000/api/socialmedialinks/${platform}`, {
+          url: url.trim(),
+          platform: platform
+        })
+      )
+
+      await Promise.all(updatePromises)
+      
+      setHasChanges(false)
+      setShowSaveAlert(true)
+      setApiError(null)
+    } catch (error) {
+      console.error("Failed to save social media links:", error)
+      setApiError("Failed to save social media links. Please try again.")
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const handleCloseAlert = () => {
     setShowSaveAlert(false)
+  }
+
+  const handleCloseApiError = () => {
+    setApiError(null)
+  }
+
+  if (isLoading) {
+    return (
+      <Box
+        sx={{
+          minHeight: "100vh",
+          backgroundColor: "#f8f9fa",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <CircularProgress size={40} />
+      </Box>
+    )
   }
 
   return (
@@ -210,6 +285,17 @@ const SocialMedia = () => {
             </Box>
           </CardContent>
         </Card>
+
+        {/* API Error Alert */}
+        {apiError && (
+          <Alert 
+            severity="error" 
+            onClose={handleCloseApiError}
+            sx={{ mb: 3, borderRadius: "8px" }}
+          >
+            {apiError}
+          </Alert>
+        )}
 
         {/* Social Media Links Card */}
         <Card
@@ -361,7 +447,13 @@ const SocialMedia = () => {
                 variant="contained"
                 onClick={handleSave}
                 disabled={isSaving || !hasChanges || Object.values(formErrors).some((error) => error)}
-                startIcon={<SaveIcon sx={{ fontSize: 18 }} />}
+                startIcon={
+                  isSaving ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : (
+                    <SaveIcon sx={{ fontSize: 18 }} />
+                  )
+                }
                 sx={{
                   backgroundColor: "#1A1A1A",
                   color: "#ffffff",
