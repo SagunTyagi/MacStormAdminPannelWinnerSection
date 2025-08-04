@@ -3,6 +3,8 @@ import {
   ChevronDown,
   ChevronRight,
   Gamepad2,
+  Image,
+  ImageIcon,
   LayoutDashboard,
   Settings,
   Sword,
@@ -43,6 +45,11 @@ const menuItems = [
     label: "Sponsor Ads",
     icon: Tv2Icon, 
     path: "/admin/ads",
+  },
+  {
+    label: "Images", // ✅ NEW
+    icon: ImageIcon,   // (You can replace with a better one if needed)
+    path: "/admin/images",
   },
 ];
 

@@ -4,7 +4,8 @@ import { getToken } from "firebase/messaging";
 import { ToastContainer } from "react-toastify";
 import DailyDuels from "./pages/DailyDuels";
 import Ads from "./pages/Ads";
-
+import CreateDuel from "./pages/CreateDuel";
+import ImageGallery from "./pages/ImageGallery";
 // Firebase
 import { messaging } from "./firebase";
 import FirebaseNotificationHandler from "./components/FirebaseNotificationHandler";
@@ -31,7 +32,7 @@ function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
   // const { isLoggedIn } = useAuth();
-
+  const authToken = localStorage.getItem("authToken");
   const authRoutes = ["/login", "/register", "/forgot-password"];
   const isAuthPage = authRoutes.includes(location.pathname);
 
@@ -103,23 +104,34 @@ function App() {
     registerFcm();
   }, []);
 
-  // 👉 AUTH LAYOUT (No sidebar/navbar)
+
+  // ✅ AUTH PAGES (Login/Register) should always be accessible
   if (isAuthPage) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-neutral-200 dark:bg-zinc-500 transition-colors duration-300">
         <FirebaseNotificationHandler />
         <ToastContainer />
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route
+            path="/login"
+            element={authToken ? <Navigate to="/" /> : <Login />}
+          />
+          <Route
+            path="/register"
+            element={authToken ? <Navigate to="/" /> : <Register />}
+          />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          {/* Catch any other path and redirect */}
+          <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </div>
     );
   }
 
-  // 👉 MAIN LAYOUT (Sidebar/Navbar shown)
+  // ✅ MAIN APP (protected)
+  if (!authToken) {
+    return <Navigate to="/login" />;
+  }
+
   return (
     <div className="flex min-h-screen bg-neutral-200 dark:bg-zinc-500 transition-colors duration-300">
       {isSidebarOpen && <Sidebar />}
@@ -138,7 +150,9 @@ function App() {
           <Route path="/matches/create" element={<CreateMatch />} />
           <Route path="/admin/duels" element={<DailyDuels />} />
           <Route path="/admin/ads" element={<Ads />} />
-          {/* Catch invalid routes */}
+          <Route path="/admin/duels/createduel" element={<CreateDuel />} />
+          <Route path="/admin/images" element={<ImageGallery />} />
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

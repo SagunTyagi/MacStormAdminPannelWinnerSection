@@ -1,7 +1,6 @@
-import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import React, { useState } from "react";
-import axiosInstance from "../utils/axios";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../utils/axios";
 
 function Register() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -33,9 +32,9 @@ function Register() {
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = "Phone no is required";
+      newErrors.phone = "Phone number is required";
     } else if (!/^\d{10}$/.test(formData.phone)) {
-      newErrors.phone = "Enter a valid phone no";
+      newErrors.phone = "Enter a valid 10-digit phone number";
     }
 
     if (!formData.password || formData.password.length < 6) {
@@ -53,21 +52,19 @@ function Register() {
     try {
       setLoading(true);
       const response = await axiosInstance.post("/auth/admin/register", formData);
-      console.log("Registration successful:", response.data);
-      // Navigate to login or show success message
+      console.log("✅ Registration successful:", response.data);
       navigate("/login");
     } catch (error) {
-      console.error("Registration failed:", error.response?.data?.message || error.message);
-      alert(error.response?.data?.message || "Registration failed. Try again.");
+      const message = error.response?.data?.message || "Registration failed. Try again.";
+      console.error("❌ Registration error:", message);
+      alert(message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <section className="min-h-screen flex items-center ">
-
-      {/* Right Column - Form */}
+    <section className="min-h-screen flex items-center justify-center">
       <div className="flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-6 p-10 dark:bg-zinc-800 bg-white rounded-lg shadow-lg">
           <div className="text-center">
@@ -110,7 +107,7 @@ function Register() {
             <div>
               <input
                 type="tel"
-                placeholder="Phone no"
+                placeholder="Phone number"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className={`w-full px-4 py-2 rounded-lg border ${
@@ -150,7 +147,7 @@ function Register() {
               {loading ? "Registering..." : "Register"}
             </button>
 
-            {/* Link to Login */}
+            {/* Already have account */}
             <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
               Already have an account?{" "}
               <a href="/login" className="text-zinc-800 dark:text-white font-medium hover:underline">
