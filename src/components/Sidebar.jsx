@@ -3,6 +3,8 @@ import {
   ChevronDown,
   ChevronRight,
   Gamepad2,
+  Image,
+  ImageIcon,
   LayoutDashboard,
   Settings,
   User,

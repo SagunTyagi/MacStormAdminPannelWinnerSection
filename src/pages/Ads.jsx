@@ -15,6 +15,7 @@ function Ads() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MDI1MzE0LCJleHAiOjE3NTQxMTE3MTR9.yoJG84eTP9MlHKF9Yk-P1-CFVsvP_8-_tjvIeYDcprA";
 
 
   const fetchAds = async () => {
@@ -45,12 +46,15 @@ function Ads() {
         if (isEditing) {
         // PUT request — update without media
         await axios.put(`/ads/${editingId}`, {
-            adName: form.adName,
-            adType: form.adType,
-            startDate: form.startDate,
-            endDate: form.endDate,
-            targetUrl: form.targetUrl,
+          adName: form.adName,
+          adType: form.adType,
+          startDate: form.startDate,
+          endDate: form.endDate,
+          targetUrl: form.targetUrl,
+        }, {
+          headers: { "Authorization": `Bearer ${token}` }
         });
+
         alert("Ad updated!");
         } else {
         // POST request — with media
@@ -59,7 +63,12 @@ function Ads() {
         const data = new FormData();
         Object.entries(form).forEach(([key, val]) => data.append(key, val));
 
-        await axios.post("/ads", data);
+        await axios.post("/ads", data, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
         alert("Ad uploaded!");
         }
 
@@ -85,7 +94,10 @@ function Ads() {
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this ad?")) return;
     try {
-      await axios.delete(`/ads/${id}`);
+      await axios.delete(`/ads/${id}`, {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
       fetchAds();
     } catch (err) {
       alert("Failed to delete.");
@@ -104,7 +116,7 @@ const filteredAds = ads;
   return (
     <div className="p-4 sm:p-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-3">
-        <h1 className="text-3xl font-semibold">Sponsor Ads</h1>
+        <h1 className="text-3xl font-semibold dark:text-white">Sponsor Ads</h1>
 
         <div className="flex gap-2">
             <button
@@ -263,81 +275,174 @@ const filteredAds = ads;
         </form>
         )}
 
-
-        {/* Scheduled Ads Table */}
+        {/* Scheduled Ads */}
         {tab === "scheduled" && (
-        <div className="bg-white rounded shadow mt-6 p-6">
+          <div className="bg-white rounded shadow mt-6 p-6">
             <h2 className="text-2xl font-semibold mb-4">Ad Schedule</h2>
-            <div className="overflow-x-auto">
-            <table className="min-w-full table-auto text-sm text-left">
+
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full table-auto text-sm text-left">
                 <thead className="bg-zinc-100 text-zinc-600">
-                <tr>
+                  <tr>
                     <th className="p-3 font-medium">Ad Name</th>
                     <th className="p-3 font-medium">Type</th>
                     <th className="p-3 font-medium">Start Date</th>
                     <th className="p-3 font-medium">End Date</th>
                     <th className="p-3 font-medium">Status</th>
                     <th className="p-3 font-medium text-center">Actions</th>
-                </tr>
+                  </tr>
                 </thead>
                 <tbody>
-                {filteredAds.map((ad) => (
-                    <tr key={ad.id} className="border-t hover:bg-zinc-50">
-                    <td className="p-3">{ad.adName}</td>
-                    <td className="p-3">{ad.adType}</td>
-                    <td className="p-3">{ad.startDate}</td>
-                    <td className="p-3">{ad.endDate}</td>
-                    <td className="p-3">
+                  {filteredAds.map((ad) => (
+                    <tr key={ad.id} className="border-t hover:bg-indigo-50">
+                      <td className="p-3">{ad.adName}</td>
+                      <td className="p-3">{ad.adType}</td>
+                      <td className="p-3">{ad.startDate}</td>
+                      <td className="p-3">{ad.endDate}</td>
+                      <td className="p-3">
                         <span
-                        className={`text-xs font-medium px-2 py-1 rounded ${
+                          onClick={async () => {
+                            try {
+                              await axios.patch(`/ads/${ad.id}/toggle`);
+                              setAds(prev =>
+                                prev.map(a =>
+                                  a.id === ad.id
+                                    ? { ...a, status: a.status === "active" ? "inactive" : "active" }
+                                    : a
+                                )
+                              );
+                            } catch {
+                              alert("Failed to toggle status");
+                            }
+                          }}
+                          className={`cursor-pointer text-xs font-medium px-2 py-1 rounded ${
                             ad.status === "active"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-zinc-200 text-zinc-700"
-                        }`}
+                              ? "bg-green-100 text-green-800"
+                              : "bg-zinc-200 text-zinc-700"
+                          }`}
                         >
-                        {ad.status}
+                          {ad.status}
                         </span>
-                    </td>
-                    <td className="p-3 flex justify-center items-center space-x-2">
+                      </td>
+                      <td className="p-3 flex justify-center gap-2">
                         <button
-                        onClick={() => {
+                          onClick={() => {
                             setForm({
-                            adName: ad.adName,
-                            adType: ad.adType,
-                            startDate: ad.startDate,
-                            endDate: ad.endDate,
-                            targetUrl: ad.targetUrl,
-                            media: null, // file input can't be pre-filled
+                              adName: ad.adName,
+                              adType: ad.adType,
+                              startDate: ad.startDate,
+                              endDate: ad.endDate,
+                              targetUrl: ad.targetUrl,
+                              media: null,
                             });
                             setIsEditing(true);
                             setEditingId(ad.id);
                             setTab("upload");
-                        }}
-                        className="text-zinc-600 hover:text-black"
+                          }}
+                          className="text-zinc-600 hover:text-black"
                         >
-                        ✏️
+                          ✏️
                         </button>
                         <button
-                        onClick={() => handleDelete(ad.id)}
-                        className="text-red-600 hover:text-red-800"
+                          onClick={() => handleDelete(ad.id)}
+                          className="text-red-600 hover:text-red-800"
                         >
-                        🗑️
+                          🗑️
                         </button>
-                    </td>
+                      </td>
                     </tr>
-                ))}
-                {filteredAds.length === 0 && (
+                  ))}
+                  {filteredAds.length === 0 && (
                     <tr>
-                    <td colSpan="6" className="text-center text-zinc-500 py-6">
+                      <td colSpan="6" className="text-center text-zinc-500 py-6">
                         No scheduled ads found.
-                    </td>
+                      </td>
                     </tr>
-                )}
+                  )}
                 </tbody>
-            </table>
+              </table>
             </div>
-        </div>
+
+            {/* Mobile Card Layout */}
+            <div className="md:hidden flex flex-col gap-3">
+              {filteredAds.map((ad) => (
+                <div key={ad.id} className="rounded-xl border border-gray-200 p-3 bg-gray-50">
+                  <p className="text-xs text-gray-500">Ad Name</p>
+                  <p className="font-medium mb-1">{ad.adName}</p>
+
+                  <p className="text-xs text-gray-500">Type</p>
+                  <p className="mb-1">{ad.adType}</p>
+
+                  <p className="text-xs text-gray-500">Start Date</p>
+                  <p className="mb-1">{ad.startDate}</p>
+
+                  <p className="text-xs text-gray-500">End Date</p>
+                  <p className="mb-1">{ad.endDate}</p>
+
+                  <p className="text-xs text-gray-500">Status</p>
+                  <span
+                    onClick={async () => {
+                      try {
+                        await axios.patch(`/ads/${ad.id}/toggle`);
+                        setAds(prev =>
+                          prev.map(a =>
+                            a.id === ad.id
+                              ? { ...a, status: a.status === "active" ? "inactive" : "active" }
+                              : a
+                          )
+                        );
+                      } catch {
+                        alert("Failed to toggle status");
+                      }
+                    }}
+                    className={`inline-block mt-1 text-xs font-medium px-2 py-1 rounded ${
+                      ad.status === "active"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-zinc-200 text-zinc-700"
+                    }`}
+                  >
+                    {ad.status}
+                  </span>
+
+                  <div className="flex justify-end gap-3 mt-3">
+                    <button
+                      onClick={() => {
+                        setForm({
+                          adName: ad.adName,
+                          adType: ad.adType,
+                          startDate: ad.startDate,
+                          endDate: ad.endDate,
+                          targetUrl: ad.targetUrl,
+                          media: null,
+                        });
+                        setIsEditing(true);
+                        setEditingId(ad.id);
+                        setTab("upload");
+                      }}
+                      className="text-sm text-blue-600"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(ad.id)}
+                      className="text-sm text-red-600"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {filteredAds.length === 0 && (
+                <p className="text-center text-zinc-500 py-6">
+                  No scheduled ads found.
+                </p>
+              )}
+            </div>
+          </div>
         )}
+
 
         {/* Ad Performance Table */}
         {tab === "active" && (
@@ -360,7 +465,7 @@ const filteredAds = ads;
                     ? ((ad.clicks / ad.impressions) * 100).toFixed(2)
                     : "0.00";
                     return (
-                    <tr key={ad.id} className="border-t hover:bg-zinc-50">
+                    <tr key={ad.id} className="border-t transition-colors duration-200 hover:bg-indigo-50 hover:shadow-sm">
                         <td className="p-3">{ad.adName}</td>
                         <td className="p-3">{ad.impressions.toLocaleString()}</td>
                         <td className="p-3">{ad.clicks}</td>

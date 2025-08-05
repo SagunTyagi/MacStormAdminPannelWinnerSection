@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { getToken } from "firebase/messaging";
 import { ToastContainer } from "react-toastify";
-
 // Firebase
 import { messaging } from "./firebase";
 import FirebaseNotificationHandler from "./components/FirebaseNotificationHandler";
@@ -114,8 +113,14 @@ function App() {
         <FirebaseNotificationHandler />
         <ToastContainer />
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route
+            path="/login"
+            element={authToken ? <Navigate to="/" /> : <Login />}
+          />
+          <Route
+            path="/register"
+            element={authToken ? <Navigate to="/" /> : <Register />}
+          />
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>
       </div>

@@ -2,20 +2,31 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { useNavigate } from "react-router-dom";
 
 function DailyDuels() {
   const [tab, setTab] = useState("pending");
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedDuel, setSelectedDuel] = useState(null); 
   const [duels, setDuels] = useState({ pending: [], verified: [], webhooks: [] });
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  const navigate = useNavigate();
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MDI1MzE0LCJleHAiOjE3NTQxMTE3MTR9.yoJG84eTP9MlHKF9Yk-P1-CFVsvP_8-_tjvIeYDcprA";
+  const completedToday = duels.verified.filter((d) => {
+    const date = d.completedAt ? new Date(d.completedAt) : null;
+    if (!date) return false;
+    return date.toDateString() === new Date().toDateString();
+  }).length;
 
   useEffect(() => {
     const fetchDuels = async () => {
       try {
-        const pendingRes = await axios.get("http://localhost:5000/api/duels?status=pending");
-        const verifiedRes = await axios.get("http://localhost:5000/api/duels?status=verified");
+        const pendingRes = await axios.get("http://localhost:5000/api/duels?status=pending", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const verifiedRes = await axios.get("http://localhost:5000/api/duels?status=verified", {
+          headers: { Authorization: `Bearer ${token}` }
+        });
 
         const combined = [...verifiedRes.data, ...pendingRes.data];
         const webhooks = combined
@@ -49,14 +60,29 @@ function DailyDuels() {
   
 const renderSummaryStats = () => {
   const active = duels.pending.length;
-  const completedToday = duels.verified.filter((d) =>
-    new Date(d.completedAt).toDateString() === new Date().toDateString()
-  ).length;
 
-  const earnings = duels.verified.reduce(
-    (sum, d) => sum + 0.7 * d.entryFee * d.joinedPlayers,
-    0
-  );
+  console.log("🧪 Verified Duels CompletedAt:");
+  duels.verified.forEach((d, i) => {
+    console.log(
+      `#${i + 1}: completedAt=${d.completedAt}, startTime=${d.startTime}, status=${d.status}`
+    );
+  });
+
+  const completedToday = duels.verified.filter((d) => {
+    const duelDate = new Date(d.completedAt || d.startTime)
+      .toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
+    const today = new Date()
+      .toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" });
+    return duelDate === today;
+  }).length;
+
+
+  const earnings = duels.verified.reduce((sum, d) => {
+    const entry = Number(d.entryFee) || 0;
+    const joined = Number(d.joinedPlayers) || 0;
+    return sum + 0.7 * entry * joined;
+  }, 0);
+
 
   const pendingVerifications = duels.pending.filter((d) => d.status?.toLowerCase() === "pending").length;
 
@@ -73,7 +99,7 @@ const renderSummaryStats = () => {
       </div>
       <div className="bg-white dark:bg-zinc-800 rounded-lg p-4 shadow text-center">
         <p className="text-sm text-gray-500">Total Earnings</p>
-        <p className="text-2xl font-bold dark:text-white">₹{earnings}</p>
+        <p className="text-2xl font-bold dark:text-white">₹{earnings.toFixed(0)}</p>
       </div>
       <div className="bg-white dark:bg-zinc-800 rounded-lg p-4 shadow text-center">
         <p className="text-sm text-gray-500">Pending Verification</p>
@@ -82,14 +108,14 @@ const renderSummaryStats = () => {
     </div>
   );
 };
-
 const renderCard = (duel) => {
   const handleVerify = async () => {
     setLoading(true);
     try {
-      const res = await axios.put(`http://localhost:5000/api/duels/${duel.id}`, {
-        status: "verified",
-      });
+      const res = await axios.put(`http://localhost:5000/api/duels/${duel.id}`, 
+        { status: "verified" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       const updatedDuel = res.data;
       setDuels((prev) => {
         const updatedPending = prev.pending.filter((d) => d.id !== updatedDuel.id);
@@ -103,102 +129,162 @@ const renderCard = (duel) => {
       setLoading(false);
     }
   };
+
   return (
     <div
       key={duel.id}
-      className="border-l-4 border-blue-600 bg-white dark:bg-zinc-800 rounded-lg shadow-md p-4 w-1/2"
+      className="bg-white dark:bg-zinc-800 rounded-lg shadow-md p-4 flex flex-col justify-between h-full"
     >
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{duel.title}</h2>
-        <span className="text-xs font-medium px-2 py-1 rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-white">
-          {duel.status}
-        </span>
-      </div>
+      {/* Banner */}
+      {duel.banner && (
+        <img
+          src={`http://localhost:5000${duel.banner}`}
+          alt="Duel Banner"
+          className="w-full h-40 object-cover rounded mb-3"
+        />
+      )}
 
-      <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300">
-        <p><strong>Type:</strong> {duel.type}</p>
-        <p><strong>Players:</strong> {duel.joinedPlayers} 👥 </p>
-        <p><strong>Entry Fee:</strong> ₹{duel.entryFee}</p>
-        <p><strong>Prize Pool:</strong> 🏆 ₹{duel.prizePool}</p>
-        <p className="col-span-2">
-          <strong>Start Time:</strong>{" "}
-          {new Date(duel.startTime).toLocaleString("en-IN", {
-            timeZone: "Asia/Kolkata",
-          })}
-        </p>
-        {duel.winner && (
+      {/* Duel Info */}
+      <div className="flex-1">
+        <div className="flex justify-between items-center mb-2">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{duel.title}</h2>
+          <span className="text-xs font-medium px-2 py-1 rounded bg-yellow-100 text-yellow-800 dark:bg-yellow-700 dark:text-white">
+            {duel.status}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300 mb-3">
+          <p><strong>Type:</strong> {duel.type}</p>
+          <p><strong>Players:</strong> {duel.joinedPlayers} 👥 </p>
+          <p><strong>Entry Fee:</strong> ₹{duel.entryFee}</p>
+          <p><strong>Prize Pool:</strong> 🏆 ₹{duel.prizePool}</p>
           <p className="col-span-2">
-            <strong>Winner:</strong> {duel.winner}
+            <strong>Start Time:</strong>{" "}
+            {new Date(duel.startTime).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
           </p>
-        )}
+          {duel.winner && (
+            <p className="col-span-2">
+              <strong>Winner:</strong> {duel.winner}
+            </p>
+          )}
+        </div>
       </div>
 
-      <div className="mt-4 flex gap-2">
+      {/* Action Buttons */}
+      <div className="mt-3 flex gap-2 flex-wrap">
         <button
-          className="px-3 py-1 text-sm bg-zinc-200 dark:bg-zinc-700 text-black dark:text-white rounded hover:bg-zinc-300 dark:hover:bg-zinc-600"
+          className="px-3 py-1 text-sm bg-gray-200 rounded"
           onClick={() => setSelectedDuel(duel)}
         >
-          View Details
+          View
         </button>
 
+        <button
+          className="px-3 py-1 text-sm bg-blue-500 text-white rounded"
+          onClick={() => navigate(`/admin/duels/createduel?id=${duel.id}`)}
+        >
+          Edit
+        </button>
+
+        <button
+          className="px-3 py-1 text-sm bg-red-500 text-white rounded"
+          onClick={async () => {
+            if (!window.confirm("Delete this duel?")) return;
+            await axios.delete(`http://localhost:5000/api/duels/${duel.id}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success("Duel deleted!");
+            setDuels(prev => ({
+              ...prev,
+              pending: prev.pending.filter(d => d.id !== duel.id),
+              verified: prev.verified.filter(d => d.id !== duel.id),
+            }));
+          }}
+        >
+          Delete
+        </button>
+        
         {duel.status?.toLowerCase() === "pending" && (
           <button
-            className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700"
+            className="px-3 py-1 text-sm bg-green-500 text-white rounded"
             onClick={handleVerify}
           >
-            Verify Result
+            Verify
           </button>
         )}
+
       </div>
     </div>
   );
 };
-
   const renderWebhooksTable = () => (
-    <div className="w-full overflow-x-auto px-2 sm:px-0">
-      <div className="min-w-[700px]">
-        <table className="w-full bg-white dark:bg-zinc-800 rounded-md shadow text-sm">
-          <thead>
-            <tr className="border-b dark:border-zinc-700 text-left">
-              <th className="px-4 py-2 font-medium dark:text-white">Duel ID</th>
-              <th className="px-4 py-2 font-medium dark:text-white">Event</th>
-              <th className="px-4 py-2 font-medium dark:text-white">Winner</th>
-              <th className="px-4 py-2 font-medium dark:text-white">Timestamp</th>
-              <th className="px-4 py-2 font-medium dark:text-white">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {duels.webhooks.map((event, idx) => (
-              <tr
-                key={idx}
-                className="border-b dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700"
-              >
-                <td className="px-4 py-2 dark:text-white">{event.duelId}</td>
-                <td className="px-4 py-2 dark:text-white">{event.event}</td>
-                <td className="px-4 py-2 dark:text-white">{event.winner}</td>
-                <td className="px-4 py-2 dark:text-white">
-                  {new Date(event.timestamp).toLocaleString("en-IN", {
-                    timeZone: "Asia/Kolkata",
-                  })}
-                </td>
-                <td
-                  className={`px-4 py-2 font-semibold ${
-                    event.status?.toLowerCase() === "verified"
-                      ? "text-green-600"
-                      : "text-yellow-600"
-                  }`}
-                >
-                  {event.status}
-                </td>
+    <div className="w-full px-2 sm:px-4">
+      <div className="bg-white dark:bg-zinc-800 rounded-2xl shadow-md p-4 sm:p-6 border border-gray-200 dark:border-zinc-700">
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full table-auto text-sm text-left border-separate border-spacing-y-2">
+            <thead>
+              <tr className="border-b dark:border-zinc-700">
+                <th className="px-4 py-2 font-medium text-zinc-700 dark:text-white">Duel ID</th>
+                <th className="px-4 py-2 font-medium text-zinc-700 dark:text-white">Event</th>
+                <th className="px-4 py-2 font-medium text-zinc-700 dark:text-white">Winner</th>
+                <th className="px-4 py-2 font-medium text-zinc-700 dark:text-white">Timestamp</th>
+                <th className="px-4 py-2 font-medium text-zinc-700 dark:text-white">Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {duels.webhooks.map((event, idx) => (
+                <tr key={idx} className="border-b dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-700">
+                  <td className="px-4 py-2 dark:text-white">{event.duelId}</td>
+                  <td className="px-4 py-2 dark:text-white">{event.event}</td>
+                  <td className="px-4 py-2 dark:text-white">{event.winner}</td>
+                  <td className="px-4 py-2 dark:text-white">
+                    {new Date(event.timestamp).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
+                  </td>
+                  <td className={`px-4 py-2 font-semibold ${
+                    event.status?.toLowerCase() === "verified" ? "text-green-600" : "text-yellow-600"
+                  }`}>
+                    {event.status}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Card Layout */}
+        <div className="md:hidden flex flex-col gap-3">
+          {duels.webhooks.map((event, idx) => (
+            <div key={idx} className="rounded-xl border border-gray-200 dark:border-zinc-700 p-3 bg-gray-50 dark:bg-zinc-900">
+              <p className="text-xs text-gray-500">Duel ID</p>
+              <p className="font-medium dark:text-white mb-1">{event.duelId}</p>
+              
+              <p className="text-xs text-gray-500">Event</p>
+              <p className="dark:text-white mb-1">{event.event}</p>
+
+              <p className="text-xs text-gray-500">Winner</p>
+              <p className="dark:text-white mb-1">{event.winner}</p>
+
+              <p className="text-xs text-gray-500">Timestamp</p>
+              <p className="dark:text-white mb-1">
+                {new Date(event.timestamp).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}
+              </p>
+
+              <p className="text-xs text-gray-500">Status</p>
+              <p className={`font-semibold ${
+                event.status?.toLowerCase() === "verified" ? "text-green-600" : "text-yellow-600"
+              }`}>
+                {event.status}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
+  );
 
 
-);
+
 console.log("Tab:", tab);
 console.log("pending duels:", duels.pending);
 console.log("Completed duels:", duels.verified);  
@@ -208,7 +294,7 @@ console.log("Completed duels:", duels.verified);
       {/* Header + Button */}
     <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
           Daily Duels
         </h1>
         <h5 className="text-sm text-gray-500 dark:text-gray-100 mt-1">
@@ -216,16 +302,29 @@ console.log("Completed duels:", duels.verified);
         </h5>
       </div>
 
-      <div className="flex items-center gap-4">
-       
-        <button
-          onClick={() => setShowCreateModal(true)}
-          className="bg-black text-white px-4 py-2 rounded hover:bg-zinc-700"
-        >
-          + Create Duel
-        </button>
+      {tab !== "webhooks" && (
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => navigate("/admin/duels/createduel")}
+              className="bg-black text-white px-4 py-2 rounded hover:bg-zinc-700"
+            >
+              + Create Duel
+            </button>
+          </div>
+        )}
       </div>
-    </div>
+
+      {/* Show under heading for webhooks */}
+      {tab === "webhooks" && (
+        <div className="mb-4">
+          <button
+            onClick={() => navigate("/admin/duels/createduel")}
+            className="bg-black text-white px-4 py-2 rounded hover:bg-zinc-700"
+          >
+            + Create Duel
+          </button>
+        </div>
+      )}
 
         {renderSummaryStats()}
 
@@ -279,185 +378,24 @@ console.log("Completed duels:", duels.verified);
 
       {/* Content */}
       <div className="space-y-4">
-        {tab === "pending" &&
-          duels.pending.map(renderCard)}
+        {tab === "pending" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+            {duels.pending.map(renderCard)}
+          </div>
+        )}
 
-        {tab === "verified" &&
-          [...duels.verified]
-            .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
-            .map(renderCard)}
+        {tab === "verified" && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+            {[...duels.verified]
+              .sort((a, b) => new Date(b.startTime) - new Date(a.startTime))
+              .map(renderCard)}
+          </div>
+        )}
 
 
         {tab === "webhooks" && renderWebhooksTable()}
 
       </div>
-
-      {/* Create Duel Modal */}
-       {showCreateModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 transition-opacity duration-200 ease-out">
-          <div className="bg-white dark:bg-zinc-800 p-6 pb-8 rounded-lg w-full max-w-md max-h-[90vh] overflow-y-auto space-y-4">
-            <h2 className="text-xl font-bold dark:text-gray-100">Create New Duel</h2>
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  setLoading(true);
-                  const form = e.target;
-                  const joinedPlayers = parseInt(form.joinedPlayers.value);
-                  const newDuel = {
-                    title: form.title.value,
-                    entryFee: parseInt(form.entryFee.value),
-                    prizePool: parseInt(form.prizePool.value),
-                    type: form.type.value,
-                    players: `0/${form.players.value}`,
-                    joinedPlayers: isNaN(joinedPlayers) ? 0 : joinedPlayers,
-                    startTime: new Date(form.startTime.value).toISOString(),
-                    status: "pending",
-                  };
-
-                  try {
-                    const res = await axios.post("http://localhost:5000/api/duels", newDuel);
-                    const savedDuel = res.data;
-
-                    setDuels((prev) => ({
-                      ...prev,
-                      pending: [...prev.pending, savedDuel],
-                    }));
-
-                    toast.success("✅ New duel created!");
-                    setShowCreateModal(false);
-                  } catch (err) {
-                    console.error("Failed to create duel:", err);
-                    toast.error(`❌ ${err.response?.data?.message || "Failed to create duel."}`);
-
-                  } finally {
-                    setLoading(false);
-                  }
-                }}
-
-
-
-
-                className="space-y-4"
-            >
-                <div className="space-y-2">
-                <label className="block text-sm font-medium dark:text-gray-100">Duel Title</label>
-                <input
-                    type="text"
-                    name="title"
-                    placeholder="Enter duel title"
-                    required
-                    className="w-full p-2 rounded bg-zinc-100 dark:bg-zinc-700"
-                />
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium dark:text-gray-100">Entry Fee (₹)</label>
-                  <input
-                    type="number"
-                    name="entryFee"
-                    required
-                    className="w-full p-2 rounded bg-zinc-100 dark:bg-zinc-700"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                    <label className="block text-sm font-medium dark:text-gray-100">Max Players</label>
-                    <input
-                    type="number"
-                    name="players"
-                    required
-                    className="w-full p-2 rounded bg-zinc-100 dark:bg-zinc-700"
-                    />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium dark:text-gray-100">Joined Players</label>
-                  <input
-                    type="number"
-                    name="joinedPlayers"
-                    defaultValue={0}
-                    min={0}
-                    required
-                    className="w-full p-2 rounded bg-zinc-100 dark:bg-zinc-700"
-                  />
-                </div>
-
-
-                </div>
-
-                <div className="space-y-2">
-                <label className="block text-sm font-medium dark:text-gray-100">Prize Pool (₹)</label>
-                <input
-                    type="number"
-                    name="prizePool"
-                    required
-                    className="w-full p-2 rounded bg-zinc-100 dark:bg-zinc-700"
-                />
-                </div>
-
-                <div className="space-y-2">
-                <label className="block text-sm font-medium dark:text-gray-100">Game Type</label>
-                <select
-                    name="type"
-                    className="w-full p-2 rounded bg-zinc-100 dark:bg-zinc-700 dark:text-white"
-                >
-                    <option value="Solo">Solo</option>
-                    <option value="Duo">Duo</option>
-                    <option value="Squad">Squad</option>
-                </select>
-                </div>
-
-                <div className="space-y-2">
-                <label className="block text-sm font-medium dark:text-gray-100">Start Time</label>
-                <input
-                    type="datetime-local"
-                    name="startTime"
-                    required
-                    className="w-full p-2 rounded bg-zinc-100 dark:bg-zinc-700"
-                />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowCreateModal(false)}
-                    className="px-4 py-2 bg-zinc-300 dark:bg-zinc-600 rounded"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
-                    type="submit"
-                    className={`px-4 py-2 bg-black text-white rounded flex items-center justify-center gap-2 ${
-                      loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-zinc-700'
-                    }`}
-                    disabled={loading}
-                  >
-                    {loading && (
-                      <svg
-                        className="animate-spin h-4 w-4 text-white"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12" cy="12" r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                          fill="none"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                        />
-                      </svg>
-                    )}
-                    {loading ? "Creating..." : "Create Duel"}
-                  </button>
-                </div>
-
-            </form>
-            </div>
-        </div>
-        )}
 
       {/* View Details Modal */}
       {selectedDuel && (
