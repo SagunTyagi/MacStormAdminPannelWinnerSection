@@ -8,10 +8,32 @@ import {
   User,
   Vote,
   Users as UsersIcon,
+   Sword,
+  Tv2Icon,
+   DollarSign,
+   AlertTriangle,
+   Bell,
+   ClipboardList,
+   Headphones,
+   Crown,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const menuItems = [
+  
+   {
+    label: "Super Admin Pannel",
+    icon: Crown,
+    path: "/super-admin-pannel",
+    submenuKey: "super-admin", 
+    subItems: [
+      { label: "P&L OverView", path: "/p&l-overview" },
+      { label: "Admin Management", path: "/admin-management" },
+      { label: "System Health", path: "/system-health" },
+      { label: "Audit Log Viewer", path: "/audit-log" },
+      { label: "Manual Ledger", path: "/manual-ledger" },
+    ],
+  },
   {
     label: "Dashboard",
     icon: LayoutDashboard,
@@ -22,7 +44,10 @@ const menuItems = [
     icon: User,
     submenuKey: "users",
     subItems: [
-      { label: "All Users", path: "/users" },
+       { label: "All Users", path: "/users" },
+      { label: "User Settings", path: "/user-settings" },
+      { label: "User KYC", path: "/user-kyc" },
+      { label: "User Teams", path: "/user-teams" },
     ],
   },
   {
@@ -51,6 +76,51 @@ const menuItems = [
       { label: "Matches", path: "/matches" },
     ],
   },
+    {
+    label: "Daily Duels",
+    icon: Sword,
+    path: "/admin/duels",
+  },
+  {
+    label: "Sponsor Ads",
+    icon: Tv2Icon, 
+    path: "/admin/ads",
+  },
+   {
+    label : "Problem Center",
+    icon:  AlertTriangle,
+    submenuKey: "problemCenter",
+    subItems: [
+      { label: "Problems", path: "/admin/problemcenter" },
+    ],
+  },
+  {
+    label : "Notification Center",
+    icon:  Bell,
+    submenuKey: "notificationCenter",
+    subItems: [
+      { label: "Notification", path: "/admin/notificationcenter" },
+    ],
+  },
+  {
+    label : "Reports",
+    icon:  ClipboardList,
+    submenuKey: "reports",
+    subItems: [
+      { label: "CSV/PDF exports & scheduled reports", path: "/admin/reports" },
+    ],
+  },
+   {
+    label: "Support Desk",
+    icon: Headphones,
+    path :"/support"
+  },
+   {
+    label: "Setting",
+    icon: LayoutDashboard,
+    path: "/settings",
+  },
+
 ];
 
 const Sidebar = () => {
@@ -97,6 +167,8 @@ const Sidebar = () => {
                     </Link>
                   ))}
                 </div>
+
+                
               )}
             </div>
           ) : (

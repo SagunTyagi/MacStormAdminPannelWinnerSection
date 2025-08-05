@@ -23,7 +23,21 @@ import AllMatches from "./pages/AllMatches";
 import CreateMatch from "./pages/CreateMatch";
 import AllVotes from "./pages/AllVotes";
 import Teams from "./pages/Teams";
-
+import Setting from "./pages/Setting";
+import DailyDuels from "./pages/DailyDuels";
+import Ads from "./pages/Ads";
+import UserSettings from "./pages/UserSettings";
+import UserKYC from "./pages/UserKYC";
+import UserTeams from "./pages/UserTeams";
+import Support from "./pages/Support";
+import PLOverview from "./pages/PLOverview";
+import AdminManagement from "./pages/AdminManagement"
+import SystemHealth from "./pages/SystemHealth";
+import AuditLogViewer from "./pages/AuditLogViewer";
+import ManualLedger from "./pages/ManualLedger";
+import ProblemCenter from "./pages/ProblemCenter";
+import NotificationCenter from "./pages/NotificationCenter";
+import Report from "./pages/Report";
 // Auth util (you must create this hook)
 // import useAuth from "./hooks/useAuth";
 
@@ -131,13 +145,29 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/users" element={<AllUsers />} />
+          <Route path="/settings" element={<Setting/>} />
           <Route path="/teams" element={<Teams />} />
           <Route path="/games" element={<AllGames />} />
           <Route path="/games/create" element={<CreateGame />} />
           <Route path="/games/edit/:id" element={<CreateGame />} />
           <Route path="/matches" element={<AllMatches />} />
           <Route path="/matches/create" element={<CreateMatch />} />
+            <Route path="/admin/duels" element={<DailyDuels />} />
+          <Route path="/admin/ads" element={<Ads />} />
           <Route path="/voting-centre" element={<AllVotes />} />
+           <Route path="/p&l-overview" element={<PLOverview />} />
+          <Route path="/admin-management" element={<AdminManagement />} />
+          <Route path="/system-health" element={<SystemHealth />} />
+          <Route path="/audit-log" element={<AuditLogViewer />} />
+          <Route path="/manual-ledger" element={<ManualLedger />} />
+           <Route path="*" element={<Navigate to="/" />} />
+          <Route path="/user-settings" element={<UserSettings />} />
+          <Route path="/user-kyc" element={<UserKYC />} />
+          <Route path="/user-teams" element={<UserTeams />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="/admin/problemcenter" element={<ProblemCenter/>} />
+          <Route path="/admin/notificationcenter" element={<NotificationCenter/>} />
+          <Route path="/admin/reports" element={<Report/>} />
           {/* Catch invalid routes */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
