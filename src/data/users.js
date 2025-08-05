@@ -424,6 +424,7 @@ export const Admins = [
   },
 ];
 
+
 import { Cpu, Database, HardDrive, CloudOff } from "lucide-react";
 
 export const metrics = [
@@ -500,3 +501,194 @@ export const auditLogs = [
     timestamp: "7/17/2025, 11:59:54 PM",
   },
 ];
+
+
+// Top Stats
+import { Users, Activity, Gamepad2, DollarSign } from "lucide-react";
+export const summaryStats = [
+  { label: "Total Players", value: "12,500", icon: Users, },
+  { label: "Online Now", value: "1,340", icon: Activity, },
+  { label: "Matches Played", value: "45,234", icon: Gamepad2, },
+  { label: "Revenue", value: "$89,000" , icon: DollarSign,},
+];
+
+export const barData = {
+  labels: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+  datasets: [
+    {
+      label: "This Week",
+      data: [1200, 1900, 3000, 5000, 3200, 4200, 4800],
+      backgroundColor: "#2b53d6ff", 
+      borderRadius: 8,
+      barThickness: 30,
+    },
+    {
+      label: "Last Week",
+      data: [1000, 1700, 2600, 4500, 2800, 3900, 4400],
+      backgroundColor: "#e5e7eb", // light gray for contrast
+      borderRadius: 8,
+      barThickness: 30,
+    },
+  ],
+};
+
+
+export const barOptions = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: "bottom",
+      labels: {
+        color: "#000",
+        font: {
+          size: 13,
+          weight: "bold",
+        },
+      },
+    },
+  },
+  scales: {
+    x: {
+      grid: { display: false },
+      categoryPercentage: 0.5,   // Reduce to increase space between groups
+      barPercentage: 0.7,        // Reduce bar width
+      ticks: {
+        color: "#333",
+        font: {
+          size: 12,
+        },
+      },
+    },
+    y: {
+      beginAtZero: true,
+      ticks: {
+        color: "#333",
+        font: {
+          size: 12,
+        },
+        callback: (value) => `$${value}`,
+      },
+      grid: {
+        color: "#eee",
+      },
+    },
+  },
+};
+
+
+
+
+export const donutData1 = {
+  labels: ["Free-Fire", "PubG", "Call of Duty", "League of Legends"],
+  datasets: [
+    {
+      label: "Player Type",
+      data: [300, 200, 100, 150],
+      backgroundColor: ["#2b53d6ff", "#CAF0F8", "#90E0EF", "#dddddd"],
+    },
+  ],
+};
+
+
+export const donutOptions = {
+  responsive: true,
+  cutout: "40%",
+  plugins: {
+    legend: {
+      position: "bottom",
+      align: "center",
+      labels: {
+        usePointStyle: true,
+        pointStyle: "rectRounded",  // More modern look
+        boxWidth: 14,
+        padding: 20,
+        color: "#333",
+        font: {
+          size: 13,
+        },
+      },
+    },
+  },
+  maintainAspectRatio: false,
+};
+
+
+export const miniLineData = {
+  labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
+  datasets: [
+    {
+      label: "Monthly Players",
+      data: [800, 1000, 950, 1240],
+      fill: false,
+      borderColor: "black",
+      tension: 0.4,
+    },
+  ],
+};
+
+export const miniOptions = {
+  responsive: true,
+  plugins: { legend: { display: false } },
+  scales: {
+    x: { display: false },
+    y: { display: false },
+  },
+};
+
+export const divisionData = [
+  { name: "Bronze", count: 3400 },
+  { name: "Silver", count: 2800 },
+  { name: "Gold", count: 2100 },
+  { name: "Platinum", count: 900 },
+];
+
+
+
+// 📁 /data/playersActiveChart.js
+
+export const playersActiveData = {
+  labels: ["6 AM", "8 AM", "10 AM", "12 PM", "2 PM", "4 PM", "6 PM", "8 PM", "10 PM"],
+  datasets: [
+    {
+      label: "Active Players",
+      data: [120, 200, 350, 420, 390, 460, 500, 480, 430],
+      borderColor: "#90E0EF", // Yellow
+      backgroundColor: "rgba(250, 204, 21, 0.2)",
+      tension: 0.4,
+      fill: true,
+      pointBackgroundColor: "#facc15",
+      pointBorderWidth: 2,
+    },
+  ],
+};
+
+export const playersActiveOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: "#f3f4f6",
+      },
+      ticks: {
+        color: "#6b7280",
+        font: { size: 12 },
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        color: "#6b7280",
+        font: { size: 12 },
+      },
+    },
+  },
+};
