@@ -23,7 +23,7 @@ import {
   CircularProgress,
   Alert,
 } from "@mui/material"
-import { FileText, Edit, Eye, X, Save, Upload, CheckCircle, Plus } from "lucide-react"
+import { FileText, Edit, Eye, X, Save, Upload, CheckCircle, Plus, Trash2 } from "lucide-react"
 
 const LegalDocuments = () => {
   const theme = useTheme()
@@ -32,13 +32,17 @@ const LegalDocuments = () => {
   const [documents, setDocuments] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [updateLoading, setUpdateLoading] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState({})
 
   const [showEditModal, setShowEditModal] = useState(false)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
 
   const [activeTab, setActiveTab] = useState(0)
   const [selectedDocument, setSelectedDocument] = useState(null)
   const [markdownContent, setMarkdownContent] = useState("")
+  const [documentToDelete, setDocumentToDelete] = useState(null)
 
   const [newDocData, setNewDocData] = useState({
     title: "",
@@ -79,21 +83,49 @@ const LegalDocuments = () => {
     console.log("Save draft:", markdownContent)
   }
 
-  const handlePublishLive = () => {
-    if (selectedDocument) {
+  const handlePublishLive = async () => {
+    if (!selectedDocument) return
+
+    setUpdateLoading(true)
+    try {
+      // Call PUT API to update the document
+      const updateData = {
+        content: markdownContent,
+        updatedBy: selectedDocument.updatedBy || "Admin", // You can modify this to get current user
+      }
+
+      const res = await axios.put(
+        `http://localhost:5000/api/legal-docs/${selectedDocument.id}`,
+        updateData
+      )
+
+      // Update the local state with the response data
+      const updatedDoc = {
+        ...res.data,
+        lastUpdated: new Date(res.data.updatedAt).toLocaleString(),
+      }
+
       setDocuments(prev =>
         prev.map(doc =>
-          doc.id === selectedDocument.id
-            ? {
-                ...doc,
-                content: markdownContent,
-                lastUpdated: new Date().toLocaleString(),
-              }
-            : doc,
-        ),
+          doc.id === selectedDocument.id ? updatedDoc : doc
+        )
       )
+
+      setShowEditModal(false)
+      setSelectedDocument(null)
+      setMarkdownContent("")
+      setActiveTab(0)
+
+      // Optional: Show success message
+      console.log("Document updated successfully")
+    } catch (err) {
+      console.error("Failed to update document:", err)
+      setError("Failed to update document. Please try again.")
+      // Optional: You can show an alert or toast notification here
+      alert("Failed to update document. Please try again.")
+    } finally {
+      setUpdateLoading(false)
     }
-    setShowEditModal(false)
   }
 
   const handleCloseEditModal = () => {
@@ -135,6 +167,40 @@ const LegalDocuments = () => {
     } catch (err) {
       console.error("Error adding document:", err)
       alert("Failed to add document")
+    }
+  }
+
+  const handleOpenDeleteModal = (document) => {
+    setDocumentToDelete(document)
+    setShowDeleteModal(true)
+  }
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteModal(false)
+    setDocumentToDelete(null)
+  }
+
+  const handleDeleteDocument = async () => {
+    if (!documentToDelete) return
+
+    setDeleteLoading(prev => ({ ...prev, [documentToDelete.id]: true }))
+
+    try {
+      await axios.delete(`http://localhost:5000/api/legal-docs/${documentToDelete.id}`)
+      
+      // Remove the document from local state
+      setDocuments(prev => prev.filter(doc => doc.id !== documentToDelete.id))
+      
+      setShowDeleteModal(false)
+      setDocumentToDelete(null)
+      
+      console.log("Document deleted successfully")
+    } catch (err) {
+      console.error("Failed to delete document:", err)
+      setError("Failed to delete document. Please try again.")
+      alert("Failed to delete document. Please try again.")
+    } finally {
+      setDeleteLoading(prev => ({ ...prev, [documentToDelete.id]: false }))
     }
   }
 
@@ -202,16 +268,21 @@ const LegalDocuments = () => {
           </Button>
           <Button
             variant="contained"
-            startIcon={<Upload size={16} />}
+            startIcon={deleteLoading[document.id] ? <CircularProgress size={16} color="inherit" /> : <Trash2 size={16} />}
+            onClick={() => handleOpenDeleteModal(document)}
+            disabled={deleteLoading[document.id]}
             size={isMobile ? "small" : "medium"}
             sx={{
-              backgroundColor: "#1a1a1a",
+              backgroundColor: "#d32f2f",
               "&:hover": {
-                backgroundColor: "#333",
+                backgroundColor: "#b71c1c",
+              },
+              "&:disabled": {
+                backgroundColor: "#ffcdd2",
               },
             }}
           >
-            Publish
+            {deleteLoading[document.id] ? "Deleting..." : "Delete"}
           </Button>
         </Stack>
       </Stack>
@@ -266,7 +337,7 @@ const LegalDocuments = () => {
           </CardContent>
         </Card>
 
-        {/* Edit Modal (unchanged) */}
+        {/* Edit Modal */}
         <Dialog
           open={showEditModal}
           onClose={handleCloseEditModal}
@@ -399,13 +470,15 @@ const LegalDocuments = () => {
                 startIcon={<Save size={18} />}
                 onClick={handleSaveDraft}
                 sx={{ flex: 1, py: 1.5, fontWeight: 600 }}
+                disabled={updateLoading}
               >
                 Save Draft
               </Button>
               <Button
                 variant="contained"
-                startIcon={<Upload size={18} />}
+                startIcon={updateLoading ? <CircularProgress size={18} color="inherit" /> : <Upload size={18} />}
                 onClick={handlePublishLive}
+                disabled={updateLoading}
                 sx={{
                   flex: 1,
                   py: 1.5,
@@ -416,7 +489,7 @@ const LegalDocuments = () => {
                   },
                 }}
               >
-                Publish Live
+                {updateLoading ? "Publishing..." : "Publish Live"}
               </Button>
             </Stack>
           </DialogActions>
@@ -462,9 +535,63 @@ const LegalDocuments = () => {
             </Button>
           </DialogActions>
         </Dialog>
+
+        {/* Delete Confirmation Modal */}
+        <Dialog
+          open={showDeleteModal}
+          onClose={handleCloseDeleteModal}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 2,
+            },
+          }}
+        >
+          <DialogTitle sx={{ fontWeight: 600, display: "flex", alignItems: "center", gap: 1 }}>
+            <Trash2 size={24} color="#d32f2f" />
+            Delete Document
+          </DialogTitle>
+          <DialogContent>
+            <Typography variant="body1" sx={{ mb: 2 }}>
+              Are you sure you want to delete this document? This action cannot be undone.
+            </Typography>
+            {documentToDelete && (
+              <Box sx={{ p: 2, backgroundColor: "#f5f5f5", borderRadius: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                  {documentToDelete.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Version: {documentToDelete.version}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Last updated: {documentToDelete.lastUpdated}
+                </Typography>
+              </Box>
+            )}
+          </DialogContent>
+          <DialogActions sx={{ p: 2 }}>
+            <Button 
+              onClick={handleCloseDeleteModal}
+              variant="outlined"
+              disabled={deleteLoading[documentToDelete?.id]}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDeleteDocument}
+              variant="contained"
+              color="error"
+              startIcon={deleteLoading[documentToDelete?.id] ? <CircularProgress size={18} color="inherit" /> : <Trash2 size={18} />}
+              disabled={deleteLoading[documentToDelete?.id]}
+              sx={{ fontWeight: 600 }}
+            >
+              {deleteLoading[documentToDelete?.id] ? "Deleting..." : "Delete Document"}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Box>
   )
 }
-
 export default LegalDocuments

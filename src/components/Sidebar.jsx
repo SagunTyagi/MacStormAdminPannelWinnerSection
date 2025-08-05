@@ -6,11 +6,7 @@ import {
   LayoutDashboard,
   Settings,
   User,
-  Vote,
-  Users as UsersIcon,
-   Sword,
-  Tv2Icon,
-   DollarSign,
+  DollarSign,
    AlertTriangle,
    Bell,
    ClipboardList,
@@ -76,10 +72,16 @@ const menuItems = [
       { label: "Matches", path: "/matches" },
     ],
   },
-    {
-    label: "Daily Duels",
-    icon: Sword,
-    path: "/admin/duels",
+  {
+    label: "Daily Bets",
+    icon: DollarSign,
+    submenuKey: "dailyBets",
+    subItems: [
+      { label: "Overview", path: "/admin/bets" },
+      // { label: "Markets Tab", path: "/admin/bets/markets" },
+      // { label: "Live Liability", path: "/admin/bets/liability" },
+      // { label: "Settlements", path: "/admin/bets/settlements" },
+    ],
   },
   {
     label: "Sponsor Ads",
@@ -132,8 +134,8 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 bg-white dark:bg-zinc-800 text-zinc-800 dark:text-white border-r dark:border-zinc-700 min-h-screen">
-      <div className="p-4 text-2xl font-bold">MyApp</div>
+    <aside className="w-64 bg-green-50 dark:bg-zinc-800 text-zinc-800 dark:text-white border-r dark:border-zinc-700 min-h-screen">
+      <div className="p-4 text-2xl font-bold">Battle <span className="text-green-600"> Nation</span> <span className="text-green-800"> Admin</span></div>
       <nav className="px-4 space-y-3 my-2 text-sm">
         {menuItems.map((item) => {
           const Icon = item.icon;

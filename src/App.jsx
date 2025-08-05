@@ -38,6 +38,13 @@ import ManualLedger from "./pages/ManualLedger";
 import ProblemCenter from "./pages/ProblemCenter";
 import NotificationCenter from "./pages/NotificationCenter";
 import Report from "./pages/Report";
+import DailyBets from "./pages/DailyBets";
+import ProblemCenter from "./pages/ProblemCenter";
+import NotificationCenter from "./pages/NotificationCenter";
+import Report from "./pages/Report";
+import Match from "./pages/Match";
+import Setting from "./pages/Setting";
+import Reportss from "./pages/Reportss"; // Assuming this is the correct import for Reportss
 // Auth util (you must create this hook)
 // import useAuth from "./hooks/useAuth";
 
@@ -168,6 +175,14 @@ function App() {
           <Route path="/admin/problemcenter" element={<ProblemCenter/>} />
           <Route path="/admin/notificationcenter" element={<NotificationCenter/>} />
           <Route path="/admin/reports" element={<Report/>} />
+          <Route path="/admin/bets" element={<DailyBets />} />
+          <Route path="/admin/problemcenter" element={<ProblemCenter/>} />
+          <Route path="/admin/notificationcenter" element={<NotificationCenter/>} />
+          <Route path="/admin/reports" element={<Report/>} />
+          <Route path="/admin/matches" element={<Match/>} />
+          <Route path="/settings" element={<Setting/>} />
+          <Route path="/reportss" element={<Reportss/>} />
+
           {/* Catch invalid routes */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

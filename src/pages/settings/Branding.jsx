@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import axios from "axios"
 import {
   Box,
   Card,
@@ -37,11 +38,14 @@ export default function Branding({ sidebarOpen = true }) {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
 
   const [logo, setLogo] = useState(null)
+  const [logoFile, setLogoFile] = useState(null)
   const [icon, setIcon] = useState(null)
+  const [iconFile, setIconFile] = useState(null)
   const [splashUrl, setSplashUrl] = useState("https://cdn.battlenation.com/splash.mp4")
   const [isPublishing, setIsPublishing] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [showSuccess, setShowSuccess] = useState(false)
+  const [apiError, setApiError] = useState(null)
   const [dragOver, setDragOver] = useState({ logo: false, icon: false })
 
   const logoInputRef = useRef(null)
@@ -56,6 +60,12 @@ export default function Branding({ sidebarOpen = true }) {
           if (prev >= 100) {
             clearInterval(interval)
             setter(URL.createObjectURL(file))
+            // Store the actual file for API upload
+            if (type === 'logo') {
+              setLogoFile(file)
+            } else if (type === 'icon') {
+              setIconFile(file)
+            }
             return 100
           }
           return prev + 10
@@ -80,19 +90,89 @@ export default function Branding({ sidebarOpen = true }) {
     const file = e.dataTransfer.files[0]
     if (file && file.type.startsWith("image/")) {
       setter(URL.createObjectURL(file))
+      // Store the actual file for API upload
+      if (type === 'logo') {
+        setLogoFile(file)
+      } else if (type === 'icon') {
+        setIconFile(file)
+      }
     }
   }
 
   const handlePublish = async () => {
     setIsPublishing(true)
-    await new Promise((res) => setTimeout(res, 3000))
-    setIsPublishing(false)
-    setShowSuccess(true)
-    setTimeout(() => setShowSuccess(false), 4000)
+    setApiError(null)
+    
+    try {
+      // Create FormData for multipart/form-data request
+      const formData = new FormData()
+      
+      // Add files to FormData if they exist
+      if (logoFile) {
+        formData.append('logo', logoFile)
+      }
+      
+      if (iconFile) {
+        formData.append('icon', iconFile)
+      }
+      
+      // Add splash URL to FormData
+      if (splashUrl.trim()) {
+        formData.append('splashUrl', splashUrl.trim())
+      }
+
+      // Make POST request to upload API
+      const response = await axios.post(
+        'http://localhost:5000/api/brandassets/upload',
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          // Optional: Add upload progress tracking
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            )
+            setUploadProgress(percentCompleted)
+          }
+        }
+      )
+
+      console.log('Upload successful:', response.data)
+      
+      // Show success message
+      setShowSuccess(true)
+      setTimeout(() => setShowSuccess(false), 4000)
+      
+      // Optional: Reset file states after successful upload
+      // setLogoFile(null)
+      // setIconFile(null)
+      
+    } catch (error) {
+      console.error('Upload failed:', error)
+      setApiError(
+        error.response?.data?.message || 
+        'Failed to upload brand assets. Please try again.'
+      )
+    } finally {
+      setIsPublishing(false)
+      setUploadProgress(0)
+    }
   }
 
-  const handleRemoveAsset = (setter) => {
+  const handleRemoveAsset = (setter, type) => {
     setter(null)
+    // Also clear the corresponding file
+    if (type === 'logo') {
+      setLogoFile(null)
+    } else if (type === 'icon') {
+      setIconFile(null)
+    }
+  }
+
+  const handleCloseApiError = () => {
+    setApiError(null)
   }
 
   const UploadArea = ({
@@ -163,7 +243,7 @@ export default function Branding({ sidebarOpen = true }) {
             size="small"
             onClick={(e) => {
               e.stopPropagation()
-              handleRemoveAsset(setter)
+              handleRemoveAsset(setter, type)
             }}
             sx={{
               position: "absolute",
@@ -287,6 +367,17 @@ export default function Branding({ sidebarOpen = true }) {
           versioning.
         </Alert>
 
+        {/* API Error Alert */}
+        {apiError && (
+          <Alert 
+            severity="error" 
+            onClose={handleCloseApiError}
+            sx={{ mb: 3, borderRadius: 2 }}
+          >
+            {apiError}
+          </Alert>
+        )}
+
         {/* Upload Areas - Now taking full 95% width with proper margins */}
         <Box sx={{ mb: 3 }}>
           <Grid container spacing={3}>
@@ -375,6 +466,27 @@ export default function Branding({ sidebarOpen = true }) {
           </Grid>
         </Box>
 
+        {/* Upload Progress Bar (shown during API upload) */}
+        {isPublishing && uploadProgress > 0 && (
+          <Box sx={{ mb: 3 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Uploading assets... {uploadProgress}%
+            </Typography>
+            <LinearProgress 
+              variant="determinate" 
+              value={uploadProgress} 
+              sx={{ 
+                height: 8, 
+                borderRadius: 4,
+                backgroundColor: '#e0e0e0',
+                '& .MuiLinearProgress-bar': {
+                  backgroundColor: '#2196f3'
+                }
+              }} 
+            />
+          </Box>
+        )}
+
         <Divider sx={{ my: 3 }} />
 
         {/* Footer */}
@@ -434,7 +546,7 @@ export default function Branding({ sidebarOpen = true }) {
                   )
                 }
                 onClick={handlePublish}
-                disabled={isPublishing}
+                disabled={isPublishing || (!logoFile && !iconFile && !splashUrl.trim())}
                 sx={{
                   borderRadius: 3,
                   px: 4,
