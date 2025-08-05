@@ -1,5 +1,5 @@
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { getToken } from "firebase/messaging";
 import { ToastContainer } from "react-toastify";
 
@@ -31,39 +31,23 @@ import UserKYC from "./pages/UserKYC";
 import UserTeams from "./pages/UserTeams";
 import Support from "./pages/Support";
 import PLOverview from "./pages/PLOverview";
-import AdminManagement from "./pages/AdminManagement"
+import AdminManagement from "./pages/AdminManagement";
 import SystemHealth from "./pages/SystemHealth";
 import AuditLogViewer from "./pages/AuditLogViewer";
 import ManualLedger from "./pages/ManualLedger";
-import ProblemCenter from "./pages/ProblemCenter";
-import NotificationCenter from "./pages/NotificationCenter";
-import Report from "./pages/Report";
 import DailyBets from "./pages/DailyBets";
 import ProblemCenter from "./pages/ProblemCenter";
 import NotificationCenter from "./pages/NotificationCenter";
 import Report from "./pages/Report";
 import Match from "./pages/Match";
-import Setting from "./pages/Setting";
-import Reportss from "./pages/Reportss"; // Assuming this is the correct import for Reportss
-// Auth util (you must create this hook)
-// import useAuth from "./hooks/useAuth";
+import Reportss from "./pages/Reportss"; // Uncomment if this page exists
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
-  // const { isLoggedIn } = useAuth();
-
   const authRoutes = ["/login", "/register", "/forgot-password"];
   const isAuthPage = authRoutes.includes(location.pathname);
 
-  // Redirect to login if not authenticated and not on auth page
-  // useEffect(() => {
-  //   if (!isLoggedIn && !isAuthPage) {
-  //     window.location.href = "/login";
-  //   }
-  // }, [isLoggedIn, isAuthPage]);
-
-  // Register Firebase Messaging Service Worker
   useEffect(() => {
     const registerFcm = async () => {
       try {
@@ -124,7 +108,6 @@ function App() {
     registerFcm();
   }, []);
 
-  // 👉 AUTH LAYOUT (No sidebar/navbar)
   if (isAuthPage) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-neutral-200 dark:bg-zinc-500 transition-colors duration-300">
@@ -134,13 +117,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          {/* Catch any other path and redirect */}
         </Routes>
       </div>
     );
   }
 
-  // 👉 MAIN LAYOUT (Sidebar/Navbar shown)
   return (
     <div className="flex min-h-screen bg-neutral-200 dark:bg-zinc-500 transition-colors duration-300">
       {isSidebarOpen && <Sidebar />}
@@ -152,38 +133,33 @@ function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/users" element={<AllUsers />} />
-          <Route path="/settings" element={<Setting/>} />
           <Route path="/teams" element={<Teams />} />
           <Route path="/games" element={<AllGames />} />
           <Route path="/games/create" element={<CreateGame />} />
           <Route path="/games/edit/:id" element={<CreateGame />} />
           <Route path="/matches" element={<AllMatches />} />
           <Route path="/matches/create" element={<CreateMatch />} />
-            <Route path="/admin/duels" element={<DailyDuels />} />
+          <Route path="/admin/duels" element={<DailyDuels />} />
           <Route path="/admin/ads" element={<Ads />} />
           <Route path="/voting-centre" element={<AllVotes />} />
-           <Route path="/p&l-overview" element={<PLOverview />} />
+          <Route path="/p&l-overview" element={<PLOverview />} />
           <Route path="/admin-management" element={<AdminManagement />} />
           <Route path="/system-health" element={<SystemHealth />} />
           <Route path="/audit-log" element={<AuditLogViewer />} />
           <Route path="/manual-ledger" element={<ManualLedger />} />
-           <Route path="*" element={<Navigate to="/" />} />
           <Route path="/user-settings" element={<UserSettings />} />
           <Route path="/user-kyc" element={<UserKYC />} />
           <Route path="/user-teams" element={<UserTeams />} />
           <Route path="/support" element={<Support />} />
-          <Route path="/admin/problemcenter" element={<ProblemCenter/>} />
-          <Route path="/admin/notificationcenter" element={<NotificationCenter/>} />
-          <Route path="/admin/reports" element={<Report/>} />
+          <Route path="/admin/problemcenter" element={<ProblemCenter />} />
+          <Route path="/admin/notificationcenter" element={<NotificationCenter />} />
+          <Route path="/admin/reports" element={<Report />} />
           <Route path="/admin/bets" element={<DailyBets />} />
-          <Route path="/admin/problemcenter" element={<ProblemCenter/>} />
-          <Route path="/admin/notificationcenter" element={<NotificationCenter/>} />
-          <Route path="/admin/reports" element={<Report/>} />
-          <Route path="/admin/matches" element={<Match/>} />
-          <Route path="/settings" element={<Setting/>} />
-          <Route path="/reportss" element={<Reportss/>} />
+          <Route path="/admin/matches" element={<Match />} />
+          <Route path="/settings" element={<Setting />} />
+          <Route path="/reportss" element={<Reportss />} />
 
-          {/* Catch invalid routes */}
+          {/* Fallback Route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
