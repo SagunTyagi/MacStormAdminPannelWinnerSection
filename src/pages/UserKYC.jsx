@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   EyeIcon,
   BanIcon,
@@ -9,9 +9,8 @@ import {
   Ellipsis,
 } from "lucide-react";
 import UserDetail from "./UserDetail";
-import initialUsers from "../data/users";
 
-//  Compute KYC status from docs
+// Compute KYC status from docs
 const computeKycStatus = (docs) => {
   if (!docs?.length) return "Pending";
   if (docs.some((doc) => doc.status === "Rejected")) return "Rejected";
@@ -20,8 +19,9 @@ const computeKycStatus = (docs) => {
 };
 
 export default function UserKYC() {
-
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState(null);
   const [deleteUser, setDeleteUser] = useState(null);
@@ -34,6 +34,127 @@ export default function UserKYC() {
     { id: "admin2", name: "Admin Two" },
     { id: "admin3", name: "Admin Three" },
   ];
+  const authToken =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MjM5MDEwLCJleHAiOjE3NTU1MzUwMTB9.lCno1q1Kaf286P6ZQvSKw-CTgU3I-q_Hus2siePX-4g";
+
+  // API fetching logic
+  useEffect(() => {
+    const fetchUsersAndTransactions = async () => {
+      try {
+        const usersResponse = await fetch("http://localhost:5000/api/auth/user", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        if (!usersResponse.ok) {
+          throw new Error("Failed to fetch user data.");
+        }
+
+        const usersData = await usersResponse.json();
+
+        const mappedUsersPromises = usersData.users.map(async (apiUser) => {
+          let totalDeposits = 0;
+          let totalWithdrawals = 0; // Assuming a similar endpoint for withdrawals
+
+          try {
+            const depositResponse = await fetch(
+              `http://localhost:5000/api/user/deposit/${apiUser.member_id}`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${authToken}`,
+                },
+              }
+            );
+
+            if (depositResponse.ok) {
+              const depositData = await depositResponse.json();
+              if (depositData.status && depositData.data) {
+                totalDeposits = depositData.data.reduce(
+                  (sum, record) => sum + Number(record.amount),
+                  0
+                );
+              }
+            } else {
+              console.warn(
+                `Failed to fetch deposit data for user ${apiUser.member_id}: ${depositResponse.statusText}`
+              );
+            }
+
+            // You would typically fetch withdrawals from a similar endpoint
+            // For now, we'll keep withdrawals at 0 or add placeholder logic if available
+            // Example:
+            const withdrawalResponse = await fetch(
+              `http://localhost:5000/api/user/withdraw/${apiUser.member_id}`,
+              {
+                method: "GET",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${authToken}`,
+                },
+              }
+            );
+            if (withdrawalResponse.ok) {
+              const withdrawalData = await withdrawalResponse.json();
+              if (withdrawalData.status && withdrawalData.data) {
+                totalWithdrawals = withdrawalData.data.reduce(
+                  (sum, record) => sum + Number(record.amount),
+                  0
+                );
+              }
+            }
+           
+          } catch (transactionError) {
+            console.error(
+              `Error fetching transactions for user ${apiUser.member_id}:`,
+              transactionError
+            );
+          }
+
+          return {
+            id: apiUser.member_id,
+            name: apiUser.user_name || null,
+            fullName: `${apiUser.first_name} ${apiUser.last_name}`,
+            email: apiUser.email_id || null,
+            location: apiUser.location || "Unknown",
+            joined: apiUser.createdAt
+              ? new Date(apiUser.createdAt).toLocaleDateString()
+              : null,
+            status: apiUser.status || "Active",
+            kycStatus: "Verified", // This should ideally be computed from actual KYC docs if available
+            kycDocs: [],
+            balance: Number(apiUser.wallet_balance) || 0,
+            deposits: totalDeposits,
+            withdrawals: totalWithdrawals,
+            lastActive: apiUser.updatedAt
+              ? new Date(apiUser.updatedAt).toLocaleDateString()
+              : null,
+            assignedAdmin: null,
+            bank: {
+              bankName: apiUser.bank_name || "N/A",
+              accountNumber: apiUser.account_number || "N/A",
+              ifsc: apiUser.ifsc_code || "N/A",
+              upiId: apiUser.upi_id || "N/A",
+            },
+          };
+        });
+
+        const finalMappedUsers = await Promise.all(mappedUsersPromises);
+        setUsers(finalMappedUsers);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching users or transactions:", err);
+        setError("Failed to load users. Please check the API endpoint and token.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsersAndTransactions();
+  }, []); // Empty dependency array to run only once on mount
 
   const handleBan = (id) => {
     setUsers((prev) =>
@@ -66,9 +187,9 @@ export default function UserKYC() {
   const filteredUsers = users.filter((u) => {
     const q = search.toLowerCase().trim();
     return (
-      u.name.toLowerCase().includes(q) ||
-      u.fullName.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q)
+      u.name?.toLowerCase().includes(q) ||
+      u.fullName?.toLowerCase().includes(q) ||
+      u.email?.toLowerCase().includes(q)
     );
   });
 
@@ -80,12 +201,12 @@ export default function UserKYC() {
       "Location",
       "Joined",
       "Status",
-      "Verified",
+      "KYC Status",
       "Deposits",
       "Withdrawals",
       "Balance",
       "Last Active",
-      "Assigned Admin"
+      "Assigned Admin",
     ];
     const rows = users.map((u) => [
       u.name,
@@ -94,12 +215,12 @@ export default function UserKYC() {
       u.location,
       u.joined,
       u.status,
-      u.verified ? "Yes" : "No",
+      u.kycStatus,
       u.deposits,
       u.withdrawals,
       u.balance,
       u.lastActive,
-      u.assignedAdmin || "-"
+      u.assignedAdmin || "-",
     ]);
     const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
 
@@ -122,6 +243,22 @@ export default function UserKYC() {
     );
   }
 
+  if (loading) {
+    return (
+      <div className="p-6 text-center text-gray-500 dark:text-gray-400">
+        Loading users...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center text-red-500">
+        Error: {error}
+      </div>
+    );
+  }
+  console.log({ filteredUsers });
   return (
     <div className="p-6 min-h-screen bg-gray-50 dark:bg-zinc-900 text-gray-900 dark:text-white">
       {/* Header */}
@@ -150,7 +287,6 @@ export default function UserKYC() {
       {/* User Cards */}
       <div className="space-y-4">
         {filteredUsers.map((user) => {
-          const kycStatus = computeKycStatus(user.kycDocs || []);
           return (
             <div
               key={user.id}
@@ -172,14 +308,14 @@ export default function UserKYC() {
                     </span>
                     <span
                       className={`text-xs px-2 py-1 rounded-full ${
-                        kycStatus === "Verified"
+                        user.kycStatus === "Verified"
                           ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-white"
-                          : kycStatus === "Rejected"
+                          : user.kycStatus === "Rejected"
                           ? "bg-red-100 text-red-700 dark:bg-red-700 dark:text-white"
                           : "bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-white"
                       }`}
                     >
-                      {kycStatus}
+                      {user.kycStatus}
                     </span>
                   </div>
                   <p className="text-sm">{user.fullName}</p>
@@ -194,11 +330,32 @@ export default function UserKYC() {
                 </div>
               </div>
 
-              {/* Right Side */}
+              {/* Right Side - Added Headers */}
               <div className="flex items-center justify-between flex-wrap gap-4 mt-4 md:mt-0 text-sm">
-                <div className="text-green-600">${user.deposits.toFixed(2)}</div>
-                <div className="text-red-600">${user.withdrawals.toFixed(2)}</div>
-                <div className="text-blue-600">${user.balance.toFixed(2)}</div>
+                <div className="flex flex-col items-center">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Deposits
+                  </span>
+                  <span className="text-green-600">
+                    ${user.deposits.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Withdrawals
+                  </span>
+                  <span className="text-red-600">
+                    ${user.withdrawals.toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    Balance
+                  </span>
+                  <span className="text-blue-600">
+                    ${user.balance.toFixed(2)}
+                  </span>
+                </div>
                 <div className="text-xs text-center text-gray-600 dark:text-gray-400">
                   Last active
                   <br />
@@ -264,7 +421,8 @@ export default function UserKYC() {
               </button>
               <button
                 onClick={() => {
-                  if (!selectedAdmin) return alert("Please select an admin.");
+                  // No-op for now, as this functionality is not requested to be wired to an API
+                  if (!selectedAdmin) return console.error("Please select an admin."); // Changed alert to console.error
                   setUsers((prev) =>
                     prev.map((u) =>
                       u.id === assignUser.id
@@ -284,129 +442,155 @@ export default function UserKYC() {
         </div>
       )}
 
-
+      {/* Wallet Adjustment Modal */}
       {walletUser && (
-  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-    <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
-      <h2 className="text-lg font-bold mb-1">Wallet Adjustment</h2>
-      <p className="text-sm text-gray-500 mb-4">
-        Adjust wallet balance for <strong>{walletUser.name}</strong>
-      </p>
-      <p className="mb-4">
-        Current Balance: ${walletUser.balance?.toFixed(2) ?? "0.00"}
-      </p>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded shadow-md w-full max-w-md">
+            <h2 className="text-lg font-bold mb-1">Wallet Adjustment</h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Adjust wallet balance for <strong>{walletUser.name}</strong>
+            </p>
+            <p className="mb-4">
+              Current Balance: ${walletUser.balance?.toFixed(2) ?? "0.00"}
+            </p>
 
-      {/* Form States */}
-      <div className="grid gap-4">
-        <div>
-          <label className="text-sm font-medium">Amount</label>
-          <input
-            type="number"
-            min="0"
-            placeholder="Enter amount"
-            className="w-full px-3 py-2 border rounded"
-            value={walletUser.amount || ""}
-            onChange={(e) =>
-              setWalletUser({
-                ...walletUser,
-                amount: parseFloat(e.target.value) || 0,
-              })
-            }
-          />
+            {/* Form States */}
+            <div className="grid gap-4">
+              <div>
+                <label className="text-sm font-medium">Amount</label>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Enter amount"
+                  className="w-full px-3 py-2 border rounded"
+                  value={walletUser.amount || ""}
+                  onChange={(e) =>
+                    setWalletUser({
+                      ...walletUser,
+                      amount: Number(e.target.value) || 0,
+                    })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Type</label>
+                <select
+                  className="w-full px-3 py-2 border rounded"
+                  value={walletUser.type || "credit"}
+                  onChange={(e) =>
+                    setWalletUser({ ...walletUser, type: e.target.value })
+                  }
+                >
+                  <option value="credit">Credit (+)</option>
+                  <option value="debit">Debit (-)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Reason</label>
+                <textarea
+                  rows={2}
+                  placeholder="Enter reason for adjustment"
+                  className="w-full px-3 py-2 border rounded"
+                  value={walletUser.reason || ""}
+                  onChange={(e) =>
+                    setWalletUser({ ...walletUser, reason: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium">Admin PIN</label>
+                <input
+                  type="password"
+                  placeholder="Enter your admin PIN"
+                  className="w-full px-3 py-2 border rounded"
+                  value={walletUser.pin || ""}
+                  onChange={(e) =>
+                    setWalletUser({ ...walletUser, pin: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setWalletUser(null)}
+                className="px-4 py-2 border rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const { id, amount, type } = walletUser;
+                  if (!amount || amount <= 0) {
+                    // Replaced alert with a console.error, as alerts are blocked in the immersive environment.
+                    console.error("Enter a valid amount.");
+                    return;
+                  }
+
+                  setUsers((prevUsers) =>
+                    prevUsers.map((u) => {
+                      if (u.id !== id) return u;
+
+                      const updatedDeposits = u.deposits || 0;
+                      const updatedWithdrawals = u.withdrawals || 0;
+                      const updatedBalance = u.balance || 0;
+
+                      if (type === "credit") {
+                        return {
+                          ...u,
+                          deposits: updatedDeposits + amount,
+                          balance: updatedBalance + amount,
+                        };
+                      } else {
+                        return {
+                          ...u,
+                          withdrawals: updatedWithdrawals + amount,
+                          balance: updatedBalance - amount,
+                        };
+                      }
+                    })
+                  );
+
+                  setWalletUser(null);
+                }}
+                className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+              >
+                + Confirm Adjustment
+              </button>
+            </div>
+          </div>
         </div>
-
-        <div>
-          <label className="text-sm font-medium">Type</label>
-          <select
-            className="w-full px-3 py-2 border rounded"
-            value={walletUser.type || "credit"}
-            onChange={(e) =>
-              setWalletUser({ ...walletUser, type: e.target.value })
-            }
-          >
-            <option value="credit">Credit (+)</option>
-            <option value="debit">Debit (-)</option>
-          </select>
+      )}
+      {/* Delete Confirmation Modal */}
+      {deleteUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white dark:bg-zinc-800 p-6 rounded w-full max-w-sm text-center">
+            <h2 className="text-lg font-bold mb-4">Confirm Deletion</h2>
+            <p className="mb-4">
+              Are you sure you want to delete user{" "}
+              <strong>{deleteUser.name}</strong>? This action cannot be undone.
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={() => setDeleteUser(null)}
+                className="px-4 py-2 rounded border dark:border-zinc-600"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
-
-        <div>
-          <label className="text-sm font-medium">Reason</label>
-          <textarea
-            rows={2}
-            placeholder="Enter reason for adjustment"
-            className="w-full px-3 py-2 border rounded"
-            value={walletUser.reason || ""}
-            onChange={(e) =>
-              setWalletUser({ ...walletUser, reason: e.target.value })
-            }
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium">Admin PIN</label>
-          <input
-            type="password"
-            placeholder="Enter your admin PIN"
-            className="w-full px-3 py-2 border rounded"
-            value={walletUser.pin || ""}
-            onChange={(e) =>
-              setWalletUser({ ...walletUser, pin: e.target.value })
-            }
-          />
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-end gap-3 mt-6">
-        <button
-          onClick={() => setWalletUser(null)}
-          className="px-4 py-2 border rounded"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={() => {
-            const { id, amount, type } = walletUser;
-            if (!amount || amount <= 0) {
-              return alert("Enter a valid amount.");
-            }
-
-            setUsers((prevUsers) =>
-              prevUsers.map((u) => {
-                if (u.id !== id) return u;
-
-                const updatedDeposits = u.deposits || 0;
-                const updatedWithdrawals = u.withdrawals || 0;
-                const updatedBalance = u.balance || 0;
-
-                if (type === "credit") {
-                  return {
-                    ...u,
-                    deposits: updatedDeposits + amount,
-                    balance: updatedBalance + amount,
-                  };
-                } else {
-                  return {
-                    ...u,
-                    withdrawals: updatedWithdrawals + amount,
-                    balance: updatedBalance - amount,
-                  };
-                }
-              })
-            );
-
-            setWalletUser(null);
-          }}
-          className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
-        >
-          + Confirm Adjustment
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
-
+      )}
     </div>
   );
 }

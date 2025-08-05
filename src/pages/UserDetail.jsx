@@ -11,7 +11,7 @@ export default function UserDetail({ user, onBack, onKycStatusChange }) {
     if (docs.every((doc) => doc.status === "Verified")) return "Verified";
     return "Pending";
   };
-
+console.log({user})
   const [activeTab, setActiveTab] = useState("Overview");
   const [kycDocs, setKycDocs] = useState(user.kycDocs || []);
   const [kycStatus, setKycStatus] = useState(computeKycStatus(kycDocs));
@@ -166,7 +166,7 @@ export default function UserDetail({ user, onBack, onKycStatusChange }) {
             <td className="font-medium p-2">IFSC</td>
             <td className="p-2">{user.bank?.ifsc || "N/A"}</td>
           </tr>
-          <tr>
+          <tr> 
             <td className="font-medium p-2">UPI</td>
             <td className="p-2">{user.bank?.upiId || "N/A"}</td>
           </tr>
