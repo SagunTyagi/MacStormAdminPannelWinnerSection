@@ -345,7 +345,7 @@ export default function UserReportsCenter() {
         originalId: updatedReportData.id || 0,
         title: updatedReportData.title || "Untitled Report",
         category: (updatedReportData.category || "other").toLowerCase(),
-        status: updatedReportData.status || "pending",
+        status: updatedReportData.status || "assigned",
         priority: "medium", // Default priority, as it's not in the provided report API response
         reportedBy: {
           username: updatedReportData.user_name || "Unknown User",
@@ -370,9 +370,9 @@ export default function UserReportsCenter() {
         evidence: Array.isArray(updatedReportData.evidence_files)
           ? updatedReportData.evidence_files.filter((file) => file !== null)
           : [],
-        assignedTo: updatedReportData.assigned_admin || null,
+        assignedTo: updatedReportData.assigned_admin || adminName,
         assignedBy: updatedReportData.assigned_by || null, // Assuming backend returns this, otherwise it will be null
-        assignedAt: updatedReportData.updatedAt ? new Date(updatedReportData.updatedAt).toLocaleString() : null, // Use updatedAt for assignment timestamp
+       assignedAt: new Date().toLocaleString(), // Current timestamp for assignment
         urgency: updatedReportData.status === "pending" ? "normal" : "low", // Default urgency
         location: "Global", // Default location
         upvotes: Math.floor(Math.random() * 50), // Random for now
@@ -382,7 +382,12 @@ export default function UserReportsCenter() {
 
       // Update local state with the transformed data
       setUserReports((prev) => prev.map((r) => (r.id === reportId ? transformedUpdatedReport : r)))
-      showSnackbar(`Assigned to ${transformedUpdatedReport.assignedTo}`, "success")
+      // showSnackbar(`Assigned to ${transformedUpdatedReport.assignedTo}`, "success")
+      if (adminName) {
+  showSnackbar(`Assigned to ${adminName}`, "success")
+} else {
+  showSnackbar("Report unassigned successfully", "success")
+}
     } catch (error) {
       console.error("Assignment error:", error)
       showSnackbar(`Failed to assign: ${error.message}`, "error")
