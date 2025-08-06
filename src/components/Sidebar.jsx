@@ -16,6 +16,7 @@ import {
   Crown,
   Monitor,
   ThumbsUp,
+  Sword,
   Users as UsersIcon,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -56,6 +57,16 @@ const menuItems = [
     submenuKey: "teams",
     subItems: [{ label: "All Teams", path: "/teams" }],
   },
+   {
+    label: "Daily Duels",
+    icon: Sword,
+    path: "/admin/duels",
+  },
+    {
+    label: "Images", // ✅ NEW
+    icon: ImageIcon,   // (You can replace with a better one if needed)
+    path: "/admin/images",
+  },
   {
     label: "Voting Centre",
     icon: ThumbsUp,
@@ -69,7 +80,9 @@ const menuItems = [
     subItems: [
       { label: "All Games", path: "/games" },
       { label: "Matches", path: "/matches" },
+      {label: "Contest" , path: "/contest-list" },
     ],
+    
   },
   {
     label: "Daily Bets",

@@ -40,6 +40,12 @@ import NotificationCenter from "./pages/NotificationCenter";
 import Report from "./pages/Report";
 import Match from "./pages/Match";
 import Reportss from "./pages/Reportss"; // Uncomment if this page exists
+import CreateDuel from "./pages/CreateDuel";
+import ImageGallery from "./pages/ImageGallery";
+import Contestcreate from "./pages/contest-create"
+import Contestlist from "./pages/contest-list";
+import ContestDetail from "./pages/contest-details";
+import contestResult from "./pages/content-Result";
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -163,7 +169,12 @@ function App() {
           <Route path="/admin/matches" element={<Match />} />
           <Route path="/settings" element={<Setting />} />
           <Route path="/reportss" element={<Reportss />} />
-
+<Route path="/admin/duels/createduel" element={<CreateDuel />} />
+          <Route path="/admin/images" element={<ImageGallery />} />
+          <Route path="/contest-create" element={<Contestcreate />} />
+          <Route path="/contest-list" element={<Contestlist />} />
+          <Route path="/contest-details/:id" element={<ContestDetail />} />
+          <Route path="/contest-result/:id" element={<contestResult />} />
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

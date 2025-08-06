@@ -625,7 +625,3 @@ const formatDate = (dateString) =>
 };
 
 export default AdminManagement;
-
-
-
-
