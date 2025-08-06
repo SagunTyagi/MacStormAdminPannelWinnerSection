@@ -9,6 +9,8 @@ import ImageGallery from "./pages/ImageGallery";
 // Firebase
 import { messaging } from "./firebase";
 import FirebaseNotificationHandler from "./components/FirebaseNotificationHandler";
+import WithdrawRequests from "./pages/WithdrawRequests";
+
 
 // Layout
 import Sidebar from "./components/Sidebar";
@@ -152,6 +154,8 @@ function App() {
           <Route path="/admin/ads" element={<Ads />} />
           <Route path="/admin/duels/createduel" element={<CreateDuel />} />
           <Route path="/admin/images" element={<ImageGallery />} />
+          <Route path="/admin/withdrawals" element={<WithdrawRequests />} />
+
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

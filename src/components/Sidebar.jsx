@@ -10,6 +10,7 @@ import {
   Sword,
   Tv2Icon,
   User,
+  Wallet2Icon,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -51,6 +52,12 @@ const menuItems = [
     icon: ImageIcon,   // (You can replace with a better one if needed)
     path: "/admin/images",
   },
+  {
+    label: "Withdrawal Request",
+    icon: Wallet2Icon , 
+    path: "/admin/withdrawals",
+  }
+
 ];
 
 const Sidebar = () => {
