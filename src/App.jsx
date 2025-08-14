@@ -46,6 +46,12 @@ import Contestcreate from "./pages/contest-create"
 import Contestlist from "./pages/contest-list";
 import ContestDetail from "./pages/contest-details";
 import contestResult from "./pages/content-Result";
+import Bonus from "./pages/Bonus";
+import DuoContestForm from "./pages/DuoContestForm";
+import DeclareResult from "./pages/DeclareResult";
+import DuoContest from "./pages/DuoContest";
+import Kyc from "./pages/Kyc";
+
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -168,6 +174,7 @@ function App() {
           <Route path="/admin/bets" element={<DailyBets />} />
           <Route path="/admin/matches" element={<Match />} />
           <Route path="/settings" element={<Setting />} />
+          <Route path="/bonus" element={<Bonus />} />
           <Route path="/reportss" element={<Reportss />} />
 <Route path="/admin/duels/createduel" element={<CreateDuel />} />
           <Route path="/admin/images" element={<ImageGallery />} />
@@ -175,6 +182,10 @@ function App() {
           <Route path="/contest-list" element={<Contestlist />} />
           <Route path="/contest-details/:id" element={<ContestDetail />} />
           <Route path="/contest-result/:id" element={<contestResult />} />
+          <Route path="/duo/create" element={<DuoContestForm />} />
+          <Route path="/duo/result/:id" element={<DeclareResult />} />
+          <Route path="/duoContests" element={<DuoContest />} />
+          <Route path="/kyc" element={<Kyc />} />
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

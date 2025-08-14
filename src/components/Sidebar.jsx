@@ -16,6 +16,7 @@ import {
   Crown,
   Monitor,
   ThumbsUp,
+  Gift,
   Sword,
   Users as UsersIcon,
 } from "lucide-react";
@@ -47,7 +48,14 @@ const menuItems = [
     subItems: [
       { label: "All Users", path: "/users" },
       { label: "User Settings", path: "/user-settings" },
-      { label: "User KYC", path: "/user-kyc" },
+      { 
+        label: "User KYC", 
+        path: "/user-kyc",
+        submenuKey: "userKyc",
+        subItems: [
+          { label: "KYC", path: "/kyc" }, 
+        ]  
+      },
       { label: "User Teams", path: "/user-teams" },
     ],
   },
@@ -80,9 +88,14 @@ const menuItems = [
     subItems: [
       { label: "All Games", path: "/games" },
       { label: "Matches", path: "/matches" },
-      {label: "Contest" , path: "/contest-list" },
+      {
+        label: "Contest",
+        submenuKey: "contest-submenu",
+        subItems: [
+          { label: "Duo Contests", path: "/duoContests" },
+        ],
+      },
     ],
-    
   },
   {
     label: "Daily Bets",
@@ -128,6 +141,11 @@ const menuItems = [
     icon: Settings,
     path: "/settings",
   },
+  {
+    label: "Bonus",
+    icon: Gift,
+    path: "/bonus",
+  },
 ];
 
 const Sidebar = () => {
@@ -136,6 +154,89 @@ const Sidebar = () => {
 
   const toggleMenu = (key) => {
     setOpenMenus((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const renderMenuItem = (item, depth = 0) => {
+    const Icon = item.icon;
+    const isSubmenuOpen = openMenus[item.submenuKey];
+    const marginClass = depth > 0 ? `ml-${depth * 5}` : '';
+
+    // If item has both path and subItems (like User KYC)
+    if (item.path && item.subItems) {
+      return (
+        <div key={item.label}>
+          <div className="flex">
+            <Link
+              to={item.path}
+              className={`flex-1 p-2 rounded-l hover:bg-zinc-300 dark:hover:bg-zinc-700 ${marginClass} ${
+                location.pathname === item.path
+                  ? "text-primary-600 font-medium bg-zinc-300 dark:bg-zinc-700"
+                  : ""
+              }`}
+            >
+              {item.label}
+            </Link>
+            <button
+              onClick={() => toggleMenu(item.submenuKey)}
+              className="p-2 rounded-r hover:bg-zinc-300 dark:hover:bg-zinc-700 border-l border-zinc-400 dark:border-zinc-600"
+            >
+              {isSubmenuOpen ? (
+                <ChevronDown size={16} />
+              ) : (
+                <ChevronRight size={16} />
+              )}
+            </button>
+          </div>
+          {isSubmenuOpen && (
+            <div className="ml-5 my-2 space-y-1">
+              {item.subItems.map((sub) => renderMenuItem(sub, depth + 1))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // If item has only subItems (expandable menu)
+    if (item.subItems) {
+      return (
+        <div key={item.label}>
+          <button
+            onClick={() => toggleMenu(item.submenuKey)}
+            className={`flex w-full items-center justify-between p-2 rounded hover:bg-zinc-300 dark:hover:bg-zinc-700 border-b dark:border-zinc-700 ${marginClass}`}
+          >
+            <span className="flex items-center space-x-2">
+              {Icon && <Icon size={18} />}
+              <span>{item.label}</span>
+            </span>
+            {isSubmenuOpen ? (
+              <ChevronDown size={16} />
+            ) : (
+              <ChevronRight size={16} />
+            )}
+          </button>
+          {isSubmenuOpen && (
+            <div className="ml-5 my-2 space-y-1">
+              {item.subItems.map((sub) => renderMenuItem(sub, depth + 1))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // Regular link item
+    return (
+      <Link
+        key={item.label}
+        to={item.path}
+        className={`block p-3 rounded hover:text-primary-500 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${marginClass} ${
+          location.pathname === item.path
+            ? "text-primary-600 font-medium bg-zinc-300 dark:bg-zinc-700"
+            : ""
+        }`}
+      >
+        {item.label}
+      </Link>
+    );
   };
 
   return (
@@ -149,41 +250,71 @@ const Sidebar = () => {
           const Icon = item.icon;
           const isSubmenuOpen = openMenus[item.submenuKey];
 
-          return item.subItems ? (
-            <div key={item.label}>
-              <button
-                onClick={() => toggleMenu(item.submenuKey)}
-                className="flex w-full items-center justify-between p-2 rounded hover:bg-zinc-300 dark:hover:bg-zinc-700 border-b dark:border-zinc-700"
-              >
-                <span className="flex items-center space-x-2">
-                  <Icon size={18} />
-                  <span>{item.label}</span>
-                </span>
-                {isSubmenuOpen ? (
-                  <ChevronDown size={16} />
-                ) : (
-                  <ChevronRight size={16} />
-                )}
-              </button>
-              {isSubmenuOpen && (
-                <div className="ml-5 my-2 space-y-1">
-                  {item.subItems.map((sub) => (
-                    <Link
-                      key={sub.label}
-                      to={sub.path}
-                      className={`block p-3 rounded hover:text-primary-500 hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
-                        location.pathname === sub.path
-                          ? "text-primary-600 font-medium p-3 bg-zinc-300 dark:bg-zinc-700"
-                          : ""
-                      }`}
-                    >
-                      {sub.label}
-                    </Link>
-                  ))}
+          // Handle items with both path and subItems (like User KYC)
+          if (item.path && item.subItems) {
+            return (
+              <div key={item.label}>
+                <div className="flex">
+                  <Link
+                    to={item.path}
+                    className={`flex-1 flex items-center space-x-2 p-2 rounded-l hover:bg-zinc-300 dark:hover:bg-zinc-700 ${
+                      location.pathname === item.path
+                        ? "bg-zinc-200 dark:bg-zinc-700 font-medium"
+                        : ""
+                    }`}
+                  >
+                    {Icon && <Icon size={18} />}
+                    <span>{item.label}</span>
+                  </Link>
+                  <button
+                    onClick={() => toggleMenu(item.submenuKey)}
+                    className="p-2 rounded-r hover:bg-zinc-300 dark:hover:bg-zinc-700 border-l border-zinc-400 dark:border-zinc-600"
+                  >
+                    {isSubmenuOpen ? (
+                      <ChevronDown size={16} />
+                    ) : (
+                      <ChevronRight size={16} />
+                    )}
+                  </button>
                 </div>
-              )}
-            </div>
-          ) : (
+                {isSubmenuOpen && (
+                  <div className="ml-5 my-2 space-y-1">
+                    {item.subItems.map((sub) => renderMenuItem(sub, 0))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // Handle items with only subItems
+          if (item.subItems) {
+            return (
+              <div key={item.label}>
+                <button
+                  onClick={() => toggleMenu(item.submenuKey)}
+                  className="flex w-full items-center justify-between p-2 rounded hover:bg-zinc-300 dark:hover:bg-zinc-700 border-b dark:border-zinc-700"
+                >
+                  <span className="flex items-center space-x-2">
+                    <Icon size={18} />
+                    <span>{item.label}</span>
+                  </span>
+                  {isSubmenuOpen ? (
+                    <ChevronDown size={16} />
+                  ) : (
+                    <ChevronRight size={16} />
+                  )}
+                </button>
+                {isSubmenuOpen && (
+                  <div className="ml-5 my-2 space-y-1">
+                    {item.subItems.map((sub) => renderMenuItem(sub, 0))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+
+          // Handle regular links
+          return (
             <Link
               key={item.label}
               to={item.path}
