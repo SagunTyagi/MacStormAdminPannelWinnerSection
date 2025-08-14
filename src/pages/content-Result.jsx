@@ -50,7 +50,7 @@ export default function ContestResultDeclaration() {
     const navigate = useNavigate();
 
     // Mock auth token - replace with your actual auth implementation
-    const token = localStorage.getItem('authToken');
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU1MDY2Mjc5LCJleHAiOjE3NTYzNjIyNzl9.Mk47vv4heUHy56DqGYSCpLlmcweGptiqovYC6Z5rL7I";
 
     const joinedUsers = useMemo(() => {
         return contest?.joined_users || [];
@@ -65,7 +65,7 @@ export default function ContestResultDeclaration() {
         setIsLoading(true);
         try {
             // Fetch general contest details
-            const contestRes = await fetch(`https://macstormbattle-backend.onrender.com/api/api/contest/${contestId}`, {
+            const contestRes = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/${contestId}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -195,7 +195,7 @@ export default function ContestResultDeclaration() {
         try {
             const filledWinners = winners.filter(w => w.userId && w.name.trim());
 
-            const res = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/declare/${contestId}`, {
+            const res = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/declare/${contestId}/declare-result`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

@@ -59,7 +59,8 @@ export default function ContestDetail({ onUpdate, onCreate }) {
     const [loadingRoom, setLoadingRoom] = useState(false);
 
     // Mock auth token - replace with your actual auth implementation
-    const token = localStorage.getItem('authToken');
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU1MDY2Mjc5LCJleHAiOjE3NTYzNjIyNzl9.Mk47vv4heUHy56DqGYSCpLlmcweGptiqovYC6Z5rL7I";
+    
 
     const showToast = (title, description, variant = "default") => {
         // Replace with your toast implementation

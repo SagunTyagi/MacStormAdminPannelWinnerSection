@@ -36,7 +36,7 @@ export default function ContestForm({ onSuccess }) {
   const { id } = useParams();
   const contestId = id;
   const isEditMode = !!contestId;
-  const token = localStorage.getItem('authToken'); // Replace with your auth token logic
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU1MDY2Mjc5LCJleHAiOjE3NTYzNjIyNzl9.Mk47vv4heUHy56DqGYSCpLlmcweGptiqovYC6Z5rL7I"; // Replace with your auth token logic
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
