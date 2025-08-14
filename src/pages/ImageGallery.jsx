@@ -26,7 +26,7 @@ function ImageGallery() {
 
     const fetchImages = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/api/images");
+            const res = await axios.get("https://macstormbattle-backend.onrender.com/api/auth/admin/images");
             setImages(res.data.data);
         } catch (err) {
             console.error("Failed to fetch images", err);
@@ -64,7 +64,7 @@ function ImageGallery() {
     if (!window.confirm("Delete this image?")) return;
 
     try {
-        await axios.delete(`http://localhost:5000/api/images/${id}`);
+        await axios.delete(`https://macstormbattle-backend.onrender.com/api/auth/admin/images/${id}`);
         setImages(images.filter((img) => img.id !== id));
         setSelectedImages(selectedImages.filter((i) => i !== id));
     } catch (err) {
@@ -92,7 +92,7 @@ function ImageGallery() {
       formData.append("title", newImage.title);
       formData.append("image", newImage.file);
 
-      const res = await axios.post("http://localhost:5000/api/images", formData, {
+      const res = await axios.post("https://macstormbattle-backend.onrender.com/api/auth/admin/images", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -113,7 +113,7 @@ function ImageGallery() {
         }
 
         const res = await axios.put(
-        `http://localhost:5000/api/images/${updatedImage.id}`,
+        `https://macstormbattle-backend.onrender.com/api/auth/admin/images/${updatedImage.id}`,
         formData,
         { headers: { "Content-Type": "multipart/form-data" } }
         );
@@ -292,7 +292,7 @@ function ImageGallery() {
                   <td className="p-3">{img.title}</td>
                   <td className="p-3">
                     <img
-                      src={`http://localhost:5000${img.imageUrl}`}
+                      src={`${img.imageUrl}`}
                       alt={img.title}
                       className="w-16 h-16 object-contain rounded"
                     />
@@ -301,7 +301,7 @@ function ImageGallery() {
                   <td className="p-3 text-center flex justify-center gap-3">
                     <button
                     title="View"
-                    onClick={() => setViewImage(`http://localhost:5000${img.imageUrl}`)}
+                    onClick={() => setViewImage(`${img.imageUrl}`)}
                     className="text-gray-600 hover:text-black dark:text-gray-300 dark:hover:text-white"
                     >
                     <Eye size={16} />

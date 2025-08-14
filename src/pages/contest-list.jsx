@@ -62,7 +62,7 @@ export default function ContestList({ onContestSelect, refreshTrigger, isAdmin =
   const loadContests = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/contest', {
+      const response = await fetch('https://macstormbattle-backend.onrender.com/api/contest', {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -135,7 +135,7 @@ export default function ContestList({ onContestSelect, refreshTrigger, isAdmin =
   };
 
   const handleViewDetails = contestId => {
-    navigate(`/admin/games/contest/${contestId}`);
+    navigate(`/contest-details/${contestId}`);
   };
 
   const getStatusColor = status => {

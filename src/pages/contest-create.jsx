@@ -74,10 +74,10 @@ export default function ContestForm({ onSuccess }) {
         try {
           setLoading(true);
           const [contestRes, prizeRes] = await Promise.all([
-            fetch(`http://localhost:5000/api/contest/${contestId}`, {
+            fetch(`https://macstormbattle-backend.onrender.com/api/contest/${contestId}`, {
               headers: { Authorization: `Bearer ${token}` }
             }),
-            fetch(`http://localhost:5000/api/prize/${contestId}`, {
+            fetch(`https://macstormbattle-backend.onrender.com/api/prize/${contestId}`, {
               headers: { Authorization: `Bearer ${token}` }
             })
           ]);
@@ -176,8 +176,8 @@ export default function ContestForm({ onSuccess }) {
       });
 
       const url = isEditMode
-        ? `http://localhost:5000/api/contest/${contestId}/edit`
-        : 'http://localhost:5000/api/contest/create';
+        ? `https://macstormbattle-backend.onrender.com/api/contest/${contestId}/edit`
+        : 'https://macstormbattle-backend.onrender.com/api/contest/create';
 
       const method = isEditMode ? 'PATCH' : 'POST';
 

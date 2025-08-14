@@ -75,7 +75,7 @@ export default function ContestDetail({ onUpdate, onCreate }) {
     const loadRoomCredentials = async () => {
         try {
             setLoadingRoom(true);
-            const res = await fetch(`http://localhost:5000/api/contest/admin/${contestId}/room`, {
+            const res = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/admin/${contestId}/room`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -106,7 +106,7 @@ export default function ContestDetail({ onUpdate, onCreate }) {
     const handleUpdateRoomCredentials = async () => {
         try {
             setLoadingRoom(true);
-            const res = await fetch(`http://localhost:5000/api/contest/${contestId}/room`, {
+            const res = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/${contestId}/room`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -151,8 +151,8 @@ export default function ContestDetail({ onUpdate, onCreate }) {
             };
 
             const [contestRes, prizeRes] = await Promise.all([
-                fetch(`http://localhost:5000/api/contest/${contestId}`, { headers }),
-                fetch(`http://localhost:5000/api/prize/${contestId}`, { headers })
+                fetch(`https://macstormbattle-backend.onrender.com/api/contest/${contestId}`, { headers }),
+                fetch(`https://macstormbattle-backend.onrender.com/api/prize/${contestId}`, { headers })
             ]);
 
             if (!contestRes.ok || !prizeRes.ok) {
@@ -185,7 +185,7 @@ export default function ContestDetail({ onUpdate, onCreate }) {
 
     const handleStatusChange = async (newStatus) => {
         try {
-            const res = await fetch(`http://localhost:5000/api/contest/${contestId}/status`, {
+            const res = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/${contestId}/status`, {
                 method: 'PATCH',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -217,7 +217,7 @@ export default function ContestDetail({ onUpdate, onCreate }) {
         if (!window.confirm("Are you sure you want to delete this contest?")) return;
 
         try {
-            const res = await fetch(`http://localhost:5000/api/contest/${contestId}`, {
+            const res = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/${contestId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
