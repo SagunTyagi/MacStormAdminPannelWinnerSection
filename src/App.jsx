@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+import { Routes, Route, useLocation, Navigate ,useNavigate} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { getToken } from "firebase/messaging";
 import { ToastContainer } from "react-toastify";
@@ -33,22 +33,23 @@ import SystemHealth from "./pages/SystemHealth";
 import AuditLogViewer from "./pages/AuditLogViewer";
 import ManualLedger from "./pages/ManualLedger";
 // Auth util (you must create this hook)
-// import useAuth from "./hooks/useAuth";
+import useAuth from "./hooks/useAuth";
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
-  // const { isLoggedIn } = useAuth();
+  const navigate = useNavigate(); 
+  const { isLoggedIn, setIsLoggedIn } = useAuth();
 
   const authRoutes = ["/login", "/register", "/forgot-password"];
   const isAuthPage = authRoutes.includes(location.pathname);
 
   // Redirect to login if not authenticated and not on auth page
-  // useEffect(() => {
-  //   if (!isLoggedIn && !isAuthPage) {
-  //     window.location.href = "/login";
-  //   }
-  // }, [isLoggedIn, isAuthPage]);
+  useEffect(() => {
+    if (!isLoggedIn && !isAuthPage) {
+      navigate("/login", { replace: true });
+    }
+  }, [isLoggedIn, isAuthPage, navigate]);
 
   // Register Firebase Messaging Service Worker
   useEffect(() => {
@@ -118,7 +119,7 @@ function App() {
         <FirebaseNotificationHandler />
         <ToastContainer />
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           {/* Catch any other path and redirect */}
@@ -132,7 +133,7 @@ function App() {
     <div className="flex min-h-screen bg-neutral-200 dark:bg-zinc-500 transition-colors duration-300">
       {isSidebarOpen && <Sidebar />}
       <div className="flex-1 flex flex-col">
-        <Navbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Navbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} setIsLoggedIn={setIsLoggedIn} />
         <FirebaseNotificationHandler />
         <ToastContainer />
 

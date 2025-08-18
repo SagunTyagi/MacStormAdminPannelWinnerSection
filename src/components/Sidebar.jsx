@@ -38,7 +38,9 @@ const menuItems = [
     icon: User,
     submenuKey: "users",
     subItems: [
-      { label: "All Users", path: "/users" },
+      //{ label: "All Users", path: "/users" },
+      { label: "User Settings", path: "/user-settings" },
+      { label: "User KYC", path: "/user-kyc" },
     ],
   },
   {
@@ -56,9 +58,9 @@ const menuItems = [
     submenuKey: "voting",
     subItems: [
       { label: "All Votes", path: "/voting-centre" },
-      { label: "User Settings", path: "/user-settings" },
-      { label: "User KYC", path: "/user-kyc" },
-      { label: "User Teams", path: "/user-teams" },
+      // { label: "User Settings", path: "/user-settings" },
+      // { label: "User KYC", path: "/user-kyc" },
+      // { label: "User Teams", path: "/user-teams" },
     ],
   },
   {

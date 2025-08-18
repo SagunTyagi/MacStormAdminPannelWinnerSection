@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axiosInstance from "../utils/axios";
+// import axiosInstance from "../utils/axios";
+import axios from "axios";
 import { getToken } from "firebase/messaging";
 import { messaging } from "../firebase"; // Adjust if needed
 
-function Login() {
+function Login({ setIsLoggedIn }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -18,8 +19,8 @@ function Login() {
       const currentToken = await getToken(messaging, { vapidKey });
 
       if (currentToken) {
-        await axiosInstance.post(
-          "/api/save-token",
+        await axios.post(
+          "http://localhost:5000/api/save-token",
           { token: currentToken },
           {
             headers: {
@@ -61,14 +62,14 @@ function Login() {
 
     try {
       setLoading(true);
-      const response = await axiosInstance.post("/auth/admin/login", {
+      const response = await axios.post("http://localhost:5000/api/auth/admin/login", {
         email,
         password,
       });
-
       const authToken = response.data.token;
       localStorage.setItem("authToken", authToken);
-      await registerFcmToken(authToken); // <-- FCM registration
+      await registerFcmToken(authToken);
+      setIsLoggedIn(true); // <-- update auth state
 
       navigate("/"); // Redirect after everything is done
     } catch (err) {

@@ -3,15 +3,15 @@ import { ArrowLeft, CreditCard, FileText, Gamepad, ScrollText, User, Wallet, Che
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-
-
 export default function UserDetail({ user, onBack, onKycStatusChange }) {
   const computeKycStatus = (docs) => {
+    if (!docs?.length) return "Pending";
     if (docs.some((doc) => doc.status === "Rejected")) return "Rejected";
     if (docs.every((doc) => doc.status === "Verified")) return "Verified";
     return "Pending";
   };
-console.log({user})
+  console.log({user})
+
   const [activeTab, setActiveTab] = useState("Overview");
   const [kycDocs, setKycDocs] = useState(user.kycDocs || []);
   const [kycStatus, setKycStatus] = useState(computeKycStatus(kycDocs));
@@ -47,141 +47,67 @@ console.log({user})
     { name: "Transactions", icon: CreditCard },
     { name: "Audit Trail", icon: ScrollText },
   ];
-
+console.log({user})
   const renderTabContent = () => {
     switch (activeTab) {
       case "Overview":
-  return (
-    <div
-      ref={overviewRef}
-      className="border rounded-lg p-4 mb-4 dark:border-zinc-700 bg-white dark:bg-zinc-800 overflow-auto"
-    >
-      <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-        User Information
-      </h3>
-      <table className="min-w-full text-sm border dark:border-zinc-700 rounded-lg overflow-hidden">
-        <tbody className="divide-y dark:divide-zinc-700">
-          <tr className="bg-gray-50 dark:bg-zinc-700">
-            <td className="font-medium p-2">User ID</td>
-            <td className="p-2">{user.id}</td>
-          </tr>
-          <tr>
-            <td className="font-medium p-2">Username</td>
-            <td className="p-2">{user.name}</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-zinc-700">
-            <td className="font-medium p-2">Full Name</td>
-            <td className="p-2">{user.fullName}</td>
-          </tr>
-          <tr>
-            <td className="font-medium p-2">Email</td>
-            <td className="p-2">{user.email}</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-zinc-700">
-            <td className="font-medium p-2">Phone</td>
-            <td className="p-2">{user.phone || "N/A"}</td>
-          </tr>
-          <tr>
-            <td className="font-medium p-2">Location</td>
-            <td className="p-2">{user.location}</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-zinc-700">
-            <td className="font-medium p-2">Joined</td>
-            <td className="p-2">{user.joined}</td>
-          </tr>
-          <tr>
-            <td className="font-medium p-2">Last Active</td>
-            <td className="p-2">{user.lastActive}</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-zinc-700">
-            <td className="font-medium p-2">Status</td>
-            <td className="p-2">
-              <span
-                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                  user.status === "Active"
-                    ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-white"
-                    : "bg-red-100 text-red-700 dark:bg-red-700 dark:text-white"
-                }`}
-              >
-                {user.status}
-              </span>
-            </td>
-          </tr>
-          <tr>
-           <td className="font-medium p-2">KYC Status</td>
-           <td className="p-2">
-            <span
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-              kycStatus === "Verified"
-              ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-white"
-              : kycStatus === "Rejected"
-              ? "bg-red-100 text-red-700 dark:bg-red-700 dark:text-white"
-              : "bg-yellow-100 text-yellow-700 dark:bg-yellow-700 dark:text-white"
-             }`}
-             >
-    {kycStatus}
-    {kycStatus === "Verified" && <CheckCircle className="w-4 h-4" />}
-    {kycStatus === "Rejected" && <XCircle className="w-4 h-4" />}
-    {kycStatus !== "Verified" && kycStatus !== "Rejected" && (
-      <Clock className="w-4 h-4" />
-    )}
-  </span>
-</td>
+        return (
+          <div ref={overviewRef}>
+            <div className="bg-white p-6 rounded-lg shadow mb-6 border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Basic Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">Full Name</p>
+                  <p className="mt-1">{user.fullName}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">Email</p>
+                  <p className="mt-1">{user.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">Phone</p>
+                  <p className="mt-1">{user.phone || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">Location</p>
+                  <p className="mt-1">{user.location}</p>
+                </div>
+              </div>
+            </div>
 
-          </tr>
-          <tr className="bg-gray-50 dark:bg-zinc-700">
-            <td className="font-medium p-2">Deposits</td>
-            <td className="p-2 text-green-600">${user.deposits.toFixed(2)}</td>
-          </tr>
-          <tr>
-            <td className="font-medium p-2">Withdrawals</td>
-            <td className="p-2 text-red-600">${user.withdrawals.toFixed(2)}</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-zinc-700">
-            <td className="font-medium p-2">Balance</td>
-            <td
-              className={`p-2 ${
-                user.balance >= 0 ? "text-blue-600" : "text-red-500"
-              }`}
-            >
-              ${user.balance.toFixed(2)}
-            </td>
-          </tr>
-
-          {/* 🏦 Banking Info Header */}
-          <tr>
-            <td colSpan={2} className="p-2 pt-4 text-left text-sm font-semibold text-gray-700 dark:text-gray-300">
-              Banking Info
-            </td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-zinc-700">
-            <td className="font-medium p-2">Bank Name</td>
-            <td className="p-2">{user.bank?.bankName || "N/A"}</td>
-          </tr>
-          <tr>
-            <td className="font-medium p-2">Account No</td>
-            <td className="p-2">{user.bank?.accountNumber || "N/A"}</td>
-          </tr>
-          <tr className="bg-gray-50 dark:bg-zinc-700">
-            <td className="font-medium p-2">IFSC</td>
-            <td className="p-2">{user.bank?.ifsc || "N/A"}</td>
-          </tr>
-          <tr> 
-            <td className="font-medium p-2">UPI</td>
-            <td className="p-2">{user.bank?.upiId || "N/A"}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  );
+            <div className="bg-white p-6 rounded-lg shadow mb-6 border border-gray-200">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-gray-800">Bank/UPI Details</h3>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">Account Number</p>
+                  <p className="mt-1">**** **** {user.bank?.accountNumber?.slice(-4) || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">IFSC Code</p>
+                  <p className="mt-1">{user.bank?.ifsc || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">UPI ID</p>
+                  <p className="mt-1">{user.bank?.upiId || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-500">Bank Name</p>
+                  <p className="mt-1">{user.bank?.bankName || "N/A"}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
 
       case "KYC Docs":
         return (
-          <div className="border rounded-lg p-4 mb-4 dark:border-zinc-700">
-            <h3 className="text-lg font-semibold mb-4">KYC Documents</h3>
+          <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">KYC Documents</h3>
             {kycDocs.length > 0 ? (
               kycDocs.map((doc, index) => (
-                <div key={index} className="flex justify-between items-start border rounded p-4 dark:border-zinc-600 mb-4">
+                <div key={index} className="flex justify-between items-start border-b border-gray-200 py-4 last:border-b-0">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden">
                       {doc.url.endsWith(".pdf") ? (
@@ -191,9 +117,9 @@ console.log({user})
                       )}
                     </div>
                     <div>
-                      <p className="font-medium">{doc.type}</p>
+                      <p className="font-medium text-gray-800">{doc.type}</p>
                       <p className="text-sm text-gray-500">Uploaded: {doc.uploaded}</p>
-                      <span className={`text-xs mt-1 px-2 py-1 inline-block rounded-full ${
+                      <span className={`text-xs mt-1 px-2 py-1 inline-block rounded-full font-medium ${
                         doc.status === "Verified" ? "bg-green-100 text-green-700" :
                         doc.status === "Rejected" ? "bg-red-100 text-red-700" : "bg-yellow-100 text-yellow-700"
                       }`}>
@@ -205,13 +131,13 @@ console.log({user})
                     <div className="flex gap-2">
                       <button
                         onClick={() => window.open(doc.url, "_blank")}
-                        className="text-sm border px-3 py-1 rounded hover:bg-gray-100"
-                      >👁️ Preview</button>
+                        className="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50"
+                      >Preview</button>
                       <a
                         href={doc.url}
                         download
-                        className="text-sm border px-3 py-1 rounded hover:bg-gray-100"
-                      >⬇️ Download</a>
+                        className="text-sm border border-gray-300 px-3 py-1 rounded hover:bg-gray-50"
+                      >Download</a>
                     </div>
                     <select
                       value={doc.status}
@@ -220,7 +146,7 @@ console.log({user})
                         updatedDocs[index].status = e.target.value;
                         setKycDocs(updatedDocs);
                       }}
-                      className="text-sm mt-1 border px-2 py-1 rounded"
+                      className="text-sm mt-1 border border-gray-300 px-2 py-1 rounded"
                     >
                       <option value="Pending">Pending</option>
                       <option value="Verified">Verified</option>
@@ -234,203 +160,221 @@ console.log({user})
             )}
           </div>
         );
-
+      
       case "Payments":
-  return (
-    <div className="border rounded-lg p-4 mb-4 dark:border-zinc-700">
-      <h3 className="text-lg font-semibold mb-1">Payment History</h3>
-      <p className="text-sm text-gray-500 mb-4">Merged data from deposits and withdrawals</p>
+        // Sort payments by dd/mm/yyyy, hh:mm:ss am/pm string descending (newest first)
+        const parseDDMMYYYYTime = (str) => {
+          // Accepts 'dd/mm/yyyy, hh:mm:ss am/pm ...'
+          if (!str) return 0;
+          // Example: '05/08/2025, 12:13:56 pm'
+          const [datePart, timePart, ampm] = str.split(/,| /).map(s => s.trim()).filter(Boolean);
+          if (!datePart || !timePart) return 0;
+          const [dd, mm, yyyy] = datePart.split('/').map(Number);
+          let [hh, min, sec] = timePart.split(':').map(Number);
+          let amPm = ampm ? ampm.toLowerCase() : '';
+          if (amPm === 'pm' && hh < 12) hh += 12;
+          if (amPm === 'am' && hh === 12) hh = 0;
+          return new Date(yyyy, mm - 1, dd, hh, min, sec).getTime();
+        };
+        const sortedPayments = (user.payments || []).slice().sort((a, b) => parseDDMMYYYYTime(b.date) - parseDDMMYYYYTime(a.date));
 
-      {user.payments && user.payments.length > 0 ? (
-        <div className="space-y-4">
-          {user.payments.map((txn, index) => (
-            <div
-              key={index}
-              className="flex justify-between items-center p-4 border rounded-lg dark:border-zinc-600"
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`w-8 h-8 flex items-center justify-center rounded-full text-white ${
-                    txn.type === "Deposit" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                  }`}
-                >
-                  {txn.type === "Deposit" ? "+" : "-"}
-                </div>
-                <div>
-                  <p className="font-medium">{txn.id}</p>
-                  <p className="text-sm text-gray-500">{txn.method}</p>
-                </div>
+        return (
+          <div className="bg-white p-6 rounded-lg shadow mb-6 border border-gray-200">
+            <h3 className="text-xl font-bold mb-4 text-gray-800">Payment History</h3>
+            {sortedPayments.length > 0 ? (
+              <div className="space-y-4">
+                {sortedPayments.map((txn, index) => (
+                  <div key={index} className="flex justify-between items-center p-4 border border-gray-200 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 flex items-center justify-center rounded-full text-white ${txn.type === "Deposit" ? "bg-green-500" : "bg-red-500"}`}>
+                        {txn.type === "Deposit" ? "+" : "-"}
+                      </div>
+                      <div>
+                        {/* <p className="font-medium text-gray-800">{txn.id}</p> */}
+                        <p className="text-sm text-gray-500">{txn.description}</p>
+                      </div>
+                    </div>
+                    <div className="text-right flex flex-col items-end gap-1">
+                      <div className="flex items-center gap-2">
+                        <p className={`font-semibold ${txn.type === "Deposit" ? "text-green-600" : "text-red-600"}`}>
+                          {txn.type === "Deposit" ? "+" : "-"}${Number(txn.amount).toFixed(2)}
+                        </p>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${txn.type === "Deposit" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                          {txn.type === "Deposit" ? "Deposit" : "Withdraw"}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">{txn.date}</p>
+                      <span className={`mt-1 text-xs inline-block px-2 py-1 rounded-full ${txn.status === "success" ? "bg-green-100 text-green-700" : "bg-gray-100 text-red-600"}`}>
+                        {txn.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
-
-              <div className="text-right">
-                <p
-                  className={`font-semibold ${
-                    txn.type === "Deposit" ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  {txn.type === "Deposit" ? "+" : "-"}${txn.amount.toFixed(2)}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {new Date(txn.date).toLocaleString()}
-                </p>
-                <span
-                  className={`mt-1 text-xs inline-block px-2 py-1 rounded-full ${
-                    txn.status === "Active"
-                      ? "bg-green-100 text-green-700"
-                      : txn.status === "Pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {txn.status}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-gray-500">No payment history available.</p>
-      )}
-    </div>
-  );
+            ) : (
+              <p className="text-sm text-gray-500">No payment history available.</p>
+            )}
+          </div>
+        );
 
       case "Gameplay":
-  const gp = user.gameplay || {};
-  return (
-    <div className="border rounded-lg p-4 mb-4 dark:border-zinc-700">
-      <h3 className="text-lg font-semibold mb-1">Gameplay Statistics</h3>
-      <p className="text-sm text-gray-500 mb-4">Data joined from match_lineups, player_stats</p>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-        <div className="bg-gray-50 p-3 rounded-md text-center dark:bg-zinc-800">
-          <p className="text-2xl font-bold">{gp.totalMatches}</p>
-          <p className="text-sm text-gray-500">Total Matches</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md text-center dark:bg-zinc-800">
-          <p className="text-2xl font-bold text-green-600">{gp.wins}</p>
-          <p className="text-sm text-gray-500">Wins</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md text-center dark:bg-zinc-800">
-          <p className="text-2xl font-bold text-blue-600">{gp.avgKills}</p>
-          <p className="text-sm text-gray-500">Avg Kills</p>
-        </div>
-        <div className="bg-gray-50 p-3 rounded-md text-center dark:bg-zinc-800">
-          <p className="text-2xl font-bold text-purple-600">{gp.winRate}%</p>
-          <p className="text-sm text-gray-500">Win Rate</p>
-        </div>
-      </div>
-
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-        <div>
-          <p className="text-sm font-medium">Current Team(s)</p>
-          <span className="inline-block mt-1 px-2 py-1 text-xs bg-gray-200 rounded-full dark:bg-zinc-700">
-            {gp.currentTeam}
-          </span>
-        </div>
-        <div>
-          <p className="text-sm font-medium">Favorite Game</p>
-          <p className="mt-1">{gp.favoriteGame}</p>
-        </div>
-        <div>
-          <p className="text-sm font-medium">Total Earnings</p>
-          <p className="mt-1 text-green-600 font-semibold">${gp.totalEarnings?.toFixed(2)}</p>
-        </div>
-      </div>
-    </div>
-  );
+        const gp = user.gameplay || {};
+        return (
+          <div className="bg-white p-6 rounded-lg shadow mb-6 border border-gray-200">
+            <h3 className="text-xl font-bold mb-4 text-gray-800">Gameplay Statistics</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="bg-gray-50 p-4 rounded-lg text-center">
+                <p className="text-2xl font-bold">{gp.totalMatches}</p>
+                <p className="text-sm text-gray-500">Total Matches</p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg text-center">
+                <p className="text-2xl font-bold text-green-600">{gp.wins}</p>
+                <p className="text-sm text-gray-500">Wins</p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg text-center">
+                <p className="text-2xl font-bold text-blue-600">{gp.avgKills}</p>
+                <p className="text-sm text-gray-500">Avg Kills</p>
+              </div>
+              <div className="bg-gray-50 p-4 rounded-lg text-center">
+                <p className="text-2xl font-bold text-purple-600">{gp.winRate}%</p>
+                <p className="text-sm text-gray-500">Win Rate</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <p className="text-sm font-medium text-gray-500">Current Team(s)</p>
+                <p className="mt-1 text-gray-800">{gp.currentTeam}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Favorite Game</p>
+                <p className="mt-1 text-gray-800">{gp.favoriteGame}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500">Total Earnings</p>
+                <p className="mt-1 text-green-600 font-semibold">${gp.totalEarnings?.toFixed(2)}</p>
+              </div>
+            </div>
+          </div>
+        );
 
       case "Transactions":
-  return (
-    <div className="border rounded-lg p-4 mb-4 dark:border-zinc-700">
-      <h3 className="text-lg font-semibold mb-1">Transaction Ledger</h3>
-      <p className="text-sm text-gray-500 mb-4">All financial operations related to the user</p>
-
-      {user.transactions && user.transactions.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm border dark:border-zinc-600">
-            <thead className="bg-gray-100 dark:bg-zinc-800">
-              <tr>
-                <th className="p-2 text-left">Txn ID</th>
-                <th className="p-2 text-left">Type</th>
-                <th className="p-2 text-left">Description</th>
-                <th className="p-2 text-left">Amount</th>
-                <th className="p-2 text-left">Date</th>
-                <th className="p-2 text-left">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y dark:divide-zinc-700">
-              {user.transactions.map((txn, idx) => (
-                <tr key={idx}>
-                  <td className="p-2 font-medium">{txn.id}</td>
-                  <td className="p-2">{txn.type}</td>
-                  <td className="p-2">{txn.description}</td>
-                  <td className={`p-2 font-semibold ${txn.type === "Credit" ? "text-green-600" : "text-red-600"}`}>
-                    {txn.type === "Credit" ? "+" : "-"}${txn.amount.toFixed(2)}
-                  </td>
-                  <td className="p-2">{new Date(txn.date).toLocaleString()}</td>
-                  <td className="p-2">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      txn.status === "Success" ? "bg-green-100 text-green-700"
-                      : txn.status === "Pending" ? "bg-yellow-100 text-yellow-700"
-                      : "bg-gray-100 text-gray-600"
-                    }`}>
-                      {txn.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p className="text-sm text-gray-500">No transactions found.</p>
-      )}
-    </div>
-  );
-
+        return (
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-6 border border-gray-200">
+            <h3 className="text-xl font-bold mb-4 text-gray-800">Transaction Ledger</h3>
+            {user.transactions && user.transactions.length > 0 ? (
+              <div>
+                {/* Table for md+ screens, cards for mobile */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="p-2 text-left text-gray-500">Type</th>
+                        <th className="p-2 text-left text-gray-500">Description</th>
+                        <th className="p-2 text-left text-gray-500">Amount</th>
+                        <th className="p-2 text-left text-gray-500">Date</th>
+                        <th className="p-2 text-left text-gray-500">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {user.transactions.map((txn, idx) => (
+                        <tr key={idx}>
+                          <td className="p-2">{txn.transaction_type || "N/A"}</td>
+                          <td className="p-2">{txn.description || "N/A"}</td>
+                          <td className={`p-2 font-semibold ${txn.transaction_type === "refund" ? "text-green-600" : "text-red-600"}`}>
+                            {txn.transaction_type === "join" && txn.entry_fee ? `-$${(typeof txn.entry_fee === 'number' ? txn.entry_fee : 0).toFixed(2)}` : "N/A"}
+                            {txn.transaction_type === "refund" && txn.refund_amount ? `+$${(typeof txn.refund_amount === 'number' ? txn.refund_amount : 0).toFixed(2)}` : "N/A"}
+                          </td>
+                          <td className="p-2">{txn.createdAt ? new Date(txn.createdAt).toLocaleString() : "N/A"}</td>
+                          <td className="p-2">
+                            <span className={`px-2 py-1 text-xs rounded-full font-medium ${txn.transaction_type ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
+                              {txn.transaction_type ? "Success" : "N/A"}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Card layout for mobile */}
+                <div className="md:hidden flex flex-col gap-3">
+                  {user.transactions.map((txn, idx) => (
+                    <div key={idx} className="border rounded-lg p-3 bg-gray-50 shadow-sm flex flex-col gap-1">
+                      <div className="flex justify-between items-center">
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${txn.transaction_type ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>{txn.transaction_type ? "Success" : "N/A"}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+                        <span>Type: <span className="font-medium text-gray-700">{txn.transaction_type || "N/A"}</span></span>
+                        <span>Description: <span className="font-medium text-gray-700">{txn.description || "N/A"}</span></span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+                        <span>Amount: <span className={`font-semibold ${txn.transaction_type === "refund" ? "text-green-600" : "text-red-600"}`}>
+                          {txn.transaction_type === "join" && txn.entry_fee ? `-$${(typeof txn.entry_fee === 'number' ? txn.entry_fee : 0).toFixed(2)}` : "N/A"}
+                          {txn.transaction_type === "refund" && txn.refund_amount ? `+$${(typeof txn.refund_amount === 'number' ? txn.refund_amount : 0).toFixed(2)}` : "N/A"}
+                        </span></span>
+                        <span>Date: <span className="font-medium text-gray-700">{txn.createdAt ? new Date(txn.createdAt).toLocaleString() : "N/A"}</span></span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No transactions found.</p>
+            )}
+          </div>
+        );
 
       case "Audit Trail":
-  return (
-    <div className="border rounded-lg p-4 mb-4 dark:border-zinc-700">
-      <h3 className="text-lg font-semibold mb-2">Audit Trail</h3>
-      <p className="text-sm text-gray-500 mb-4">Logs of admin actions and system changes</p>
-
-      {user.auditTrail && user.auditTrail.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="min-w-full text-sm border dark:border-zinc-600">
-            <thead className="bg-gray-100 dark:bg-zinc-800">
-              <tr>
-                <th className="p-2 text-left">Action</th>
-                <th className="p-2 text-left">Performed By</th>
-                <th className="p-2 text-left">Role</th>
-                <th className="p-2 text-left">Timestamp</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y dark:divide-zinc-700">
-              {user.auditTrail.map((log) => (
-                <tr key={log.id}>
-                  <td className="p-2">{log.action}</td>
-                  <td className="p-2 font-medium">{log.performedBy}</td>
-                  <td className="p-2">
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      log.role === "Admin"
-                        ? "bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white"
-                        : "bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-white"
-                    }`}>
-                      {log.role}
-                    </span>
-                  </td>
-                  <td className="p-2">{new Date(log.timestamp).toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <p className="text-sm text-gray-500">No audit logs available.</p>
-      )}
-    </div>
-  );
+        return (
+          <div className="bg-white p-4 sm:p-6 rounded-lg shadow mb-6 border border-gray-200">
+            <h3 className="text-xl font-bold mb-4 text-gray-800">Audit Trail</h3>
+            {user.auditTrail && user.auditTrail.length > 0 ? (
+              <div>
+                {/* Table for md+ screens, cards for mobile */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="p-2 text-left text-gray-500">Action</th>
+                        <th className="p-2 text-left text-gray-500">Performed By</th>
+                        <th className="p-2 text-left text-gray-500">Role</th>
+                        <th className="p-2 text-left text-gray-500">Timestamp</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {user.auditTrail.map((log) => (
+                        <tr key={log.id}>
+                          <td className="p-2">{log.action}</td>
+                          <td className="p-2 font-medium">{log.performedBy}</td>
+                          <td className="p-2">
+                            <span className={`px-2 py-1 text-xs rounded-full font-medium ${log.role === "Admin" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>{log.role}</span>
+                          </td>
+                          <td className="p-2">{new Date(log.timestamp).toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {/* Card layout for mobile */}
+                <div className="md:hidden flex flex-col gap-3">
+                  {user.auditTrail.map((log) => (
+                    <div key={log.id} className="border rounded-lg p-3 bg-gray-50 shadow-sm flex flex-col gap-1">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-gray-700">{log.action}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${log.role === "Admin" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"}`}>{log.role}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-xs text-gray-500">
+                        <span>By: <span className="font-medium text-gray-700">{log.performedBy}</span></span>
+                        <span>Date: <span className="font-medium text-gray-700">{new Date(log.timestamp).toLocaleString()}</span></span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No audit logs available.</p>
+            )}
+          </div>
+        );
 
       default:
         return null;
@@ -438,51 +382,68 @@ console.log({user})
   };
 
   return (
-    <div className="p-6 min-h-screen bg-white dark:bg-zinc-900 text-gray-900 dark:text-white">
-      <button onClick={onBack} className="mb-6 flex items-center text-sm text-blue-600 hover:underline">
-        <ArrowLeft className="w-4 h-4 mr-1" /> Back to KYC list
-      </button>
-
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold">User Detail: {user.name}</h2>
-        <span className={`text-xs px-2 py-1 rounded-full ${
-          user.status === "Active"
-            ? "bg-green-100 text-green-700"
-            : "bg-red-100 text-red-700"
-        }`}>
-          {user.status}
-        </span>
-      </div>
-
-      <div className="flex gap-2 border-b mb-4 overflow-x-auto">
-        {tabs.map((tab) => (
+    <div className="min-h-screen bg-gray-100 text-gray-900 p-2 sm:p-4 md:p-6 lg:p-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header Section */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-2">
           <button
-            key={tab.name}
-            onClick={() => setActiveTab(tab.name)}
-            className={`flex items-center gap-2 px-4 py-2 text-sm font-medium ${
-              activeTab === tab.name
-                ? "border-b-2 border-black text-black"
-                : "text-gray-500"
-            }`}
+            onClick={onBack}
+            className="flex items-center text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded px-2 py-1"
+            aria-label="Back to KYC list"
           >
-            <tab.icon className="w-4 h-4" />
-            {tab.name}
-          </button>
-        ))}
-      </div>
-
-      {activeTab === "Overview" && (
-        <div className="mb-4 text-right">
-          <button
-            onClick={handleExportPDF}
-            className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700"
-          >
-            Download Overview as PDF
+            <ArrowLeft className="w-5 h-5 mr-2" />
+            <span className="text-sm font-medium">Back to KYC list</span>
           </button>
         </div>
-      )}
 
-      <div>{renderTabContent()}</div>
+        {/* User Card Header */}
+        <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md mb-4 border border-gray-200 flex flex-col sm:flex-row items-center gap-4">
+          <div className="w-20 h-20 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full flex-shrink-0 flex items-center justify-center text-2xl font-bold text-white shadow-md">
+            {user.name?.[0] || <User className="w-10 h-10" />}
+          </div>
+          <div className="flex-1 w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <h1 className="text-xl sm:text-2xl font-bold mr-2 break-all">{user.name}</h1>
+              <span className={`text-xs px-2 py-1 rounded-full font-medium ${user.status === "Active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{user.status}</span>
+            </div>
+            <p className="text-xs sm:text-sm text-gray-500 mt-1 break-all">User ID: {user.id} • Joined {user.joined}</p>
+          </div>
+        </div>
+
+        {/* Tabs and Content */}
+        <div className="bg-white rounded-xl shadow-md mb-6 border border-gray-200">
+          <div className="flex flex-wrap border-b border-gray-200 overflow-x-auto">
+            {tabs.map((tab) => (
+              <button
+                key={tab.name}
+                onClick={() => setActiveTab(tab.name)}
+                className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors duration-150 ${
+                  activeTab === tab.name
+                    ? "border-b-2 border-blue-600 text-blue-700 bg-blue-50"
+                    : "text-gray-500 hover:text-blue-600 hover:bg-gray-50"
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                {tab.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="p-2 sm:p-4 md:p-6">
+            {activeTab === "Overview" && (
+              <div className="mb-4 flex justify-end">
+                <button
+                  onClick={handleExportPDF}
+                  className="bg-blue-600 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-semibold shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  Download Overview as PDF
+                </button>
+              </div>
+            )}
+            <div>{renderTabContent()}</div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
