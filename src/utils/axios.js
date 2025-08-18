@@ -4,8 +4,8 @@ const axiosInstance = axios.create({
     // baseURL: 'http://localhost:5000/api',
     baseURL:'https://macstormbattle-backend.onrender.com/api',
     withCredentials: true,
-    // headers: {
-    //     Authorization: 'Bearer API_KEY',
-    // },
+    headers: {
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+    },
 });
 export default axiosInstance;        
