@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Menu, User, Edit2, Save, X } from "lucide-react";
+import { Menu, User, Edit2, Save, X,LogOut } from "lucide-react";
 import DarkModeToggle from "./DarkModeToggle";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";

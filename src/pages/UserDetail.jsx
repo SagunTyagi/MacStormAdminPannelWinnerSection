@@ -406,65 +406,17 @@ export default function UserDetail({ user, onBack, onKycStatusChange, authToken 
       </div>
 
       {activeTab === "Overview" && (
-        <>
-          <div className="mb-4 text-right">
-            <button
-              onClick={handleExportPDF}
-              className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
-            >
-              Export as PDF
-            </button>
-          </div>
-
-          {/* User Card Header */}
-          <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md mb-4 border border-gray-200 flex flex-col sm:flex-row items-center gap-4">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-200 to-blue-400 rounded-full flex-shrink-0 flex items-center justify-center text-2xl font-bold text-white shadow-md">
-              {user.name?.[0] || <User className="w-10 h-10" />}
-            </div>
-            <div className="flex-1 w-full">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-bold mr-2 break-all">{user.name}</h1>
-                <span className={`text-xs px-2 py-1 rounded-full font-medium ${user.status === "Active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{user.status}</span>
-              </div>
-              <p className="text-xs sm:text-sm text-gray-500 mt-1 break-all">User ID: {user.id} • Joined {user.joined}</p>
-            </div>
-          </div>
-
-          {/* Tabs and Content */}
-          <div className="bg-white rounded-xl shadow-md mb-6 border border-gray-200">
-            <div className="flex flex-wrap border-b border-gray-200 overflow-x-auto">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.name}
-                  onClick={() => setActiveTab(tab.name)}
-                  className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-xs sm:text-sm font-medium whitespace-nowrap transition-colors duration-150 ${
-                    activeTab === tab.name
-                      ? "border-b-2 border-blue-600 text-blue-700 bg-blue-50"
-                      : "text-gray-500 hover:text-blue-600 hover:bg-gray-50"
-                  }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  {tab.name}
-                </button>
-              ))}
-            </div>
-
-            <div className="p-2 sm:p-4 md:p-6">
-              {activeTab === "Overview" && (
-                <div className="mb-4 flex justify-end">
-                  <button
-                    onClick={handleExportPDF}
-                    className="bg-blue-600 text-white px-3 py-2 rounded-md text-xs sm:text-sm font-semibold shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    Download Overview as PDF
-                  </button>
-                </div>
-              )}
-              <div>{renderTabContent()}</div>
-            </div>
-          </div>
-        </>
+        <div className="mb-4 text-right">
+          <button
+            onClick={handleExportPDF}
+            className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800"
+          >
+            Export as PDF
+          </button>
+        </div>
       )}
+
+      <div>{renderTabContent()}</div>
     </div>
   );
 

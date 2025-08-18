@@ -1,6 +1,6 @@
 import { Routes, Route, useLocation, Navigate ,useNavigate} from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
+
 import { getToken } from "firebase/messaging";
 import { ToastContainer } from "react-toastify";
 // Firebase
@@ -64,6 +64,7 @@ function App() {
   const location = useLocation();
   const authRoutes = ["/login", "/register", "/forgot-password"];
   const isAuthPage = authRoutes.includes(location.pathname);
+const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const registerFcm = async () => {
