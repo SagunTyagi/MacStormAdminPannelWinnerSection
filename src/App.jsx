@@ -8,6 +8,7 @@ import CreateDuel from "./pages/CreateDuel";
 import ImageGallery from "./pages/ImageGallery";
 // Firebase
 import { messaging } from "./firebase";
+
 import FirebaseNotificationHandler from "./components/FirebaseNotificationHandler";
 import WithdrawRequests from "./pages/WithdrawRequests";
 
@@ -26,7 +27,7 @@ import AllGames from "./pages/AllGames";
 import CreateGame from "./pages/CreateGame";
 import AllMatches from "./pages/AllMatches";
 import CreateMatch from "./pages/CreateMatch";
-
+import NotificationCenter from './pages/NotificationCenter'
 // Auth util (you must create this hook)
 // import useAuth from "./hooks/useAuth";
 
@@ -37,74 +38,6 @@ function App() {
   const authToken = localStorage.getItem("authToken");
   const authRoutes = ["/login", "/register", "/forgot-password"];
   const isAuthPage = authRoutes.includes(location.pathname);
-
-  // Redirect to login if not authenticated and not on auth page
-  // useEffect(() => {
-  //   if (!isLoggedIn && !isAuthPage) {
-  //     window.location.href = "/login";
-  //   }
-  // }, [isLoggedIn, isAuthPage]);
-
-  // Register Firebase Messaging Service Worker
-  useEffect(() => {
-    const registerFcm = async () => {
-      try {
-        if (!("serviceWorker" in navigator)) {
-          console.error("Service Worker not supported in this browser");
-          return;
-        }
-
-        let registration = await navigator.serviceWorker.getRegistration(
-          "/firebase-messaging-sw.js"
-        );
-
-        if (!registration) {
-          registration = await navigator.serviceWorker.register(
-            "/firebase-messaging-sw.js",
-            {
-              scope: "/",
-              type: "module",
-            }
-          );
-
-          await new Promise((resolve) => {
-            if (registration.active) return resolve();
-            registration.addEventListener("updatefound", () => {
-              const installingWorker = registration.installing;
-              installingWorker.addEventListener("statechange", () => {
-                if (installingWorker.state === "activated") {
-                  resolve();
-                }
-              });
-            });
-          });
-        }
-
-        const permission = await Notification.requestPermission();
-        if (permission !== "granted") {
-          console.warn("Notification permission not granted");
-          return;
-        }
-
-        const currentToken = await getToken(messaging, {
-          vapidKey:
-            "BCI-Cu-Pg0FnXdyxDeR6LHozhMO_5Ft5I5VIi7bI8ofJhOrHMffJgNbPnHczr1Rtlu9rqVKalQRkQJ5pC6qsc6c",
-          serviceWorkerRegistration: registration,
-        });
-
-        if (currentToken) {
-          console.log("FCM Token:", currentToken);
-          localStorage.setItem("fcmToken", currentToken);
-        } else {
-          console.warn("No registration token available");
-        }
-      } catch (error) {
-        console.error("FCM registration error:", error);
-      }
-    };
-
-    registerFcm();
-  }, []);
 
 
   // ✅ AUTH PAGES (Login/Register) should always be accessible
@@ -155,7 +88,7 @@ function App() {
           <Route path="/admin/duels/createduel" element={<CreateDuel />} />
           <Route path="/admin/images" element={<ImageGallery />} />
           <Route path="/admin/withdrawals" element={<WithdrawRequests />} />
-
+          <Route path="/admin/notifications" element={<NotificationCenter />} />
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

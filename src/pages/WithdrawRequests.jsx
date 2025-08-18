@@ -10,10 +10,10 @@ const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInJvbGUiOiJT
 function WithdrawRequests() {
   const [requests, setRequests] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const entriesPerPage = 15;
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-
+  const [selectedDate, setSelectedDate] = useState("");
+  const [entriesPerPage, setEntriesPerPage] = useState(10);
 
   const fetchRequests = async () => {
     try {
@@ -77,22 +77,28 @@ function WithdrawRequests() {
 
 
     const filteredRequests = requests.filter((req) => {
-        const name = req.User?.user_name?.toLowerCase() || "";
-        const userId = req.userId?.toString() || "";
-        const date = new Date(req.createdAt).toLocaleDateString("en-IN");
-        const status = req.status?.toLowerCase() || "";
-        const query = searchQuery.toLowerCase();
+    const name = req.User?.user_name?.toLowerCase() || "";
+    const userId = req.userId?.toString() || "";
+    const dateObj = new Date(req.createdAt);
+    const dateStr = dateObj.toLocaleDateString("en-IN");
+    const status = req.status?.toLowerCase() || "";
+    const query = searchQuery.toLowerCase();
 
-        const matchesSearch =
-            name.includes(query) ||
-            userId.includes(query) ||
-            date.includes(query) ||
-            status.includes(query);
+    const matchesSearch =
+        name.includes(query) ||
+        userId.includes(query) ||
+        dateStr.includes(query) ||
+        status.includes(query);
 
-        const matchesStatus = statusFilter ? status === statusFilter : true;
+    const matchesStatus = statusFilter ? status === statusFilter : true;
 
-        return matchesSearch && matchesStatus;
-        });
+    const matchesDate = selectedDate
+        ? dateObj.toISOString().split("T")[0] === selectedDate
+        : true;
+
+    return matchesSearch && matchesStatus && matchesDate;
+    });
+
 
 
     const totalPages = Math.ceil(filteredRequests.length / entriesPerPage);
@@ -139,6 +145,32 @@ function WithdrawRequests() {
                 <option value="pending">Pending</option>
                 <option value="approved">Approved</option>
                 <option value="rejected">Rejected</option>
+            </select>
+
+
+            {/* DATE PICKER */}
+            <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="px-3 py-2 rounded border border-gray-300
+                        dark:bg-zinc-800 dark:text-white dark:border-gray-600"
+            />
+
+            {/* ENTRIES PER PAGE */}
+            <select
+                value={entriesPerPage}
+                onChange={(e) => {
+                setEntriesPerPage(Number(e.target.value));
+                setCurrentPage(1);
+                }}
+                className="px-3 py-2 rounded border border-gray-300
+                        dark:bg-zinc-800 dark:text-white dark:border-gray-600"
+            >
+                <option value={5}>5 per page</option>
+                <option value={10}>10 per page</option>
+                <option value={20}>20 per page</option>
+                <option value={50}>50 per page</option>
             </select>
             </div>
         </div>

@@ -8,8 +8,11 @@ function Register() {
     name: "",
     email: "",
     password: "",
-    phone: "",
+    phone: ""
   });
+  const [profileImageFile, setProfileImageFile] = useState(null);
+
+  const [preview, setPreview] = useState(""); // for local preview
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -45,13 +48,33 @@ function Register() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setProfileImageFile(file); // store file for FormData
+    setPreview(URL.createObjectURL(file)); // local preview
+  };
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
     try {
       setLoading(true);
-      const response = await axiosInstance.post("/auth/admin/register", formData);
+      const formDataToSend = new FormData();
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("password", formData.password);
+      formDataToSend.append("phone", formData.phone);
+      if (profileImageFile) {
+        formDataToSend.append("profile_image", profileImageFile);
+      }
+
+      const response = await axiosInstance.post("/auth/admin/register", formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" }
+      });
+
       console.log("✅ Registration successful:", response.data);
       navigate("/login");
     } catch (error) {
@@ -82,9 +105,8 @@ function Register() {
                 placeholder="Full Name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className={`w-full px-4 py-2 rounded-lg border ${
-                  errors.name ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-                } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
+                className={`w-full px-4 py-2 rounded-lg border ${errors.name ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
+                  } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
               />
               {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
             </div>
@@ -96,9 +118,8 @@ function Register() {
                 placeholder="Email address"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className={`w-full px-4 py-2 rounded-lg border ${
-                  errors.email ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-                } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
+                className={`w-full px-4 py-2 rounded-lg border ${errors.email ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
+                  } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
               />
               {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
             </div>
@@ -110,9 +131,8 @@ function Register() {
                 placeholder="Phone number"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className={`w-full px-4 py-2 rounded-lg border ${
-                  errors.phone ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-                } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
+                className={`w-full px-4 py-2 rounded-lg border ${errors.phone ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
+                  } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
               />
               {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
             </div>
@@ -124,9 +144,8 @@ function Register() {
                 placeholder="Password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className={`w-full px-4 py-2 pr-10 rounded-lg border ${
-                  errors.password ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-                } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
+                className={`w-full px-4 py-2 pr-10 rounded-lg border ${errors.password ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
+                  } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
               />
               <button
                 type="button"
@@ -136,6 +155,24 @@ function Register() {
                 {passwordVisible ? "Hide" : "Show"}
               </button>
               {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
+            </div>
+
+            {/* Profile Image (optional) */}
+            <div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="w-full text-sm text-zinc-600 dark:text-zinc-300"
+              />
+              {preview && (
+                <img
+                  src={preview}
+                  alt="Preview"
+                  className="mt-2 w-16 h-16 rounded-full object-cover border"
+                />
+              )}
+              <p className="text-xs text-zinc-500">Optional profile picture</p>
             </div>
 
             {/* Submit */}

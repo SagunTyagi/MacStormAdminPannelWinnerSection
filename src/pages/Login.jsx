@@ -11,7 +11,7 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const vapidKey = "BCI-Cu-Pg0FnXdyxDeR6LHozhMO_5Ft5I5VIi7bI8ofJhOrHMffJgNbPnHczr1Rtlu9rqVKalQRkQJ5pC6qsc6c";
+  const vapidKey = "BAJQxI1gTLXmAlYRejnmDTxvgqd34FUpAOyG-A2f5yl-GGkpuEuc4_X2IYhUMN-KBZTEj3W5k0bpEVu7bdVwYMI";
 
   const registerFcmToken = async (authToken) => {
     try {

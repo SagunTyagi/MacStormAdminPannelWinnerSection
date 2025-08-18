@@ -11,6 +11,7 @@ import {
   Tv2Icon,
   User,
   Wallet2Icon,
+  Send
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -56,6 +57,12 @@ const menuItems = [
     label: "Withdrawal Request",
     icon: Wallet2Icon , 
     path: "/admin/withdrawals",
+  },
+
+  {
+    label: "Notifications",
+    icon: Send, // You'll need to import this
+    path: "/admin/notifications",
   }
 
 ];

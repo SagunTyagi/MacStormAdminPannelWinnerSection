@@ -11,7 +11,7 @@ function DailyDuels() {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const navigate = useNavigate();
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MDI1MzE0LCJleHAiOjE3NTQxMTE3MTR9.yoJG84eTP9MlHKF9Yk-P1-CFVsvP_8-_tjvIeYDcprA";
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MzY5NzkwLCJleHAiOjE3NTU2NjU3OTB9.B6xvX5qEONmozHu-3pmDu7e0nzBzmMj89AtQ60MM9-I";
   const completedToday = duels.verified.filter((d) => {
     const date = d.completedAt ? new Date(d.completedAt) : null;
     if (!date) return false;
