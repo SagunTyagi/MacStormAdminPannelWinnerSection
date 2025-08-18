@@ -20,7 +20,7 @@ function SquadContestsList() {
   useEffect(() => {
     const fetchContests = async () => {
       try {
-        const token = localStorage.getItem("authToken");
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0OTgxNDk5LCJleHAiOjE3NTYyNzc0OTl9.xPlZ7KmQNNYAux0BzumgoQ1GI3ESdvgMDXMfRx6F53Q";
         if (!token) {
           setError("You must be logged in to view contests.");
           setLoading(false);
