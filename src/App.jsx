@@ -42,7 +42,7 @@ import Match from "./pages/Match";
 import Reportss from "./pages/Reportss"; // Uncomment if this page exists
 import CreateDuel from "./pages/CreateDuel";
 import ImageGallery from "./pages/ImageGallery";
-import Contestcreate from "./pages/contest-create"
+import Contestcreate from "./pages/contest-create";
 import Contestlist from "./pages/contest-list";
 import ContestDetail from "./pages/contest-details";
 import contestResult from "./pages/content-Result";
@@ -52,6 +52,11 @@ import DeclareResult from "./pages/DeclareResult";
 import DuoContest from "./pages/DuoContest";
 import Kyc from "./pages/Kyc";
 
+import SquadContestForm from "./pages/SquadContestForm";
+import SquadContestsList from "./pages/SquadContestList";
+import SquadContest from "./pages/SquadContest";
+import SquadContestDeclareResult from "./pages/SquadContestDeclareResult";
+import ContestResultDeclaration from "./pages/content-Result";
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -119,6 +124,8 @@ function App() {
     registerFcm();
   }, []);
 
+  const authToken = localStorage.getItem("authToken");
+
   if (isAuthPage) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-neutral-200 dark:bg-zinc-500 transition-colors duration-300">
@@ -140,7 +147,7 @@ function App() {
   }
 
   return (
-    <div className="flex min-h-screen bg-neutral-200 dark:bg-zinc-500 transition-colors duration-300">
+    <div className="flex min-h-screen bg-neutral-200 dark:bg-zinc-500 transition-colors duration-300 w-full">
       {isSidebarOpen && <Sidebar />}
       <div className="flex-1 flex flex-col">
         <Navbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
@@ -169,14 +176,17 @@ function App() {
           <Route path="/user-teams" element={<UserTeams />} />
           <Route path="/support" element={<Support />} />
           <Route path="/admin/problemcenter" element={<ProblemCenter />} />
-          <Route path="/admin/notificationcenter" element={<NotificationCenter />} />
+          <Route
+            path="/admin/notificationcenter"
+            element={<NotificationCenter />}
+          />
           <Route path="/admin/reports" element={<Report />} />
           <Route path="/admin/bets" element={<DailyBets />} />
           <Route path="/admin/matches" element={<Match />} />
           <Route path="/settings" element={<Setting />} />
           <Route path="/bonus" element={<Bonus />} />
           <Route path="/reportss" element={<Reportss />} />
-<Route path="/admin/duels/createduel" element={<CreateDuel />} />
+          <Route path="/admin/duels/createduel" element={<CreateDuel />} />
           <Route path="/admin/images" element={<ImageGallery />} />
           <Route path="/contest-create" element={<Contestcreate />} />
           <Route path="/contest-list" element={<Contestlist />} />
@@ -186,6 +196,20 @@ function App() {
           <Route path="/duo/result/:id" element={<DeclareResult />} />
           <Route path="/duoContests" element={<DuoContest />} />
           <Route path="/kyc" element={<Kyc />} />
+          <Route path="/solo/create" element={<Contestcreate />} />
+          <Route path="/solo" element={<Contestlist />} />
+          <Route path="/solo/:id" element={<ContestDetail />} />
+          <Route path="/solo/:id/declare-result" element={<ContestResultDeclaration />} />
+
+          {/* squad contest */}
+          <Route path="/squad/" element={<SquadContestsList />} />
+          <Route path="/squad/create" element={<SquadContestForm />} />
+          <Route path="/squad/:id" element={<SquadContest />} />
+          <Route
+            path="/squad/:id/declare-result"
+            element={<SquadContestDeclareResult />}
+          />
+
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

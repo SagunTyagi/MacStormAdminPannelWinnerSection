@@ -1,744 +1,316 @@
 import React, { useState, useEffect } from "react";
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  Button,
-  Chip,
-  Typography,
-  Box,
-  Divider,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  TextField,
-  Select,
-  MenuItem,
-  InputLabel,
-  FormControl,
-  CircularProgress,
-  Avatar,
-  Paper,
-  Alert,
-  IconButton,
-  Grid
-} from "@mui/material";
-import {
-  People as PeopleIcon,
-  CalendarToday as CalendarIcon,
-  EmojiEvents as TrophyIcon,
-  CurrencyRupee as RupeeIcon,
-  Key as KeyIcon,
-  Tag as HashIcon,
-  Person as UserIcon,
-  ArrowBack as ArrowBackIcon,
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  Check as CheckIcon,
-  Close as CloseIcon,
-  Error as ErrorIcon
-} from "@mui/icons-material";
-import { useParams, useNavigate } from "react-router-dom";
-import ContestDeclareResult from './content-Result';
+import { useParams, useNavigate, Link } from "react-router-dom";
+import RoomDetailsCard from "../components/RoomDetailsCard";
+import PlayersTable from "../components/PlayersTable";
+import PrizeDistributionTable from "../components/PrizeDistributionTable";
 
-export default function ContestDetail({ onUpdate, onCreate }) {
-    const [contest, setContest] = useState(null);
-    const [prizeDistribution, setPrizeDistribution] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
-    const { id: contestId } = useParams();
-    const [showResultDeclaration, setShowResultDeclaration] = useState(false);
-    const [roomCredentials, setRoomCredentials] = useState({
-        room_id: '',
-        room_password: '',
-        room_created_by: ''
-    });
-    const [isEditingRoom, setIsEditingRoom] = useState(false);
-    const [loadingRoom, setLoadingRoom] = useState(false);
-
-    // Mock auth token - replace with your actual auth implementation
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU1MDY2Mjc5LCJleHAiOjE3NTYzNjIyNzl9.Mk47vv4heUHy56DqGYSCpLlmcweGptiqovYC6Z5rL7I";
-    
-
-    const showToast = (title, description, variant = "default") => {
-        // Replace with your toast implementation
-        console.log(`[${variant}] ${title}: ${description}`);
-    };
-
-    useEffect(() => {
-        if (contest) {
-            loadRoomCredentials();
-        }
-    }, [contest]);
-
-    const loadRoomCredentials = async () => {
-        try {
-            setLoadingRoom(true);
-            const res = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/admin/${contestId}/room`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!res.ok) {
-                throw new Error('Failed to load room credentials');
-            }
-
-            const data = await res.json();
-            setRoomCredentials({
-                room_id: data.room_id || '',
-                room_password: data.room_password || '',
-                room_created_by: data.room_created_by || ''
-            });
-        } catch (error) {
-            showToast(
-                "Error",
-                error.message || "Failed to load room credentials",
-                "destructive"
-            );
-        } finally {
-            setLoadingRoom(false);
-        }
-    };
-
-    const handleUpdateRoomCredentials = async () => {
-        try {
-            setLoadingRoom(true);
-            const res = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/${contestId}/room`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(roomCredentials)
-            });
-
-            if (!res.ok) {
-                throw new Error('Failed to update room credentials');
-            }
-
-            showToast(
-                "Success",
-                "Room credentials updated successfully!"
-            );
-            setIsEditingRoom(false);
-            loadRoomCredentials();
-            if (onUpdate) onUpdate();
-        } catch (error) {
-            showToast(
-                "Error",
-                error.message || "Failed to update room credentials",
-                "destructive"
-            );
-        } finally {
-            setLoadingRoom(false);
-        }
-    };
-
-    useEffect(() => {
-        loadContestDetails();
-    }, [contestId]);
-
-    const loadContestDetails = async () => {
-        try {
-            setLoading(true);
-
-            const headers = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
-
-            const [contestRes, prizeRes] = await Promise.all([
-                fetch(`https://macstormbattle-backend.onrender.com/api/contest/${contestId}`, { headers }),
-                fetch(`https://macstormbattle-backend.onrender.com/api/prize/${contestId}`, { headers })
-            ]);
-
-            if (!contestRes.ok || !prizeRes.ok) {
-                throw new Error('Failed to fetch contest details');
-            }
-
-            const contestData = await contestRes.json();
-            const prizeData = await prizeRes.json();
-
-            setContest(contestData);
-            setPrizeDistribution(prizeData);
-        } catch (error) {
-            showToast(
-                "Error",
-                error.message || "Failed to load contest details",
-                "destructive"
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleJoinContest = async () => {
-        setShowResultDeclaration(true);
-    };
-
-    const handleBackToList = () => {
-        setShowResultDeclaration(false);
-    };
-
-    const handleStatusChange = async (newStatus) => {
-        try {
-            const res = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/${contestId}/status`, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ match_status: newStatus })
-            });
-
-            if (!res.ok) {
-                throw new Error('Failed to update status');
-            }
-
-            showToast(
-                "Success",
-                "Contest status updated successfully!"
-            );
-            loadContestDetails();
-            if (onUpdate) onUpdate();
-        } catch (error) {
-            showToast(
-                "Error",
-                error.message || "Failed to update contest status",
-                "destructive"
-            );
-        }
-    };
-
-    const handleDeleteContest = async () => {
-        if (!window.confirm("Are you sure you want to delete this contest?")) return;
-
-        try {
-            const res = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/${contestId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (!res.ok) {
-                throw new Error('Failed to delete contest');
-            }
-
-            showToast(
-                "Success",
-                "Contest deleted successfully!"
-            );
-
-            if (onUpdate) {
-                onUpdate();
-            }
-
-            setTimeout(() => {
-                navigate("/contest-list");
-            }, 1500);
-
-        } catch (error) {
-            showToast(
-                "Error",
-                error.message || "Failed to delete contest",
-                "destructive"
-            );
-        }
-    };
-
-    const getStatusColor = (status) => {
-        const statusColors = {
-            live: 'success',
-            upcoming: 'primary',
-            completed: 'default',
-            cancelled: 'error',
-            delayed: 'warning'
-        };
-        return statusColors[status] || 'default';
-    };
-
-    const canJoinContest = (contest) => {
-        if (!contest) return false;
-        const now = new Date();
-        const matchTime = new Date(contest.match_schedule);
-        const thirtyMinsBefore = new Date(matchTime.getTime() - 30 * 60 * 1000);
-
-        return contest.remaining_seats > 0 && now < thirtyMinsBefore && contest.match_status === 'upcoming';
-    };
-
-    if (showResultDeclaration && contest) {
-        return <ContestDeclareResult contest={contest} onBack={handleBackToList} />;
-    }
-
-    if (loading) {
-        return (
-            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 256 }}>
-                <CircularProgress size={40} />
-            </Box>
-        );
-    }
-
-    if (!contest) {
-        return (
-            <Box sx={{ textAlign: 'center', py: 6 }}>
-                <ErrorIcon sx={{ fontSize: 60, color: 'grey.400', mb: 2 }} />
-                <Typography variant="h5" gutterBottom>
-                    Contest Not Found
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                    The requested contest could not be loaded.
-                </Typography>
-            </Box>
-        );
-    }
-
-    const formatDate = (dateString) => {
-        try {
-            const date = new Date(dateString);
-            return date.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-                year: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-        } catch {
-            return dateString;
-        }
-    };
-
-    return (
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-            <Card>
-                <CardHeader
-                    title={
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                <IconButton onClick={() => navigate(-1)} size="small">
-                                    <ArrowBackIcon />
-                                </IconButton>
-                                <Typography variant="h5" component="div">
-                                    {contest.event_name}
-                                </Typography>
-                                <Chip 
-                                    label={contest.match_status.toUpperCase()} 
-                                    color={getStatusColor(contest.match_status)}
-                                    size="small"
-                                />
-                            </Box>
-                            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                                <Chip label={contest.game} variant="outlined" size="small" />
-                                <Chip label={contest.team} variant="outlined" size="small" />
-                                <Chip label={contest.map} variant="outlined" size="small" />
-                            </Box>
-                        </Box>
-                    }
-                    action={
-                        <Button
-                            variant="contained"
-                            startIcon={<EditIcon />}
-                            onClick={() => navigate(`/admin/games/contest/edit/${contestId}`)}
-                            sx={{ bgcolor: 'black', color: 'white' }}
-                        >
-                            Edit Contest
-                        </Button>
-                    }
-                />
-                <Divider />
-                <CardContent>
-                    <Grid container spacing={3}>
-                        {/* Left column - Contest info */}
-                        <Grid item xs={12} md={8}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                {/* Basic info table */}
-                                <Paper>
-                                    <Table>
-                                        <TableBody>
-                                            <TableRow>
-                                                <TableCell sx={{ fontWeight: 'bold', width: '200px' }}>Match Schedule</TableCell>
-                                                <TableCell>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <CalendarIcon fontSize="small" color="action" />
-                                                        {formatDate(contest.match_schedule)}
-                                                    </Box>
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell sx={{ fontWeight: 'bold' }}>Entry Fee</TableCell>
-                                                <TableCell>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <RupeeIcon fontSize="small" color="action" />
-                                                        {contest.joining_fee}
-                                                    </Box>
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell sx={{ fontWeight: 'bold' }}>Prize Pool</TableCell>
-                                                <TableCell>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <TrophyIcon fontSize="small" color="action" />
-                                                        ₹{contest.prize_pool}
-                                                    </Box>
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell sx={{ fontWeight: 'bold' }}>Participants</TableCell>
-                                                <TableCell>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <PeopleIcon fontSize="small" color="action" />
-                                                        {contest.joined_count} / {contest.room_size}
-                                                    </Box>
-                                                </TableCell>
-                                            </TableRow>
-                                            {contest.match_sponsor && (
-                                                <TableRow>
-                                                    <TableCell sx={{ fontWeight: 'bold' }}>Sponsor</TableCell>
-                                                    <TableCell>{contest.match_sponsor}</TableCell>
-                                                </TableRow>
-                                            )}
-                                        </TableBody>
-                                    </Table>
-                                </Paper>
-
-                                {/* Description card */}
-                                {contest.match_description && (
-                                    <Card variant="outlined">
-                                        <CardHeader 
-                                            title="Description" 
-                                            titleTypographyProps={{ variant: 'subtitle2' }}
-                                            sx={{ py: 1, borderBottom: 1, borderColor: 'divider' }}
-                                        />
-                                        <CardContent sx={{ py: 2 }}>
-                                            <Typography variant="body2">
-                                                {contest.match_description}
-                                            </Typography>
-                                        </CardContent>
-                                    </Card>
-                                )}
-
-                                {/* Room Credentials Section */}
-                                <Card variant="outlined">
-                                    <CardHeader 
-                                        title="Room Credentials" 
-                                        titleTypographyProps={{ variant: 'subtitle2' }}
-                                        action={
-                                            isEditingRoom ? (
-                                                <Box sx={{ display: 'flex', gap: 1 }}>
-                                                    <Button
-                                                        variant="outlined"
-                                                        size="small"
-                                                        onClick={() => setIsEditingRoom(false)}
-                                                        disabled={loadingRoom}
-                                                        startIcon={<CloseIcon />}
-                                                    >
-                                                        Cancel
-                                                    </Button>
-                                                    <Button
-                                                        variant="contained"
-                                                        size="small"
-                                                        onClick={handleUpdateRoomCredentials}
-                                                        disabled={loadingRoom}
-                                                        startIcon={<CheckIcon />}
-                                                    >
-                                                        {loadingRoom ? <CircularProgress size={20} /> : "Save"}
-                                                    </Button>
-                                                </Box>
-                                            ) : (
-                                                <Button
-                                                    variant="outlined"
-                                                    size="small"
-                                                    onClick={() => setIsEditingRoom(true)}
-                                                    startIcon={<EditIcon />}
-                                                >
-                                                    Edit
-                                                </Button>
-                                            )
-                                        }
-                                        sx={{ py: 1, borderBottom: 1, borderColor: 'divider' }}
-                                    />
-                                    <CardContent sx={{ py: 2 }}>
-                                        {isEditingRoom ? (
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                                <TextField
-                                                    label={
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <HashIcon fontSize="small" />
-                                                            Room ID
-                                                        </Box>
-                                                    }
-                                                    value={roomCredentials.room_id}
-                                                    onChange={(e) => setRoomCredentials({ ...roomCredentials, room_id: e.target.value })}
-                                                    placeholder="Enter room ID"
-                                                    fullWidth
-                                                    size="small"
-                                                />
-                                                <TextField
-                                                    label={
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <KeyIcon fontSize="small" />
-                                                            Room Password
-                                                        </Box>
-                                                    }
-                                                    value={roomCredentials.room_password}
-                                                    onChange={(e) => setRoomCredentials({ ...roomCredentials, room_password: e.target.value })}
-                                                    placeholder="Enter room password"
-                                                    fullWidth
-                                                    size="small"
-                                                />
-                                                <TextField
-                                                    label={
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                            <UserIcon fontSize="small" />
-                                                            Created By
-                                                        </Box>
-                                                    }
-                                                    value={roomCredentials.room_created_by}
-                                                    onChange={(e) => setRoomCredentials({ ...roomCredentials, room_created_by: e.target.value })}
-                                                    placeholder="Enter creator name"
-                                                    fullWidth
-                                                    size="small"
-                                                />
-                                            </Box>
-                                        ) : (
-                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                    <HashIcon color="action" />
-                                                    <Box>
-                                                        <Typography variant="caption" color="text.secondary">
-                                                            Room ID
-                                                        </Typography>
-                                                        <Typography>
-                                                            {roomCredentials.room_id || 'Not set'}
-                                                        </Typography>
-                                                    </Box>
-                                                </Box>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                    <KeyIcon color="action" />
-                                                    <Box>
-                                                        <Typography variant="caption" color="text.secondary">
-                                                            Room Password
-                                                        </Typography>
-                                                        <Typography>
-                                                            {roomCredentials.room_password ? '••••••••' : 'Not set'}
-                                                        </Typography>
-                                                    </Box>
-                                                </Box>
-                                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                                    <UserIcon color="action" />
-                                                    <Box>
-                                                        <Typography variant="caption" color="text.secondary">
-                                                            Created By
-                                                        </Typography>
-                                                        <Typography>
-                                                            {roomCredentials.room_created_by || 'Not set'}
-                                                        </Typography>
-                                                    </Box>
-                                                </Box>
-                                            </Box>
-                                        )}
-                                    </CardContent>
-                                </Card>
-                            </Box>
-                        </Grid>
-
-                        {/* Right column - Stats and actions */}
-                        <Grid item xs={12} md={4}>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                                {/* Stats cards */}
-                                <Grid container spacing={2}>
-                                    <Grid item xs={6}>
-                                        <StatCard
-                                            icon={<PeopleIcon />}
-                                            value={contest.remaining_seats}
-                                            label="Seats Left"
-                                            color="blue"
-                                            compact
-                                        />
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <StatCard
-                                            icon={<TrophyIcon />}
-                                            value={contest.total_winners}
-                                            label="Winners"
-                                            color="purple"
-                                            compact
-                                        />
-                                    </Grid>
-                                </Grid>
-
-                                {/* Financial breakdown */}
-                                <Card variant="outlined">
-                                    <CardHeader 
-                                        title="Financial Breakdown" 
-                                        titleTypographyProps={{ variant: 'subtitle2' }}
-                                        sx={{ py: 1, borderBottom: 1, borderColor: 'divider' }}
-                                    />
-                                    <Table>
-                                        <TableBody>
-                                            <TableRow>
-                                                <TableCell sx={{ fontWeight: 'bold' }}>Total Collection</TableCell>
-                                                <TableCell sx={{ textAlign: 'right' }}>₹{contest.total_collection}</TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell sx={{ fontWeight: 'bold' }}>Platform Cut (30%)</TableCell>
-                                                <TableCell sx={{ textAlign: 'right' }}>₹{contest.platform_cut}</TableCell>
-                                            </TableRow>
-                                            <TableRow sx={{ bgcolor: 'success.light' }}>
-                                                <TableCell sx={{ fontWeight: 'bold', color: 'success.dark' }}>Prize Pool (70%)</TableCell>
-                                                <TableCell sx={{ textAlign: 'right', fontWeight: 'bold', color: 'success.dark' }}>
-                                                    ₹{contest.prize_pool}
-                                                </TableCell>
-                                            </TableRow>
-                                        </TableBody>
-                                    </Table>
-                                </Card>
-
-                                {/* Action buttons */}
-                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                    <Button
-                                        variant="contained"
-                                        size="large"
-                                        onClick={() => handleJoinContest(contest.id)}
-                                        fullWidth
-                                    >
-                                        Declare Result
-                                    </Button>
-
-                                    <Box sx={{ display: 'flex', gap: 2 }}>
-                                        <FormControl fullWidth size="small">
-                                            <InputLabel>Status</InputLabel>
-                                            <Select
-                                                value={contest.match_status}
-                                                onChange={(e) => handleStatusChange(e.target.value)}
-                                                label="Status"
-                                            >
-                                                <MenuItem value="upcoming">Upcoming</MenuItem>
-                                                <MenuItem value="live">Live</MenuItem>
-                                                <MenuItem value="completed">Completed</MenuItem>
-                                                <MenuItem value="cancelled">Cancelled</MenuItem>
-                                                <MenuItem value="delay">Delayed</MenuItem>
-                                            </Select>
-                                        </FormControl>
-                                        <Button
-                                            variant="contained"
-                                            color="error"
-                                            onClick={handleDeleteContest}
-                                            fullWidth
-                                            startIcon={<DeleteIcon />}
-                                        >
-                                            Delete
-                                        </Button>
-                                    </Box>
-                                </Box>
-                            </Box>
-                        </Grid>
-                    </Grid>
-                </CardContent>
-            </Card>
-
-            {/* Prize distribution card */}
-            <Card>
-                <CardHeader
-                    title="Prize Distribution"
-                    subheader="How the prize pool will be distributed to winners"
-                />
-                <CardContent>
-                    <Paper>
-                        <Table>
-                            <TableHead sx={{ bgcolor: 'action.hover' }}>
-                                <TableRow>
-                                    <TableCell sx={{ width: '100px', fontWeight: 'bold' }}>Rank</TableCell>
-                                    <TableCell sx={{ fontWeight: 'bold' }}>Percentage</TableCell>
-                                    <TableCell sx={{ textAlign: 'right', fontWeight: 'bold' }}>Prize Amount</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {prizeDistribution.map((prize, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell>
-                                            {prize.rank.includes('-') ? (
-                                                <Chip label={prize.rank} variant="outlined" />
-                                            ) : (
-                                                <Chip label={`#${prize.rank}`} />
-                                            )}
-                                        </TableCell>
-                                        <TableCell>{(prize.percentage * 100).toFixed(1)}%</TableCell>
-                                        <TableCell sx={{ textAlign: 'right', fontWeight: 'bold', color: 'success.main' }}>
-                                            ₹{prize.winning_amount}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </Paper>
-                </CardContent>
-            </Card>
-        </Box>
-    );
+function Stat({ icon, label, value }) {
+  return (
+    <div className="flex items-center">
+      {icon}
+      <div>
+        <p className="text-sm text-gray-500">{label}</p>
+        <p className="font-medium">{value}</p>
+      </div>
+    </div>
+  );
 }
 
-function StatCard({ icon, value, label, color = 'blue', compact = false }) {
-    const colorStyles = {
-        blue: {
-            bg: 'primary.light',
-            iconBg: 'primary.main',
-            text: 'primary.main'
-        },
-        green: {
-            bg: 'success.light',
-            iconBg: 'success.main',
-            text: 'success.main'
-        },
-        purple: {
-            bg: 'secondary.light',
-            iconBg: 'secondary.main',
-            text: 'secondary.main'
-        },
-        orange: {
-            bg: 'warning.light',
-            iconBg: 'warning.main',
-            text: 'warning.main'
-        }
-    };
+function Tag({ text, color = "gray" }) {
+  const colorMap = {
+    blue: "bg-blue-100 text-blue-800",
+    green: "bg-green-100 text-green-800",
+    purple: "bg-purple-100 text-purple-800",
+    gray: "bg-gray-100 text-gray-800",
+  };
+  return (
+    <span
+      className={`px-3 py-1 ${colorMap[color]} rounded-full text-sm font-medium`}
+    >
+      {text}
+    </span>
+  );
+}
 
+export default function ContestDetail() {
+  const [contest, setContest] = useState(null);
+  const [prizeDistribution, setPrizeDistribution] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [roomForm, setRoomForm] = useState({
+    room_id: "",
+    room_password: "",
+    room_created_by: "",
+  });
+  // API states and functions are now handled in their respective components
+  const { id: contestId } = useParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchContest = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const token = localStorage.getItem("authToken");
+        // Fetch contest, prize, and room first
+        const [contestRes, prizeRes, roomRes] = await Promise.all([
+          fetch(
+            `https://macstormbattle-backend.onrender.com/api/contest/${contestId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+          fetch(
+            `https://macstormbattle-backend.onrender.com/api/prize/${contestId}`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+          fetch(
+            `https://macstormbattle-backend.onrender.com/api/contest/admin/${contestId}/room`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          ),
+        ]);
+        if (!contestRes.ok) throw new Error("Failed to load contest");
+        const contestData = await contestRes.json();
+        setContest(contestData);
+        if (prizeRes.ok) setPrizeDistribution(await prizeRes.json());
+        if (roomRes.ok) {
+          const room = await roomRes.json();
+          setRoomForm({
+            room_id: room.room_id || "",
+            room_password: room.room_password || "",
+            room_created_by: room.room_created_by || "",
+          });
+        }
+        // Only fetch solo players if contest is solo
+        if (contestData?.team?.toLowerCase() === "solo") {
+          const soloRes = await fetch(
+            `https://macstormbattle-backend.onrender.com/api/match/${contestId}/participants`,
+            { headers: { Authorization: `Bearer ${token}` } }
+          );
+          if (!soloRes.ok) {
+            console.error('Failed to fetch solo players');
+          }
+        }
+      } catch (err) {
+        setError(err.message || "Failed to load contest");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchContest();
+  }, [contestId]);
+
+  const handleSaveRoom = async (roomData) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      await fetch(
+        `https://macstormbattle-backend.onrender.com/api/contest/${contestId}/room`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(roomData),
+        }
+      );
+      setRoomForm(roomData);
+    } catch (err) {
+      throw new Error(err.message || "Failed to update room details");
+    }
+  };
+
+  const handleRemovePlayer = async (userId) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      await fetch(
+        `https://macstormbattle-backend.onrender.com/api/contest/${contestId}/remove-player/${userId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      
+      // Update the local state to remove the player
+      setContest(prevContest => ({
+        ...prevContest,
+        joined_users: prevContest.joined_users.filter(
+          p => (p.userId || p.user_id || p.id) !== userId
+        )
+      }));
+    } catch (err) {
+      throw new Error(err.message || "Failed to remove player");
+    }
+  };
+
+  if (loading)
+    return <div className="p-8 text-center">Loading contest details...</div>;
+  if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
+  if (!contest)
     return (
-        <Paper 
-            elevation={0}
-            sx={{ 
-                p: compact ? 2 : 3,
-                bgcolor: colorStyles[color].bg,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2
-            }}
-        >
-            <Avatar sx={{ 
-                width: compact ? 32 : 40,
-                height: compact ? 32 : 40,
-                bgcolor: colorStyles[color].iconBg,
-                color: 'white'
-            }}>
-                {React.cloneElement(icon, { fontSize: compact ? 'small' : 'medium' })}
-            </Avatar>
-            <Box>
-                <Typography 
-                    variant={compact ? 'h6' : 'h5'} 
-                    component="div" 
-                    fontWeight="bold"
-                    color={colorStyles[color].text}
-                >
-                    {value}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                    {label}
-                </Typography>
-            </Box>
-        </Paper>
+      <div className="p-8 text-center text-red-600">Contest not found</div>
     );
+
+  return (
+    <div className="min-h-screen">
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center mb-6 justify-between">
+          <button
+            type="button"
+            className="flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+            onClick={() => navigate(-1)}
+            aria-label="Back to contests"
+          >
+            <svg
+              className="w-5 h-5 mr-2"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Back to contests
+          </button>
+        </div>
+        {/* Hero */}
+        <div className="bg-white rounded-xl shadow-lg mb-8 overflow-hidden">
+          <div className="relative">
+            <img
+              src={
+                contest?.banner_image_url ||
+                "https://images.pexels.com/photos/735911/pexels-photo-735911.jpeg"
+              }
+              alt={contest?.event_name || "Contest"}
+              className="w-full h-64 object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <div className="absolute bottom-6 left-6 text-white">
+              <h1 className="text-3xl font-bold mb-2">{contest?.event_name}</h1>
+              <p className="text-lg opacity-90">{contest?.match_description}</p>
+            </div>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <Stat
+                icon={
+                  <svg
+                    className="w-5 h-5 mr-3 text-blue-500"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                }
+                label="Schedule"
+                value={
+                  contest?.match_schedule
+                    ? new Date(contest.match_schedule).toLocaleString()
+                    : "—"
+                }
+              />
+              <Stat
+                icon={
+                  <svg
+                    className="w-5 h-5 mr-3 text-green-500"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m9-4V7a4 4 0 00-8 0v2a4 4 0 00-3 3.87V18a2 2 0 002 2h10a2 2 0 002-2v-2.13A4 4 0 0017 13z"
+                    />
+                  </svg>
+                }
+                label="Players"
+                value={`${contest?.joined_count ?? 0}/${
+                  contest?.room_size ?? "—"
+                }`}
+              />
+              <Stat
+                icon={
+                  <svg
+                    className="w-5 h-5 mr-3 text-yellow-500"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 0V4m0 7v7"
+                    />
+                  </svg>
+                }
+                label="Entry Fee"
+                value={`₹${contest?.joining_fee ?? "—"}`}
+              />
+              <Stat
+                icon={
+                  <svg
+                    className="w-5 h-5 mr-3 text-purple-500"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 21h8M12 17v4m0-4a4 4 0 100-8 4 4 0 000 8zm0-8V3m0 4v4"
+                    />
+                  </svg>
+                }
+                label="Prize Pool"
+                value={
+                  contest?.prize_description || `₹${contest?.prize_pool || "—"}`
+                }
+              />
+            </div>
+            <div className="flex items-center space-x-4">
+              <Tag text={contest?.game || "Game"} color="blue" />
+              <Tag text={contest?.map || "Map"} color="green" />
+              <Tag text={contest?.team || "TEAM"} color="purple" />
+            </div>
+          </div>
+        </div>
+
+        <RoomDetailsCard 
+        roomData={roomForm}
+        onSave={handleSaveRoom}
+      />
+
+      <PlayersTable 
+        players={contest?.joined_users}
+        onRemovePlayer={handleRemovePlayer}
+      />
+
+      <PrizeDistributionTable
+        prizes={prizeDistribution}
+      />
+
+        {/* Actions */}
+        <div className="mt-8 flex flex-col md:flex-row gap-4">
+          <Link
+            to={`/solo/${contest.id}/declare-result`}
+            className="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold"
+          >
+            Declare Result
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }

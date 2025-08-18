@@ -1,47 +1,55 @@
-import { Calendar } from "lucide-react";
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { formatDisplayDate } from "../utils/dateUtils";
+import {
+  Plus,
+  Filter as FilterIcon,
+  Calendar,
+  Users,
+  DollarSign,
+  Trophy,
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import axiosInstance from "../utils/axios";
 
-function ContestList() {
+function SquadContestsList() {
+  const [filter, setFilter] = useState("All");
   const [contests, setContests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filter, setFilter] = useState("All");
-  const navigate = useNavigate();
 
+  // Fetch contests from API
   useEffect(() => {
     const fetchContests = async () => {
       try {
-        setLoading(true);
-        setError(null);
         const token = localStorage.getItem("authToken");
-        const res = await fetch("https://macstormbattle-backend.onrender.com/api/contest", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to load contests");
-        setContests(data || []);
+        if (!token) {
+          setError("You must be logged in to view contests.");
+          setLoading(false);
+          return;
+        }
+        setLoading(true);
+        const res = await axiosInstance.get("/squid-contests");
+        setContests(res.data || []); // Adjust based on API response format
       } catch (err) {
-        setError(err.message || "Failed to load contests");
+        console.error(err);
+        setError("Failed to load contests");
       } finally {
         setLoading(false);
       }
     };
+
     fetchContests();
   }, []);
 
   const filteredContests = contests
     .filter(contest => {
-      const status = contest.match_status?.toLowerCase();
-      // If a specific filter is selected, show only that status
+      // If a specific filter is selected, apply it
       if (filter !== "All") {
-        return status === filter.toLowerCase();
+        return contest.match_status && 
+               contest.match_status.toLowerCase() === filter.toLowerCase();
       }
-      // For "All" filter, hide cancelled contests
-      return status !== 'cancelled';
+      // For "All" filter, show everything except cancelled contests
+      return !contest.match_status || 
+             contest.match_status.toLowerCase() !== 'cancelled';
     });
 
   return (
@@ -51,24 +59,24 @@ function ContestList() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              All Contests
+              Squad Contests
             </h1>
             <p className="text-gray-600">
-              Join competitive tournaments and win prizes
+              Join competitive Squad tournaments and win prizes
             </p>
           </div>
-          <button
-            onClick={() => navigate("/solo/create")}
+          <Link
+            to="/squad/create"
             className="flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+            <Plus className="w-5 h-5 mr-2" />
             Create Contest
-          </button>
+          </Link>
         </div>
 
         {/* Filter */}
         <div className="flex items-center mb-6">
-          <svg className="w-5 h-5 mr-3 text-gray-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707l-7 7V21a1 1 0 01-2 0v-7.293l-7-7A1 1 0 013 6V4z" /></svg>
+          <FilterIcon className="w-5 h-5 mr-3 text-gray-500" />
           <div className="flex space-x-4">
             {[
               { label: "All", value: "All" },
@@ -102,35 +110,28 @@ function ContestList() {
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredContests
-              .slice()
-              .sort((a, b) => {
-                // Sort by status priority
-                const getPriority = (status) => {
-                  status = (status || '').toLowerCase();
-                  if (status === 'live') return 0;
-                  if (status === 'upcoming') return 1;
-                  if (status === 'completed') return 2;
-                  return 3;
-                };
+  .slice()
+  .sort((a, b) => {
+    // Define status priority (live first, then upcoming, then others)
+    const getPriority = (status) => {
+      status = (status || '').toLowerCase();
+      if (status === 'live') return 0;
+      if (status === 'upcoming') return 1;
+      if (status === 'completed') return 2;
+      return 3; // for any other status
+    };
 
-                const prioA = getPriority(a.match_status);
-                const prioB = getPriority(b.match_status);
+    // First sort by status priority
+    const statusDiff = getPriority(a.match_status) - getPriority(b.match_status);
+    if (statusDiff !== 0) return statusDiff;
 
-                if (prioA !== prioB) return prioA - prioB;
-
-                // If same status, sort by schedule (nearest first for live/upcoming, latest first for others)
-                const dateA = new Date(a.match_schedule?.replace(/,/g, ''));
-                const dateB = new Date(b.match_schedule?.replace(/,/g, ''));
-                
-                // For live and upcoming, show nearest first
-                if (prioA <= 1) return dateA - dateB;
-                // For completed and others, show latest first
-                return dateB - dateA;
-              })
-              .map((contest) => (
+    // If status is the same, sort by match schedule (nearest first)
+    return new Date(a.match_schedule) - new Date(b.match_schedule);
+  })
+  .map((contest) => (
                 <Link
-                  key={contest.id}
-                  to={`/solo/${contest.id}`}
+                  key={contest.contest_id}
+                  to={`/squad/${contest.contest_id}`}
                   state={{ contest }}
                   className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 block"
                 >
@@ -146,16 +147,14 @@ function ContestList() {
                     <div className="absolute top-4 right-4">
                       <span
                         className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          contest.match_status === "live"
+                          contest.status === "Live"
                             ? "bg-green-100 text-green-800"
-                            : contest.match_status === "completed"
+                            : contest.status === "Completed"
                             ? "bg-gray-100 text-gray-800"
-                            : contest.match_status === "cancelled"
-                            ? "bg-red-100 text-red-800"
                             : "bg-blue-100 text-blue-800"
                         }`}
                       >
-                        {contest.match_status ? contest.match_status.charAt(0).toUpperCase() + contest.match_status.slice(1) : "Upcoming"}
+                        {contest.match_status || "Upcoming"}
                       </span>
                     </div>
                   </div>
@@ -166,13 +165,27 @@ function ContestList() {
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                       {contest.match_description}
                     </p>
-                     <div className="flex items-center text-sm text-gray-600">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="flex items-center text-sm text-gray-600">
                         <Calendar className="w-4 h-4 mr-2 text-blue-500" />
-                        {formatDisplayDate(contest.match_schedule)}
+                        {new Date(contest.match_schedule).toLocaleString()}
                       </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Users className="w-4 h-4 mr-2 text-green-500" />
+                        {contest.room_size || 0} Players
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <DollarSign className="w-4 h-4 mr-2 text-yellow-500" />₹
+                        {contest.joining_fee} Entry
+                      </div>
+                      <div className="flex items-center text-sm text-gray-600">
+                        <Trophy className="w-4 h-4 mr-2 text-zinc-500" />
+                        {contest.prize_description}
+                      </div>
+                    </div>
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-gray-500">
-                        {contest.game} {contest.map ? `• ${contest.map}` : ""}
+                        {contest.game} • {contest.map}
                       </div>
                       <div className="text-sm font-medium text-blue-600">
                         {contest.match_sponsor}
@@ -193,4 +206,4 @@ function ContestList() {
   );
 }
 
-export default ContestList;
+export default SquadContestsList;

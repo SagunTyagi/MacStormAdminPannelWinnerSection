@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from "react";
+import Autocomplete from '@mui/material/Autocomplete';
 import {
   Card,
   CardHeader,
@@ -44,13 +45,13 @@ export default function ContestResultDeclaration() {
     const [isLoading, setIsLoading] = useState(true);
     const [isDeclared, setIsDeclared] = useState(false);
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [activeSearchIndex, setActiveSearchIndex] = useState(null);
+    // const [searchTerm, setSearchTerm] = useState("");
+    // const [activeSearchIndex, setActiveSearchIndex] = useState(null);
     const { id: contestId } = useParams();
     const navigate = useNavigate();
 
     // Mock auth token - replace with your actual auth implementation
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU1MDY2Mjc5LCJleHAiOjE3NTYzNjIyNzl9.Mk47vv4heUHy56DqGYSCpLlmcweGptiqovYC6Z5rL7I";
+    const token = localStorage.getItem("authToken");
 
     const joinedUsers = useMemo(() => {
         return contest?.joined_users || [];
@@ -116,60 +117,54 @@ export default function ContestResultDeclaration() {
                     : winner
             )
         );
-        if (field === "name") {
-            setSearchTerm(value);
-            setActiveSearchIndex(null);
-        }
     };
 
-    const handleNameInput = (rank, value) => {
-        updateWinner(rank, "name", value);
-        if (!value.trim()) {
-            updateWinner(rank, "userId", null);
-            return;
-        }
-        const matchingUser = joinedUsers.find(user =>
-            user.user_name.toLowerCase().includes(value.toLowerCase())
-        );
-        if (matchingUser) {
-            updateWinner(rank, "userId", matchingUser.userId);
-        } else {
-            updateWinner(rank, "userId", null);
-        }
-    };
+    // const handleNameInput = (rank, value) => {
+    //     updateWinner(rank, "name", value);
+    //     if (!value.trim()) {
+    //         updateWinner(rank, "userId", null);
+    //         return;
+    //     }
+    //     const matchingUser = joinedUsers.find(user =>
+    //         user.user_name.toLowerCase().includes(value.toLowerCase())
+    //     );
+    //     if (matchingUser) {
+    //         updateWinner(rank, "userId", matchingUser.userId);
+    //     } else {
+    //         updateWinner(rank, "userId", null);
+    //     }
+    // };
 
-    const filteredUsers = useMemo(() => {
-        if (!searchTerm) return [];
-        return joinedUsers.filter(user =>
-            user.user_name.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }, [searchTerm, joinedUsers]);
+    // const filteredUsers = useMemo(() => {
+    //     if (!searchTerm) return [];
+    //     return joinedUsers.filter(user =>
+    //         user.user_name.toLowerCase().includes(searchTerm.toLowerCase())
+    //     );
+    // }, [searchTerm, joinedUsers]);
 
-    const handleKeyDown = (e, rank) => {
-        if (filteredUsers.length === 0) return;
+    // const handleKeyDown = (e, rank) => {
+    //     if (filteredUsers.length === 0) return;
 
-        if (e.key === "ArrowDown") {
-            e.preventDefault();
-            setActiveSearchIndex(prev =>
-                prev === null ? 0 : Math.min(prev + 1, filteredUsers.length - 1)
-            );
-        } else if (e.key === "ArrowUp") {
-            e.preventDefault();
-            setActiveSearchIndex(prev =>
-                prev === null ? filteredUsers.length - 1 : Math.max(prev - 1, 0));
-        } else if (e.key === "Enter" && activeSearchIndex !== null) {
-            e.preventDefault();
-            const selectedUser = filteredUsers[activeSearchIndex];
-            selectUser(rank, selectedUser);
-        }
-    };
+    //     if (e.key === "ArrowDown") {
+    //         e.preventDefault();
+    //         setActiveSearchIndex(prev =>
+    //             prev === null ? 0 : Math.min(prev + 1, filteredUsers.length - 1)
+    //         );
+    //     } else if (e.key === "ArrowUp") {
+    //         e.preventDefault();
+    //         setActiveSearchIndex(prev =>
+    //             prev === null ? filteredUsers.length - 1 : Math.max(prev - 1, 0));
+    //     } else if (e.key === "Enter" && activeSearchIndex !== null) {
+    //         e.preventDefault();
+    //         const selectedUser = filteredUsers[activeSearchIndex];
+    //         selectUser(rank, selectedUser);
+    //     }
+    // };
 
-    const selectUser = (rank, user) => {
-        updateWinner(rank, "name", user.user_name);
-        updateWinner(rank, "userId", user.userId);
-        setActiveSearchIndex(null);
-        setSearchTerm("");
-    };
+    // const selectUser = (rank, user) => {
+    //     updateWinner(rank, "name", user.user_name);
+    //     updateWinner(rank, "userId", user.userId);
+    // };
 
     const validateWinners = () => {
         const filledWinners = winners.filter(w => w.userId && w.name.trim());
@@ -253,6 +248,9 @@ export default function ContestResultDeclaration() {
             fetchContestAndResults();
         }
     }, [contestId, token, fetchContestAndResults]);
+
+    // Get all selected userIds except for the current rank
+    const selectedUserIds = useMemo(() => winners.map(w => w.userId).filter(Boolean), [winners]);
 
     if (isLoading && !contest) {
         return (
@@ -424,139 +422,138 @@ export default function ContestResultDeclaration() {
                     />
                     <CardContent>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                            {winners.map((winner) => (
-                                <Paper 
-                                    key={winner.rank} 
-                                    elevation={2}
-                                    sx={{ 
-                                        p: 3,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        gap: 3,
-                                        position: 'relative'
-                                    }}
-                                >
-                                    <Box sx={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        gap: 2,
-                                        minWidth: 120
-                                    }}>
-                                        <Avatar
-                                            sx={{
-                                                width: 36,
-                                                height: 36,
-                                                bgcolor: winner.rank === 1
-                                                    ? 'warning.main'
-                                                    : winner.rank === 2
-                                                        ? 'grey.500'
-                                                        : winner.rank === 3
-                                                            ? 'amber.700'
-                                                            : 'primary.main',
-                                                color: 'white',
-                                                fontWeight: 'bold'
-                                            }}
-                                        >
-                                            {winner.rank}
-                                        </Avatar>
-                                        <Chip 
-                                            label={`Rank ${winner.rank}`} 
-                                            color={
-                                                winner.rank <= 3 
-                                                    ? winner.rank === 1 
-                                                        ? 'warning' 
-                                                        : winner.rank === 2 
-                                                            ? 'default' 
-                                                            : 'primary'
-                                                    : 'secondary'
-                                            }
-                                            size="small"
-                                        />
-                                    </Box>
-
-                                    <Box sx={{ flex: 1, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
-                                        <Box>
-                                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                                User ID
-                                            </Typography>
-                                            <TextField
-                                                fullWidth
-                                                size="small"
-                                                type="number"
-                                                placeholder="Enter user ID"
-                                                value={winner.userId || ""}
-                                                onChange={(e) => updateWinner(winner.rank, "userId", e.target.value)}
-                                                disabled={isDeclared}
-                                            />
-                                        </Box>
-                                        <Box sx={{ position: 'relative' }}>
-                                            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                                                Player Name
-                                            </Typography>
-                                            <TextField
-                                                fullWidth
-                                                size="small"
-                                                placeholder="Enter player name"
-                                                value={winner.name}
-                                                onChange={(e) => handleNameInput(winner.rank, e.target.value)}
-                                                onKeyDown={(e) => handleKeyDown(e, winner.rank)}
-                                                disabled={isDeclared}
-                                                InputProps={{
-                                                    endAdornment: (
-                                                        <InputAdornment position="end">
-                                                            <SearchIcon color="action" />
-                                                        </InputAdornment>
-                                                    )
+                            {winners.map((winner, idx) => {
+                                // Exclude already selected users from dropdown except for this winner
+                                const otherSelectedIds = selectedUserIds.filter((id, i) => i !== idx);
+                                const availableUsers = joinedUsers.filter(
+                                    user => !otherSelectedIds.includes(user.userId)
+                                );
+                                const selectedUser = joinedUsers.find(u => u.userId === winner.userId) || null;
+                                return (
+                                    <Paper 
+                                        key={winner.rank} 
+                                        elevation={2}
+                                        sx={{ 
+                                            p: 3,
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 3,
+                                            position: 'relative'
+                                        }}
+                                    >
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            gap: 2,
+                                            minWidth: 120
+                                        }}>
+                                            <Avatar
+                                                sx={{
+                                                    width: 36,
+                                                    height: 36,
+                                                    bgcolor: winner.rank === 1
+                                                        ? 'warning.main'
+                                                        : winner.rank === 2
+                                                            ? 'grey.500'
+                                                            : winner.rank === 3
+                                                                ? 'amber.700'
+                                                                : 'primary.main',
+                                                    color: 'white',
+                                                    fontWeight: 'bold'
                                                 }}
+                                            >
+                                                {winner.rank}
+                                            </Avatar>
+                                            <Chip 
+                                                label={`Rank ${winner.rank}`} 
+                                                color={
+                                                    winner.rank <= 3 
+                                                        ? winner.rank === 1 
+                                                            ? 'warning' 
+                                                            : winner.rank === 2 
+                                                                ? 'default' 
+                                                                : 'primary'
+                                                        : 'secondary'
+                                                }
+                                                size="small"
                                             />
-                                            {!isDeclared && winner.name && filteredUsers.length > 0 && (
-                                                <Paper 
-                                                    sx={{ 
-                                                        position: 'absolute',
-                                                        zIndex: 1,
-                                                        width: '100%',
-                                                        maxHeight: 200,
-                                                        overflow: 'auto',
-                                                        mt: 0.5,
-                                                        boxShadow: 3
-                                                    }}
-                                                >
-                                                    {filteredUsers.map((user, index) => (
-                                                        <Box
-                                                            key={user.userId}
-                                                            sx={{ 
-                                                                p: 1.5,
-                                                                cursor: 'pointer',
-                                                                bgcolor: index === activeSearchIndex ? 'action.selected' : 'background.paper',
-                                                                '&:hover': {
-                                                                    bgcolor: 'action.hover'
-                                                                }
-                                                            }}
-                                                            onClick={() => selectUser(winner.rank, user)}
-                                                        >
-                                                            <Typography variant="body1" fontWeight="medium">
-                                                                {user.user_name}
-                                                            </Typography>
-                                                            <Typography variant="body2" color="text.secondary">
-                                                                User ID: {user.userId}
-                                                            </Typography>
-                                                        </Box>
-                                                    ))}
-                                                </Paper>
-                                            )}
                                         </Box>
-                                    </Box>
 
-                                    <Box sx={{ textAlign: 'right', minWidth: 120 }}>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Prize Amount
-                                        </Typography>
-                                        <Typography variant="h6" color="success.main" fontWeight="bold">
-                                            ₹{winner.winning_amount.toLocaleString()}
-                                        </Typography>
-                                    </Box>
-                                </Paper>
-                            ))}
+                                        <Box sx={{ flex: 1, display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3 }}>
+                                            <Box>
+                                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                                    User ID
+                                                </Typography>
+                                                <TextField
+                                                    fullWidth
+                                                    size="small"
+                                                    type="number"
+                                                    placeholder="User ID"
+                                                    value={winner.userId || ""}
+                                                    disabled={!!winner.userId || isDeclared}
+                                                />
+                                            </Box>
+                                            <Box>
+                                                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                                    Player Name
+                                                </Typography>
+                                                <Autocomplete
+                                                    fullWidth
+                                                    size="small"
+                                                    disabled={isDeclared}
+                                                    options={availableUsers}
+                                                    getOptionLabel={(option) => option.user_name || ''}
+                                                    value={selectedUser}
+                                                    onChange={(_e, newValue) => {
+                                                        if (newValue) {
+                                                            updateWinner(winner.rank, "name", newValue.user_name);
+                                                            updateWinner(winner.rank, "userId", newValue.userId);
+                                                        } else {
+                                                            updateWinner(winner.rank, "name", "");
+                                                            updateWinner(winner.rank, "userId", null);
+                                                        }
+                                                    }}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            placeholder="Select player"
+                                                            InputProps={{
+                                                                ...params.InputProps,
+                                                                endAdornment: (
+                                                                    <InputAdornment position="end">
+                                                                        <SearchIcon color="action" />
+                                                                    </InputAdornment>
+                                                                )
+                                                            }}
+                                                        />
+                                                    )}
+                                                    renderOption={(props, option) => (
+                                                        <li {...props} key={option.userId}>
+                                                            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                                                                <Typography variant="body1" fontWeight="medium">
+                                                                    {option.user_name}
+                                                                </Typography>
+                                                                <Typography variant="body2" color="text.secondary">
+                                                                    User ID: {option.userId}
+                                                                </Typography>
+                                                            </Box>
+                                                        </li>
+                                                    )}
+                                                />
+                                            </Box>
+                                        </Box>
+
+                                        <Box sx={{ textAlign: 'right', minWidth: 120 }}>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Prize Amount
+                                            </Typography>
+                                            <Typography variant="h6" color="success.main" fontWeight="bold">
+                                                ₹{winner.winning_amount.toLocaleString()}
+                                            </Typography>
+                                        </Box>
+                                    </Paper>
+                                );
+                            })}
                         </Box>
                     </CardContent>
                 </Card>

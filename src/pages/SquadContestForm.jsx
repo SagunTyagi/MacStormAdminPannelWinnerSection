@@ -1,14 +1,12 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { ArrowLeft, Trash2, Plus } from "lucide-react";
 import { toast } from "react-toastify";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axios";
-import { formatAPIDate } from "../utils/dateUtils";
 
 const DEFAULT_WINNERS = [100];
 
-export default function ContestCreate() {
+export default function SquadContestForm() {
   const [eventName, setEventName] = useState("");
   const [fee, setFee] = useState("");
   const [game, setGame] = useState("BGMI");
@@ -20,35 +18,27 @@ export default function ContestCreate() {
   const [description, setDescription] = useState("");
   const [sponsor, setSponsor] = useState("");
   const [prizeDesc, setPrizeDesc] = useState("");
-  const [privateDesc, setPrivateDesc] = useState("");
-  const [team, setTeam] = useState("");
-  const [errors, setErrors] = useState({});
-  const [winners, setWinners] = useState(
-    DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, percent: p, rank: (i + 1).toString() }))
+    const [winners, setWinners] = useState(
+    DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, percent: p }))
   );
+
+  const [errors, setErrors] = useState({});
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEditMode = !!id;
 
   const totalPercent = winners.reduce((s, w) => s + Number(w.percent || 0), 0);
 
-
-  // helper to update a winner's percent or rank
-  const updateWinner = (index, field, value) => {
+  // helper to update a winner's percent
+  const updateWinner = (index, value) => {
+    const v = value === "" ? "" : Math.max(0, Math.min(100, Number(value)));
     setWinners((prev) => {
       const copy = [...prev];
-      if (field === 'percent') {
-        const v = value === "" ? "" : Math.max(0, Math.min(100, Number(value)));
-        copy[index] = { ...copy[index], percent: v };
-      } else if (field === 'rank') {
-        copy[index] = { ...copy[index], rank: value };
-      }
+      copy[index] = { ...copy[index], percent: v };
       return copy;
     });
   };
 
   const addWinner = () => {
-    setWinners((prev) => [...prev, { id: Date.now(), percent: 0, rank: "" }]);
+    setWinners((prev) => [...prev, { id: Date.now(), percent: 0 }]);
   };
 
   const removeWinner = (index) => {
@@ -73,63 +63,22 @@ export default function ContestCreate() {
     return Object.keys(e).length === 0;
   };
 
-  // Auto-generate winners array when totalWinners changes
+    // ✅ Auto-generate winners array when totalWinners changes
   useEffect(() => {
     const count = Number(totalWinners);
     if (!count || count <= 0) return;
+
     setWinners((prev) => {
       const newArr = [];
       for (let i = 0; i < count; i++) {
         newArr.push({
           id: prev[i]?.id || Date.now() + i,
           percent: prev[i]?.percent || 0,
-          rank: prev[i]?.rank || (i + 1).toString(),
         });
       }
       return newArr;
     });
   }, [totalWinners]);
-
-  // Load for edit mode
-  useEffect(() => {
-    if (!isEditMode) return;
-    const fetchData = async () => {
-      try {
-        const [contestRes, prizeRes] = await Promise.all([
-          fetch(`https://macstormbattle-backend.onrender.com/api/contest/${id}`),
-          fetch(`https://macstormbattle-backend.onrender.com/api/prize/${id}`),
-        ]);
-        if (!contestRes.ok || !prizeRes.ok) throw new Error("Failed to load contest data");
-        const contestData = await contestRes.json();
-        const prizeData = await prizeRes.json();
-        setEventName(contestData.event_name || "");
-        setFee(contestData.joining_fee || "");
-        setGame(contestData.game || "BGMI");
-        setMap(contestData.map || "Erangel");
-        setSchedule(contestData.match_schedule ? contestData.match_schedule.slice(0, 16) : "");
-        setRoomSize(contestData.room_size || "");
-        setTotalWinners(contestData.total_winners || "");
-        setBannerUrl(contestData.banner_image_url || "");
-        setDescription(contestData.match_description || "");
-        setSponsor(contestData.match_sponsor || "");
-        setPrizeDesc(contestData.prize_description || "");
-        setPrivateDesc(contestData.match_private_description || "");
-        setTeam(contestData.team || "");
-        setWinners(
-          (prizeData || []).map((p, i) => ({
-            id: Date.now() + i,
-            percent: p.percentage,
-            rank: p.rank,
-          }))
-        );
-      } catch (err) {
-        toast.error(err.message || "Failed to load contest data");
-        navigate("/solo");
-      }
-    };
-    fetchData();
-    // eslint-disable-next-line
-  }, [isEditMode, id]);
 
   const handleSubmit = async (ev) => {
     ev.preventDefault();
@@ -137,39 +86,52 @@ export default function ContestCreate() {
 
     const payload = {
       event_name: eventName,
-      room_size: Number(roomSize),
+      room_size: Number(roomSize), // you can make this dynamic if needed
       joining_fee: Number(fee),
       total_winners: winners.length,
       distribution: winners.reduce((acc, w, idx) => {
-        acc[w.rank && w.rank.trim() ? w.rank.trim() : (idx + 1).toString()] = Number(w.percent);
+        acc[idx + 1] = Number(w.percent);
         return acc;
       }, {}),
-      match_schedule: formatAPIDate(schedule),
+      match_schedule: new Date(schedule).toISOString(), // convert datetime-local to ISO
       game,
-      team: team || "SQUAD",
+      team: "SQUAD", // fixed or dynamic based on UI
       map: map.toUpperCase(),
       banner_image_url: bannerUrl || null,
       prize_description: prizeDesc,
       match_sponsor: sponsor,
       match_description: description,
-      match_private_description: privateDesc,
+      match_private_description: "Be on time", // can make optional
     };
 
     try {
-      if (isEditMode) {
-        await axiosInstance.patch(`/contest/${id}/edit`, payload, {
-          headers: { "Content-Type": "application/json" },
-        });
-        toast.success("Contest updated successfully!");
-      } else {
-        await axiosInstance.post("/contest/create", payload, {
-          headers: { "Content-Type": "application/json" },
-        });
-        toast.success("Contest created successfully!");
-      }
-      navigate("/solo");
+      await axiosInstance.post("/api/squid-contests/create", payload, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      toast.success("Contest created successfully!");
+      // reset form
+      setEventName("");
+      setFee("");
+      setGame("BGMI");
+      setMap("Erangel");
+      setSchedule("");
+      setRoomSize("");
+      setTotalWinners("");
+      setBannerUrl("");
+      setDescription("");
+      setSponsor("");
+      setPrizeDesc("");
+      setWinners(
+        DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, percent: p }))
+      );
+      setErrors({});
+      navigate("/squad");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to save contest");
+      console.error(err);
+      toast.error(err.response?.data?.message || "Failed to create contest");
     }
   };
 
@@ -190,7 +152,7 @@ export default function ContestCreate() {
 
         <div className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto">
           <h1 className="text-2xl font-bold text-gray-900 mb-6">
-            {isEditMode ? "Edit Contest" : "Create Contest"}
+            Create Squad Contest
           </h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -275,8 +237,8 @@ export default function ContestCreate() {
                 onChange={(e) => setRoomSize(e.target.value)}
                 type="number"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
-                  errors.roomSize ? "border-red-400" : "border-gray-300"}
-                `}
+                  errors.roomSize ? "border-red-400" : "border-gray-300"
+                }`}
                 placeholder="No. of players (Max 100)"
               />
               {errors.roomSize && (
@@ -284,23 +246,23 @@ export default function ContestCreate() {
               )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Winners *
-              </label>
-              <input
-                value={totalWinners}
-                onChange={(e) => setTotalWinners(e.target.value)}
-                type="number"
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
-                  errors.totalWinners ? "border-red-400" : "border-gray-300"}
-                `}
-                placeholder="Number of winners"
-              />
-              {errors.totalWinners && (
-                <p className="text-xs text-red-600 mt-1">{errors.totalWinners}</p>
-              )}
-            </div>
+             <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Total Winners *
+        </label>
+        <input
+          value={totalWinners}
+          onChange={(e) => setTotalWinners(e.target.value)}
+          type="number"
+          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
+            errors.totalWinners ? "border-red-400" : "border-gray-300"
+          }`}
+          placeholder="Number of winners"
+        />
+        {errors.totalWinners && (
+          <p className="text-xs text-red-600 mt-1">{errors.totalWinners}</p>
+        )}
+      </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -311,8 +273,8 @@ export default function ContestCreate() {
                 onChange={(e) => setSchedule(e.target.value)}
                 type="datetime-local"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
-                  errors.schedule ? "border-red-400" : "border-gray-300"}
-                `}
+                  errors.schedule ? "border-red-400" : "border-gray-300"
+                }`}
               />
               {errors.schedule && (
                 <p className="text-xs text-red-600 mt-1">{errors.schedule}</p>
@@ -353,20 +315,14 @@ export default function ContestCreate() {
 
               <div className="space-y-3">
                 {winners.map((w, i) => (
-                  <div key={w.id} className="flex items-center space-x-2 md:space-x-4">
-                    <div className="w-20">
-                      <input
-                        value={w.rank}
-                        onChange={e => updateWinner(i, 'rank', e.target.value)}
-                        type="text"
-                        className="w-full px-2 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 border-gray-300 text-center"
-                        placeholder={i === 0 ? '1' : i === 1 ? '2' : i === 2 ? '3' : '4-10'}
-                      />
+                  <div key={w.id} className="flex items-center space-x-4">
+                    <div className="w-12 h-10 bg-purple-100 text-purple-800 rounded-lg flex items-center justify-center text-sm font-medium">
+                      {i + 1}
                     </div>
                     <div className="flex-1">
                       <input
                         value={w.percent}
-                        onChange={e => updateWinner(i, 'percent', e.target.value)}
+                        onChange={(e) => updateWinner(i, e.target.value)}
                         type="number"
                         min={0}
                         max={100}
@@ -471,20 +427,6 @@ export default function ContestCreate() {
                   />
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Private Description
-                </label>
-                <textarea
-                  value={privateDesc}
-                  onChange={(e) => setPrivateDesc(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  rows={2}
-                  placeholder="Private info for admins or players"
-                />
-              </div>
-
             </div>
 
             <div className="flex space-x-3">
@@ -501,7 +443,7 @@ export default function ContestCreate() {
                 className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 disabled={totalPercent !== 100}
               >
-                {isEditMode ? "Update Contest" : "Create Contest"}
+                Create Contest
               </button>
             </div>
           </form>

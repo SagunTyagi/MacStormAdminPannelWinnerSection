@@ -11,7 +11,8 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const vapidKey = "BCI-Cu-Pg0FnXdyxDeR6LHozhMO_5Ft5I5VIi7bI8ofJhOrHMffJgNbPnHczr1Rtlu9rqVKalQRkQJ5pC6qsc6c";
+  const vapidKey =
+    "BCI-Cu-Pg0FnXdyxDeR6LHozhMO_5Ft5I5VIi7bI8ofJhOrHMffJgNbPnHczr1Rtlu9rqVKalQRkQJ5pC6qsc6c";
 
   const registerFcmToken = async (authToken) => {
     try {
@@ -84,7 +85,8 @@ function Login() {
         navigate("/login");
       }
     } catch (err) {
-      const message = err.response?.data?.message || "Login failed. Please try again.";
+      const message =
+        err.response?.data?.message || "Login failed. Please try again.";
       alert(message);
     } finally {
       setLoading(false);
@@ -98,7 +100,9 @@ function Login() {
       <div className="flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-xl space-y-8 p-10 rounded-lg shadow-lg dark:bg-zinc-800 bg-white">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Welcome Back</h1>
+            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+              Welcome Back
+            </h1>
             <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
               Please sign in to continue
             </p>
@@ -107,7 +111,10 @@ function Login() {
           <form className="space-y-6" onSubmit={validateForm} noValidate>
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              >
                 Email address
               </label>
               <input
@@ -116,16 +123,23 @@ function Login() {
                 name="email"
                 placeholder="you@example.com"
                 className={`mt-1 w-full px-4 py-2 rounded-lg bg-neutral-50 dark:bg-zinc-800 border ${
-                  emailError ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
+                  emailError
+                    ? "border-red-500"
+                    : "border-zinc-300 dark:border-zinc-700"
                 } text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
                 required
               />
-              {emailError && <p className="text-sm text-red-500 mt-1">{emailError}</p>}
+              {emailError && (
+                <p className="text-sm text-red-500 mt-1">{emailError}</p>
+              )}
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+              >
                 Password
               </label>
               <div className="relative">
@@ -135,7 +149,9 @@ function Login() {
                   name="password"
                   placeholder="••••••••"
                   className={`mt-1 w-full px-4 py-2 pr-10 rounded-lg bg-neutral-50 dark:bg-zinc-800 border ${
-                    passwordError ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
+                    passwordError
+                      ? "border-red-500"
+                      : "border-zinc-300 dark:border-zinc-700"
                   } text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
                   required
                 />
@@ -147,12 +163,17 @@ function Login() {
                   {passwordVisible ? "Hide" : "Show"}
                 </button>
               </div>
-              {passwordError && <p className="text-sm text-red-500 mt-1">{passwordError}</p>}
+              {passwordError && (
+                <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+              )}
             </div>
 
             {/* Forgot Password */}
             <div className="flex justify-end text-sm">
-              <Link to="/forgot-password" className="text-zinc-600 dark:text-zinc-400 hover:underline">
+              <Link
+                to="/forgot-password"
+                className="text-zinc-600 dark:text-zinc-400 hover:underline"
+              >
                 Forgot password?
               </Link>
             </div>
@@ -168,7 +189,10 @@ function Login() {
             {/* Sign Up */}
             <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
               Don’t have an account?{" "}
-              <Link to="/register" className="text-zinc-800 dark:text-white font-medium hover:underline">
+              <Link
+                to="/register"
+                className="text-zinc-800 dark:text-white font-medium hover:underline"
+              >
                 Sign up
               </Link>
             </p>
