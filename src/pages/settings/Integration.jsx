@@ -46,7 +46,7 @@ const Integration = () => {
   useEffect(() => {
     const fetchIntegrationSettings = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/integrations")
+        const res = await axios.get("https://macstormbattle-backend.onrender.com/api/integrations")
         const settings = res.data.settings
 
         const newFormData = {
@@ -139,7 +139,7 @@ const Integration = () => {
     const payload = { settings }
 
     try {
-      const res = await axios.post("http://localhost:5000/api/integrations", payload, {
+      const res = await axios.post("https://macstormbattle-backend.onrender.com/api/integrations", payload, {
         headers: {
           'Content-Type': 'application/json',
         },

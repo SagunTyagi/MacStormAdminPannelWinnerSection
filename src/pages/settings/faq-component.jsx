@@ -42,7 +42,7 @@ const FAQComponent = () => {
   useEffect(() => {
     const fetchFAQs = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/faqs")
+        const res = await axios.get("https://macstormbattle-backend.onrender.com/api/faqs")
         setFaqs(res.data)
       } catch (err) {
         console.error("Error fetching FAQs:", err)
@@ -59,7 +59,7 @@ const FAQComponent = () => {
     const { question, answer } = newFAQ
     if (question.trim() && answer.trim()) {
       try {
-        const res = await axios.post("http://localhost:5000/api/faqs", {
+        const res = await axios.post("https://macstormbattle-backend.onrender.com/api/faqs", {
           question: question.trim(),
           answer: answer.trim(),
         })
@@ -76,7 +76,7 @@ const FAQComponent = () => {
   // Delete FAQ
   const handleDeleteFAQ = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/faqs/${id}`)
+      await axios.delete(`https://macstormbattle-backend.onrender.com/api/faqs/${id}`)
       setFaqs(faqs.filter((faq) => faq.id !== id))
     } catch (err) {
       console.error("Error deleting FAQ:", err)
@@ -89,7 +89,7 @@ const FAQComponent = () => {
     const { id, question, answer } = editFAQ
     if (question.trim() && answer.trim()) {
       try {
-      await axios.put(`http://localhost:5000/api/faqs/${id}`, {
+      await axios.put(`https://macstormbattle-backend.onrender.com/api/faqs/${id}`, {
         question: question.trim(),
         answer: answer.trim()
       })

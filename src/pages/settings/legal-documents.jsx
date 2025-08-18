@@ -54,7 +54,7 @@ const LegalDocuments = () => {
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/api/legal-docs")
+        const res = await axios.get("https://macstormbattle-backend.onrender.com/api/legal-docs")
         const mappedDocs = res.data.map(doc => ({
           ...doc,
           lastUpdated: new Date(doc.updatedAt).toLocaleString(),
@@ -95,7 +95,7 @@ const LegalDocuments = () => {
       }
 
       const res = await axios.put(
-        `http://localhost:5000/api/legal-docs/${selectedDocument.id}`,
+        `https://macstormbattle-backend.onrender.com/api/legal-docs/${selectedDocument.id}`,
         updateData
       )
 
@@ -157,7 +157,7 @@ const LegalDocuments = () => {
 
   const handleAddDocumentSubmit = async () => {
     try {
-      const res = await axios.post("http://localhost:5000/api/legal-docs", newDocData)
+      const res = await axios.post("https://macstormbattle-backend.onrender.com/api/legal-docs", newDocData)
       const newDoc = {
         ...res.data,
         lastUpdated: new Date().toLocaleString(),
@@ -186,7 +186,7 @@ const LegalDocuments = () => {
     setDeleteLoading(prev => ({ ...prev, [documentToDelete.id]: true }))
 
     try {
-      await axios.delete(`http://localhost:5000/api/legal-docs/${documentToDelete.id}`)
+      await axios.delete(`https://macstormbattle-backend.onrender.com/api/legal-docs/${documentToDelete.id}`)
       
       // Remove the document from local state
       setDocuments(prev => prev.filter(doc => doc.id !== documentToDelete.id))

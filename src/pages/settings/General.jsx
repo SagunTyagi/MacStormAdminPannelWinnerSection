@@ -56,7 +56,7 @@ export default function General() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/general-settings")
+        const response = await axios.get("https://macstormbattle-backend.onrender.com/api/general-settings")
         const data = response.data
 
         setFormData({
@@ -103,7 +103,7 @@ export default function General() {
       }
 
       // Make POST request to save settings
-      const response = await axios.post("http://localhost:5000/api/general-settings", postData, {
+      const response = await axios.post("https://macstormbattle-backend.onrender.com/api/general-settings", postData, {
         headers: {
           'Content-Type': 'application/json',
         },

@@ -21,10 +21,10 @@ function DailyDuels() {
   useEffect(() => {
     const fetchDuels = async () => {
       try {
-        const pendingRes = await axios.get("http://localhost:5000/api/duels?status=pending", {
+        const pendingRes = await axios.get("https://macstormbattle-backend.onrender.com/api/duels?status=pending", {
           headers: { Authorization: `Bearer ${token}` }
         });
-        const verifiedRes = await axios.get("http://localhost:5000/api/duels?status=verified", {
+        const verifiedRes = await axios.get("https://macstormbattle-backend.onrender.com/api/duels?status=verified", {
           headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -112,7 +112,7 @@ const renderCard = (duel) => {
   const handleVerify = async () => {
     setLoading(true);
     try {
-      const res = await axios.put(`http://localhost:5000/api/duels/${duel.id}`, 
+      const res = await axios.put(`https://macstormbattle-backend.onrender.com/api/duels/${duel.id}`, 
         { status: "verified" },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -190,7 +190,7 @@ const renderCard = (duel) => {
           className="px-3 py-1 text-sm bg-red-500 text-white rounded"
           onClick={async () => {
             if (!window.confirm("Delete this duel?")) return;
-            await axios.delete(`http://localhost:5000/api/duels/${duel.id}`, {
+            await axios.delete(`https://macstormbattle-backend.onrender.com/api/duels/${duel.id}`, {
               headers: { Authorization: `Bearer ${token}` }
             });
             toast.success("Duel deleted!");

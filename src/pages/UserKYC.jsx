@@ -41,7 +41,7 @@ export default function UserKYC() {
   useEffect(() => {
     const fetchUsersAndTransactions = async () => {
       try {
-        const usersResponse = await fetch("http://localhost:5000/api/auth/user", {
+        const usersResponse = await fetch("https://macstormbattle-backend.onrender.com/api/auth/user", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -61,7 +61,7 @@ export default function UserKYC() {
 
           try {
             const depositResponse = await fetch(
-              `http://localhost:5000/api/user/deposit/${apiUser.member_id}`,
+              `https://macstormbattle-backend.onrender.com/api/user/deposit/${apiUser.member_id}`,
               {
                 method: "GET",
                 headers: {
@@ -89,7 +89,7 @@ export default function UserKYC() {
             // For now, we'll keep withdrawals at 0 or add placeholder logic if available
             // Example:
             const withdrawalResponse = await fetch(
-              `http://localhost:5000/api/user/withdraw/${apiUser.member_id}`,
+              `https://macstormbattle-backend.onrender.com/api/user/withdraw/${apiUser.member_id}`,
               {
                 method: "GET",
                 headers: {

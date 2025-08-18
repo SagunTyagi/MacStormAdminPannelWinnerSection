@@ -98,7 +98,7 @@ const SocialMedia = () => {
     const fetchSocialMediaLinks = async () => {
       try {
         setIsLoading(true)
-        const response = await axios.get("http://localhost:5000/api/socialmedialinks")
+        const response = await axios.get("https://macstormbattle-backend.onrender.com/api/socialmedialinks")
         
         // Transform the API response to match our formData structure
         const linksData = {}
@@ -203,7 +203,7 @@ const SocialMedia = () => {
     try {
       // Update each platform's link using PUT API
       const updatePromises = Object.entries(formData).map(([platform, url]) =>
-        axios.put(`http://localhost:5000/api/socialmedialinks/${platform}`, {
+        axios.put(`https://macstormbattle-backend.onrender.com/api/socialmedialinks/${platform}`, {
           url: url.trim(),
           platform: platform
         })

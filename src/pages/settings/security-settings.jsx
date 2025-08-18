@@ -20,7 +20,7 @@ const SecuritySettings = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/security-settings")
+        const response = await axios.get("https://macstormbattle-backend.onrender.com/api/security-settings")
         // Assuming you want to use the settings with id === 1
         const adminSettings = response.data.find((item) => item.id === 1)
         setSettings(adminSettings)
@@ -51,7 +51,7 @@ const SecuritySettings = () => {
         requireSpecialChars: updatedSettings.requireSpecialChars
       }
 
-      const response = await axios.post("http://localhost:5000/api/security-settings", settingsToSave)
+      const response = await axios.post("https://macstormbattle-backend.onrender.com/api/security-settings", settingsToSave)
 
       setSettings(updatedSettings)
       setNewIpRange("")
@@ -82,7 +82,7 @@ const SecuritySettings = () => {
         requireSpecialChars: settings.requireSpecialChars
       }
 
-      await axios.post("http://localhost:5000/api/security-settings", settingsToSave)
+      await axios.post("https://macstormbattle-backend.onrender.com/api/security-settings", settingsToSave)
 
       setShowSuccess(true)
       setTimeout(() => setShowSuccess(false), 3000)
