@@ -53,6 +53,7 @@ import DuoContest from "./pages/DuoContest";
 import Kyc from "./pages/Kyc";
 
 
+
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();
@@ -186,6 +187,7 @@ function App() {
           <Route path="/duo/result/:id" element={<DeclareResult />} />
           <Route path="/duoContests" element={<DuoContest />} />
           <Route path="/kyc" element={<Kyc />} />
+
           {/* Fallback Route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
