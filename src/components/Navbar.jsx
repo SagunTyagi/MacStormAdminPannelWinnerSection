@@ -1,8 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Menu, User, Edit2, Save, X,LogOut } from "lucide-react";
+import { Menu, User, Edit2, Save, X } from "lucide-react";
 import DarkModeToggle from "./DarkModeToggle";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+
+const getInitials = (first, last) => {
+  const name = `${first || ""} ${last || ""}`.trim();
+  if (!name) return "";
+  return name
+    .split(" ")
+    .map((n) => n[0]?.toUpperCase())
+    .join("")
+    .slice(0, 2);
+};
+
 
 const ProfileModal = ({
   open,
@@ -14,16 +25,23 @@ const ProfileModal = ({
 }) => {
   if (!open) return null;
 
+
+
   const onField = (key) => (e) =>
     setProfileData((p) => ({ ...p, [key]: e.target.value }));
 
   const handleImageChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (ev) =>
-      setProfileData((p) => ({ ...p, profile_image: ev.target.result }));
-    reader.readAsDataURL(file);
+
+    // Generate a preview URL (for UI display only)
+    const previewUrl = URL.createObjectURL(file);
+
+    setProfileData((p) => ({
+      ...p,
+      profile_image: file,  // Keep the File object for upload
+      profile_image_preview: previewUrl,  // Temporary URL for UI
+    }));
   };
 
   return (
@@ -39,11 +57,27 @@ const ProfileModal = ({
 
         <div className="flex flex-col items-center mb-6">
           <div className="relative group">
-            <img
-              src={profileData.profile_image || "https://i.pravatar.cc/80"}
-              alt="Profile"
-              className="w-20 h-20 rounded-full border-2 border-zinc-300 dark:border-zinc-700 object-cover shadow group-hover:opacity-80 transition"
-            />
+            {profileData.profile_image ? (
+              <img
+                src={profileData.profile_image}
+
+                alt="Avatar"
+                className="w-20 h-20 rounded-full border object-cover"
+              />
+
+            ) : (
+              <div
+                className="w-20 h-20 rounded-full border bg-pink-200 text-white flex items-center justify-center font-bold text-5xl"
+              >
+                {getInitials(profileData.first_name, profileData.last_name)}
+              </div>
+
+            )}
+
+
+
+
+
             <label className="absolute bottom-0 right-0 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-200 rounded-full p-1 cursor-pointer shadow group-hover:scale-105 transition">
               <Edit2 className="w-4 h-4" />
               <input
@@ -104,6 +138,8 @@ const ProfileModal = ({
               onChange={onField("mobile_no")}
             />
           </div>
+
+
 
           <div className="flex items-center gap-2">
             <label className="w-28 text-sm text-zinc-700 dark:text-zinc-200">
@@ -180,9 +216,10 @@ const Navbar = ({ onToggleSidebar }) => {
         last_name: data.last_name || "",
         email_id: data.email_id || "",
         mobile_no: data.mobile_no || "",
-        profile_image: data.profile_image || "",
+        profile_image: data.profile_image || "",   // ✅ just use what backend gives
         newPassword: "",
       });
+
     } catch (e) {
       console.error(e);
       toast.error("Could not load profile");
@@ -194,34 +231,48 @@ const Navbar = ({ onToggleSidebar }) => {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("No token found");
 
-      const body = {
-        first_name: profileData.first_name,
-        last_name: profileData.last_name,
-        email_id: profileData.email_id,
-        mobile_no: profileData.mobile_no,
-        profile_image: profileData.profile_image || null,
-      };
-      if (profileData.newPassword) {
-        body.newPassword = profileData.newPassword;
+      let imageUrl = profileData.profile_image; // Existing URL (if no new file)
+
+      // If a new file is selected, upload to S3 first
+      if (profileData.profile_image instanceof File) {
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", profileData.profile_image);
+
+        const uploadRes = await fetch("http://localhost:5000/api/admin/profile/me", {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: uploadFormData,
+        });
+
+        if (!uploadRes.ok) throw new Error("Failed to upload image");
+        const { url } = await uploadRes.json();
+        imageUrl = url; // New S3 URL
       }
 
+      // Now save profile with the updated URL
       const res = await fetch("http://localhost:5000/api/admin/profile/me", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          first_name: profileData.first_name,
+          last_name: profileData.last_name,
+          email_id: profileData.email_id,
+          mobile_no: profileData.mobile_no,
+          profile_image: imageUrl, // S3 URL (or existing URL)
+          newPassword: profileData.newPassword || undefined,
+        }),
       });
 
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.message || "Save failed");
-
-      toast.success("Profile updated");
+      if (!res.ok) throw new Error("Failed to save profile");
+      toast.success("Profile updated!");
       setProfileOpen(false);
     } catch (e) {
-      console.error(e);
-      toast.error(e.message || "Save failed");
+      toast.error(e.message || "Failed to save profile");
     } finally {
       setSaving(false);
     }
@@ -265,12 +316,24 @@ const Navbar = ({ onToggleSidebar }) => {
         <DarkModeToggle />
         <span className="text-sm text-zinc-600 dark:text-zinc-300">Admin</span>
 
-        <img
-          src={profileData.profile_image || "https://i.pravatar.cc/40"}
-          alt="Avatar"
-          className="w-8 h-8 rounded-full border cursor-pointer"
-          onClick={() => setDropdownOpen((p) => !p)}
-        />
+        {profileData.profile_image ? (
+          <img
+            src={profileData.profile_image}
+            alt="Avatar"
+            className="w-8 h-8 rounded-full border cursor-pointer object-cover"
+            onClick={() => setDropdownOpen((p) => !p)}
+          />
+
+        ) : (
+          <div
+            onClick={() => setDropdownOpen((p) => !p)}
+            className="w-8 h-8 rounded-full border cursor-pointer bg-pink-200 text-white flex items-center justify-center font-bold text-xl"
+          >
+            {getInitials(profileData.first_name, profileData.last_name)}
+          </div>
+        )}
+
+
 
         {dropdownOpen && (
           <div className="absolute right-0 top-12 mt-2 w-44 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg z-50">
@@ -309,13 +372,6 @@ const Navbar = ({ onToggleSidebar }) => {
           onSave={saveProfile}
           saving={saving}
         />
-        <button
-          onClick={handleLogout}
-          title="Logout"
-          className="p-2 rounded hover:bg-red-100 dark:hover:bg-red-600"
-        >
-          <LogOut className="w-5 h-5 text-red-600 dark:text-white" />
-        </button>
       </div>
     </header>
   );

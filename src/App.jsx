@@ -5,7 +5,10 @@ import { getToken } from "firebase/messaging";
 import { ToastContainer } from "react-toastify";
 // Firebase
 import { messaging } from "./firebase";
+
 import FirebaseNotificationHandler from "./components/FirebaseNotificationHandler";
+import WithdrawRequests from "./pages/WithdrawRequests";
+
 
 // Layout
 import Sidebar from "./components/Sidebar";
@@ -58,6 +61,9 @@ import SquadContestsList from "./pages/SquadContestList";
 import SquadContest from "./pages/SquadContest";
 import SquadContestDeclareResult from "./pages/SquadContestDeclareResult";
 import ContestResultDeclaration from "./pages/content-Result";
+import NotificationCenter from './pages/NotificationCenter'
+// Auth util (you must create this hook)
+// import useAuth from "./hooks/useAuth";
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -66,67 +72,6 @@ function App() {
   const isAuthPage = authRoutes.includes(location.pathname);
 const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  useEffect(() => {
-    const registerFcm = async () => {
-      try {
-        if (!("serviceWorker" in navigator)) {
-          console.error("Service Worker not supported in this browser");
-          return;
-        }
-
-        let registration = await navigator.serviceWorker.getRegistration(
-          "/firebase-messaging-sw.js"
-        );
-
-        if (!registration) {
-          registration = await navigator.serviceWorker.register(
-            "/firebase-messaging-sw.js",
-            {
-              scope: "/",
-              type: "module",
-            }
-          );
-
-          await new Promise((resolve) => {
-            if (registration.active) return resolve();
-            registration.addEventListener("updatefound", () => {
-              const installingWorker = registration.installing;
-              installingWorker.addEventListener("statechange", () => {
-                if (installingWorker.state === "activated") {
-                  resolve();
-                }
-              });
-            });
-          });
-        }
-
-        const permission = await Notification.requestPermission();
-        if (permission !== "granted") {
-          console.warn("Notification permission not granted");
-          return;
-        }
-
-        const currentToken = await getToken(messaging, {
-          vapidKey:
-            "BCI-Cu-Pg0FnXdyxDeR6LHozhMO_5Ft5I5VIi7bI8ofJhOrHMffJgNbPnHczr1Rtlu9rqVKalQRkQJ5pC6qsc6c",
-          serviceWorkerRegistration: registration,
-        });
-
-        if (currentToken) {
-          console.log("FCM Token:", currentToken);
-          localStorage.setItem("fcmToken", currentToken);
-        } else {
-          console.warn("No registration token available");
-        }
-      } catch (error) {
-        console.error("FCM registration error:", error);
-      }
-    };
-
-    registerFcm();
-  }, []);
-
-  const authToken = localStorage.getItem("authToken");
 
   if (isAuthPage) {
     return (
@@ -184,29 +129,9 @@ const [isLoggedIn, setIsLoggedIn] = useState(false);
           <Route path="/reportss" element={<Reportss />} />
           <Route path="/admin/duels/createduel" element={<CreateDuel />} />
           <Route path="/admin/images" element={<ImageGallery />} />
-          <Route path="/contest-create" element={<Contestcreate />} />
-          <Route path="/contest-list" element={<Contestlist />} />
-          <Route path="/contest-details/:id" element={<ContestDetail />} />
-          <Route path="/contest-result/:id" element={<contestResult />} />
-          <Route path="/duo/create" element={<DuoContestForm />} />
-          <Route path="/duo/result/:id" element={<DeclareResult />} />
-          <Route path="/duoContests" element={<DuoContest />} />
-          <Route path="/kyc" element={<Kyc />} />
-          <Route path="/solo/create" element={<Contestcreate />} />
-          <Route path="/solo" element={<Contestlist />} />
-          <Route path="/solo/:id" element={<ContestDetail />} />
-          <Route path="/solo/:id/declare-result" element={<ContestResultDeclaration />} />
-
-          {/* squad contest */}
-          <Route path="/squad/" element={<SquadContestsList />} />
-          <Route path="/squad/create" element={<SquadContestForm />} />
-          <Route path="/squad/:id" element={<SquadContest />} />
-          <Route
-            path="/squad/:id/declare-result"
-            element={<SquadContestDeclareResult />}
-          />
-
-          {/* Fallback Route */}
+          <Route path="/admin/withdrawals" element={<WithdrawRequests />} />
+          <Route path="/admin/notifications" element={<NotificationCenter />} />
+          {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

@@ -9,7 +9,7 @@ function CreateDuel() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const duelId = params.get("id"); // If editing
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MDI1MzE0LCJleHAiOjE3NTQxMTE3MTR9.yoJG84eTP9MlHKF9Yk-P1-CFVsvP_8-_tjvIeYDcprA";
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MzY5NzkwLCJleHAiOjE3NTU2NjU3OTB9.B6xvX5qEONmozHu-3pmDu7e0nzBzmMj89AtQ60MM9-I";
 
   const [form, setForm] = useState({
     title: "",
@@ -25,7 +25,7 @@ function CreateDuel() {
   // ✅ If editing, fetch duel details
   useEffect(() => {
     if (duelId) {
-      axios.get(`https://macstormbattle-backend.onrender.com/api/duels/${duelId}`)
+      axios.get(`http://localhost:5000/api/duels/${duelId}`)
         .then(res => {
           const d = res.data;
           setForm({
@@ -61,7 +61,7 @@ function CreateDuel() {
       data.set("players", `0/${form.players}`);
 
       if (duelId) {
-      await axios.put(`https://macstormbattle-backend.onrender.com/api/duels/${duelId}`, data, {
+      await axios.put(`http://localhost:5000/api/duels/${duelId}`, data, {
         headers: { 
           "Content-Type": "multipart/form-data",
           "Authorization": `Bearer ${token}`
@@ -70,7 +70,7 @@ function CreateDuel() {
 
         toast.success(" Duel updated!");
       } else {
-      await axios.post("https://macstormbattle-backend.onrender.com/api/duels", data, {
+      await axios.post("http://localhost:5000/api/duels", data, {
         headers: { 
           "Content-Type": "multipart/form-data",
           "Authorization": `Bearer ${token}`

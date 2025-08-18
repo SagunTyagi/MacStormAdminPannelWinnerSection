@@ -15,7 +15,7 @@ function Ads() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editingId, setEditingId] = useState(null);
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MDI1MzE0LCJleHAiOjE3NTQxMTE3MTR9.yoJG84eTP9MlHKF9Yk-P1-CFVsvP_8-_tjvIeYDcprA";
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MzY5NzkwLCJleHAiOjE3NTU2NjU3OTB9.B6xvX5qEONmozHu-3pmDu7e0nzBzmMj89AtQ60MM9-I";
 
 
   const fetchAds = async () => {

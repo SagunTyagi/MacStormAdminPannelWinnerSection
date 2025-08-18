@@ -3,13 +3,12 @@ import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage } from 'firebase/messaging';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAelDmc3PQFwz6OQrkZtP_INRnpDystPhE",
-  authDomain: "notificationsystem-490ea.firebaseapp.com",
-  projectId: "notificationsystem-490ea",
-  storageBucket: "notificationsystem-490ea.firebasestorage.app",
-  messagingSenderId: "161365633953",
-  appId: "1:161365633953:web:a8ead35a97c46f90c5f9e0",
-  measurementId: "G-Y7WWFJ80Y3"
+  apiKey: "AIzaSyBTJ0rnTJhK-ksJNwbtgAlw7oZZ7ac9q0c",
+  authDomain: "battelroyale-d9124.firebaseapp.com",
+  projectId: "battelroyale-d9124",
+  storageBucket: "battelroyale-d9124.firebasestorage.app",
+  messagingSenderId: "1007436304851",
+  appId: "1:1007436304851:web:a1bff78525948cfa6fdf26"
 };
 
 
