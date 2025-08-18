@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axios";
 
@@ -51,8 +52,13 @@ function Register() {
 
     try {
       setLoading(true);
-      const response = await axiosInstance.post("/auth/admin/register", formData);
-      console.log("✅ Registration successful:", response.data);
+      const response = await axios.post(
+        "https://macstormbattle-backend.onrender.com/api/auth/admin/register",
+        formData
+  
+      );
+      console.log("Registration successful:", response.data);
+      // Navigate to login or show success message
       navigate("/login");
     } catch (error) {
       const message = error.response?.data?.message || "Registration failed. Try again.";

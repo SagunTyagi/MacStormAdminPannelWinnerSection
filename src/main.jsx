@@ -6,14 +6,23 @@ import App from "./App.jsx";
 import ThemeProvider from "./contexts/ThemeProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  //  <StrictMode>
     <ThemeProvider>
       <BrowserRouter>
         <App />
       </BrowserRouter>
     </ThemeProvider>
-  </StrictMode>
-);
+  
+  
+  
+  
+  
+  
+  
+  
+  
+//    </StrictMode>
+ );
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./firebase-messaging-sw.js')

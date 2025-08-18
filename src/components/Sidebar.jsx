@@ -80,7 +80,12 @@ const menuItems = [
     label: "Voting Centre",
     icon: ThumbsUp,
     submenuKey: "voting",
-    subItems: [{ label: "All Votes", path: "/voting-centre" }],
+    subItems: [
+      { label: "All Votes", path: "/voting-centre" },
+      // { label: "User Settings", path: "/user-settings" },
+      // { label: "User KYC", path: "/user-kyc" },
+      // { label: "User Teams", path: "/user-teams" },
+    ],
   },
   {
     label: "Games",

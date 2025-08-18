@@ -1,3 +1,4 @@
+import { Routes, Route, useLocation, Navigate ,useNavigate} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { getToken } from "firebase/messaging";
@@ -132,14 +133,8 @@ function App() {
         <FirebaseNotificationHandler />
         <ToastContainer />
         <Routes>
-          <Route
-            path="/login"
-            element={authToken ? <Navigate to="/" /> : <Login />}
-          />
-          <Route
-            path="/register"
-            element={authToken ? <Navigate to="/" /> : <Register />}
-          />
+          <Route path="/login" element={<Login setIsLoggedIn={setIsLoggedIn} />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>
       </div>
@@ -150,7 +145,7 @@ function App() {
     <div className="flex min-h-screen bg-neutral-200 dark:bg-zinc-500 transition-colors duration-300 w-full">
       {isSidebarOpen && <Sidebar />}
       <div className="flex-1 flex flex-col">
-        <Navbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+        <Navbar onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} setIsLoggedIn={setIsLoggedIn} />
         <FirebaseNotificationHandler />
         <ToastContainer />
 

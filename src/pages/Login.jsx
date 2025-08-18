@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axiosInstance from "../utils/axios";
+// import axiosInstance from "../utils/axios";
+import axios from "axios";
 import { getToken } from "firebase/messaging";
 import { messaging } from "../firebase";
 
-function Login() {
+function Login({ setIsLoggedIn }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -19,8 +20,8 @@ function Login() {
       const currentToken = await getToken(messaging, { vapidKey });
 
       if (currentToken) {
-        await axiosInstance.post(
-          "/api/save-token",
+        await axios.post(
+          "https://macstormbattle-backend.onrender.com/api/save-token",
           { token: currentToken },
           {
             headers: {
@@ -62,12 +63,14 @@ function Login() {
 
     try {
       setLoading(true);
-      const response = await axiosInstance.post("/auth/admin/login", {
+      const response = await axios.post("https://macstormbattle-backend.onrender.com/api/auth/admin/login", {
         email,
         password,
       });
-
-      const { token: authToken, user } = response.data;
+      const authToken = response.data.token;
+      localStorage.setItem("authToken", authToken);
+      await registerFcmToken(authToken);
+      setIsLoggedIn(true); // <-- update auth state
 
       // Store tokens and user info
       localStorage.setItem("authToken", authToken);
