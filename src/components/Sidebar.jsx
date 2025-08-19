@@ -244,7 +244,7 @@ const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 bg-green-50 dark:bg-zinc-800 text-zinc-800 dark:text-white border-r dark:border-zinc-700 min-h-screen">
+    <aside className="  w-64 bg-green-50 dark:bg-zinc-800 text-zinc-800 dark:text-white border-r dark:border-zinc-700 min-h-screen">
       <div className="p-4 text-2xl font-bold">
         Battle <span className="text-green-600">Nation</span>{" "}
         <span className="text-green-800">Admin</span>

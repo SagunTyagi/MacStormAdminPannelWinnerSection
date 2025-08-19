@@ -201,6 +201,7 @@ import SquadContest from "./pages/SquadContest";
 import SquadContestDeclareResult from "./pages/SquadContestDeclareResult";
 import ContestResultDeclaration from "./pages/content-Result";
 
+
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const location = useLocation();

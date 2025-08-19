@@ -445,9 +445,22 @@ export default function DuoContestsList() {
     loadContests()
   }, [])
 
+    const statusPriority = {
+    live: 1,
+    upcoming: 2,
+    completed: 3,
+    cancelled: 4
+  }
+
   const filteredContests = filter === "All" 
-    ? contests 
-    : contests.filter((contest) => contest.status?.toLowerCase() === filter.toLowerCase())
+  ? [...contests].sort((a, b) => {
+      const aPriority = statusPriority[a.status?.toLowerCase()] || 99
+      const bPriority = statusPriority[b.status?.toLowerCase()] || 99
+      return aPriority - bPriority
+    })
+  : contests.filter(
+      (contest) => contest.status?.toLowerCase() === filter.toLowerCase()
+    )
 
   const handleCardClick = (contest) => {
     setSelectedContest(contest)
