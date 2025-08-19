@@ -315,7 +315,7 @@ function UserSettings() {
   const [error, setError] = useState(null);
   const itemsPerPage = 5;
 
-  const authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MjM5MDEwLCJleHAiOjE3NTU1MzUwMTB9.lCno1q1Kaf286P6ZQvSKw-CTgU3I-q_Hus2siePX-4g";
+  const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
     const fetchUsers = async () => {

@@ -9,8 +9,7 @@ function CreateDuel() {
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const duelId = params.get("id"); // If editing
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MzY5NzkwLCJleHAiOjE3NTU2NjU3OTB9.B6xvX5qEONmozHu-3pmDu7e0nzBzmMj89AtQ60MM9-I";
-
+  const token = localStorage.getItem("authToken") || "your_default_token_here"; // Replace with your actual token or logic to get it
   const [form, setForm] = useState({
     title: "",
     entryFee: "",

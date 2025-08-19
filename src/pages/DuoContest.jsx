@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom"
 
 // API configuration
 const API_BASE_URL = "https://macstormbattle-backend.onrender.com/api"
-const AUTH_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0OTgxNDk5LCJleHAiOjE3NTYyNzc0OTl9.xPlZ7KmQNNYAux0BzumgoQ1GI3ESdvgMDXMfRx6F53Q"
+const AUTH_TOKEN = localStorage.getItem("authToken") || "your_default_token_here" // Replace with your actual token or logic to get it
 
 // API helper functions
 const apiRequest = async (url, options = {}) => {

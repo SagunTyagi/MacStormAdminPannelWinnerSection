@@ -11,7 +11,7 @@ function DailyDuels() {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const navigate = useNavigate();
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MDI1MzE0LCJleHAiOjE3NTQxMTE3MTR9.yoJG84eTP9MlHKF9Yk-P1-CFVsvP_8-_tjvIeYDcprA";
+  const token = localStorage.getItem("authToken") || "your_default_token_here"; // Replace with your actual token or logic to get it
   const completedToday = duels.verified.filter((d) => {
     const date = d.completedAt ? new Date(d.completedAt) : null;
     if (!date) return false;

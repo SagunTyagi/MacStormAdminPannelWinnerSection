@@ -141,9 +141,7 @@ export default function UserReportsCenter() {
   // API Base URLs
   const API_BASE_URL = "https://macstormbattle-backend.onrender.com/api/reports"
   const ADMIN_API_URL = "https://macstormbattle-backend.onrender.com/api/auth/admin/getadmins" // Admin API URL
-  const ADMIN_AUTH_TOKEN =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MjgzNzg4LCJleHAiOjE3NTU1Nzk3ODh9.zn94eRCuW1kQolEkM47MBG8NnNwiYQfJXzXAPNxcAlQ" // Provided token
-
+  const ADMIN_AUTH_TOKEN = localStorage.getItem("authToken") // Get auth token from local storage
   // Calculate category counts from reports
   const calculateCategoryCounts = (reports) => {
     const counts = { all: reports.length }

@@ -43,7 +43,7 @@ export default function UserKYC() {
     { id: "admin2", name: "Admin Two" },
     { id: "admin3", name: "Admin Three" },
   ];
-  const authToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MzY5NzkwLCJleHAiOjE3NTU2NjU3OTB9.B6xvX5qEONmozHu-3pmDu7e0nzBzmMj89AtQ60MM9-I";
+  const authToken = localStorage.getItem("authToken");
 
   useEffect(() => {
     const fetchUsersAndTransactions = async () => {

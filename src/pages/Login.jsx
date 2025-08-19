@@ -1,9 +1,218 @@
+// import React, { useState } from "react";
+// import { Link, useNavigate } from "react-router-dom";
+// // import axiosInstance from "../utils/axios";
+// import axios from "axios";
+// import { getToken } from "firebase/messaging";
+// import { messaging } from "../firebase";
+
+// function Login({ setIsLoggedIn }) {
+//   const [passwordVisible, setPasswordVisible] = useState(false);
+//   const [emailError, setEmailError] = useState("");
+//   const [passwordError, setPasswordError] = useState("");
+//   const [loading, setLoading] = useState(false);
+//   const navigate = useNavigate();
+
+//   const vapidKey =
+//     "BCI-Cu-Pg0FnXdyxDeR6LHozhMO_5Ft5I5VIi7bI8ofJhOrHMffJgNbPnHczr1Rtlu9rqVKalQRkQJ5pC6qsc6c";
+
+//   const registerFcmToken = async (authToken) => {
+//     try {
+//       const currentToken = await getToken(messaging, { vapidKey });
+
+//       if (currentToken) {
+//         await axios.post(
+//           "https://macstormbattle-backend.onrender.com/api/save-token",
+//           { token: currentToken },
+//           {
+//             headers: {
+//               Authorization: `Bearer ${authToken}`,
+//             },
+//           }
+//         );
+//         console.log("✅ FCM token registered:", currentToken);
+//       } else {
+//         console.warn("⚠️ No FCM token available.");
+//       }
+//     } catch (error) {
+//       console.error("❌ Error registering FCM token:", error);
+//     }
+//   };
+
+//   const validateForm = async (e) => {
+//     e.preventDefault();
+//     const email = e.target.email.value.trim();
+//     const password = e.target.password.value.trim();
+
+//     let valid = true;
+
+//     if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+//       setEmailError("Enter a valid email address");
+//       valid = false;
+//     } else {
+//       setEmailError("");
+//     }
+
+//     if (!password || password.length < 6) {
+//       setPasswordError("Password must be at least 6 characters");
+//       valid = false;
+//     } else {
+//       setPasswordError("");
+//     }
+
+//     if (!valid) return;
+
+//     try {
+//       setLoading(true);
+//       const response = await axios.post("https://macstormbattle-backend.onrender.com/api/auth/admin/login", {
+//         email,
+//         password,
+//       });
+//       const authToken = response.data.token;
+//       localStorage.setItem("authToken", authToken);
+//       await registerFcmToken(authToken);
+//       setIsLoggedIn(true); // <-- update auth state
+
+//       // Store tokens and user info
+//       localStorage.setItem("authToken", authToken);
+//       localStorage.setItem("userRole", user.role);
+//       localStorage.setItem("userName", user.name);
+
+//       await registerFcmToken(authToken);
+
+//       // Navigate based on role
+//       if (user.role === "SuperAdmin") {
+//         navigate("/super-admin");
+//       } else if (user.role === "admin") {
+//         navigate("/admin");
+//       } else {
+//         navigate("/login");
+//       }
+//     } catch (err) {
+//       const message =
+//         err.response?.data?.message || "Login failed. Please try again.";
+//       alert(message);
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   if (loading) return <div>Loading...</div>;
+
+//   return (
+//     <section className="min-h-screen flex items-center justify-center">
+//       <div className="flex items-center justify-center p-6 sm:p-12">
+//         <div className="w-full max-w-xl space-y-8 p-10 rounded-lg shadow-lg dark:bg-zinc-800 bg-white">
+//           <div className="text-center">
+//             <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
+//               Welcome Back
+//             </h1>
+//             <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-2">
+//               Please sign in to continue
+//             </p>
+//           </div>
+
+//           <form className="space-y-6" onSubmit={validateForm} noValidate>
+//             {/* Email Field */}
+//             <div>
+//               <label
+//                 htmlFor="email"
+//                 className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+//               >
+//                 Email address
+//               </label>
+//               <input
+//                 type="email"
+//                 id="email"
+//                 name="email"
+//                 placeholder="you@example.com"
+//                 className={`mt-1 w-full px-4 py-2 rounded-lg bg-neutral-50 dark:bg-zinc-800 border ${
+//                   emailError
+//                     ? "border-red-500"
+//                     : "border-zinc-300 dark:border-zinc-700"
+//                 } text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
+//                 required
+//               />
+//               {emailError && (
+//                 <p className="text-sm text-red-500 mt-1">{emailError}</p>
+//               )}
+//             </div>
+
+//             {/* Password Field */}
+//             <div>
+//               <label
+//                 htmlFor="password"
+//                 className="block text-sm font-medium text-zinc-700 dark:text-zinc-300"
+//               >
+//                 Password
+//               </label>
+//               <div className="relative">
+//                 <input
+//                   type={passwordVisible ? "text" : "password"}
+//                   id="password"
+//                   name="password"
+//                   placeholder="••••••••"
+//                   className={`mt-1 w-full px-4 py-2 pr-10 rounded-lg bg-neutral-50 dark:bg-zinc-800 border ${
+//                     passwordError
+//                       ? "border-red-500"
+//                       : "border-zinc-300 dark:border-zinc-700"
+//                   } text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
+//                   required
+//                 />
+//                 <button
+//                   type="button"
+//                   onClick={() => setPasswordVisible((prev) => !prev)}
+//                   className="absolute top-1/2 right-3 transform -translate-y-1/2 text-sm text-zinc-500 dark:text-zinc-300"
+//                 >
+//                   {passwordVisible ? "Hide" : "Show"}
+//                 </button>
+//               </div>
+//               {passwordError && (
+//                 <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+//               )}
+//             </div>
+
+//             {/* Forgot Password */}
+//             <div className="flex justify-end text-sm">
+//               <Link
+//                 to="/forgot-password"
+//                 className="text-zinc-600 dark:text-zinc-400 hover:underline"
+//               >
+//                 Forgot password?
+//               </Link>
+//             </div>
+
+//             {/* Submit Button */}
+//             <button
+//               type="submit"
+//               className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-black font-semibold rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-600"
+//             >
+//               Sign In
+//             </button>
+
+//             {/* Sign Up */}
+//             <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
+//               Don’t have an account?{" "}
+//               <Link
+//                 to="/register"
+//                 className="text-zinc-800 dark:text-white font-medium hover:underline"
+//               >
+//                 Sign up
+//               </Link>
+//             </p>
+//           </form>
+//         </div>
+//       </div>
+//     </section>
+//   );
+// }
+
+// export default Login;
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 // import axiosInstance from "../utils/axios";
 import axios from "axios";
 import { getToken } from "firebase/messaging";
-import { messaging } from "../firebase";
+import { messaging } from "../firebase"; // Adjust if needed
 
 function Login({ setIsLoggedIn }) {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -11,7 +220,6 @@ function Login({ setIsLoggedIn }) {
   const [passwordError, setPasswordError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
   const vapidKey =
     "BCI-Cu-Pg0FnXdyxDeR6LHozhMO_5Ft5I5VIi7bI8ofJhOrHMffJgNbPnHczr1Rtlu9rqVKalQRkQJ5pC6qsc6c";
 
@@ -21,20 +229,20 @@ function Login({ setIsLoggedIn }) {
 
       if (currentToken) {
         await axios.post(
-          "https://macstormbattle-backend.onrender.com/api/save-token",
+          "http://localhost:5000/api/save-token",
           { token: currentToken },
           {
             headers: {
-              Authorization: `Bearer ${authToken}`,
+              Authorization: `Bearer ${authToken}`, // Optional if using auth
             },
           }
         );
-        console.log("✅ FCM token registered:", currentToken);
+        console.log("FCM token registered:", currentToken);
       } else {
-        console.warn("⚠️ No FCM token available.");
+        console.warn("No FCM token available.");
       }
     } catch (error) {
-      console.error("❌ Error registering FCM token:", error);
+      console.error("Error registering FCM token:", error);
     }
   };
 
@@ -63,7 +271,7 @@ function Login({ setIsLoggedIn }) {
 
     try {
       setLoading(true);
-      const response = await axios.post("https://macstormbattle-backend.onrender.com/api/auth/admin/login", {
+      const response = await axios.post("http://localhost:5000/api/auth/admin/login", {
         email,
         password,
       });
@@ -72,21 +280,7 @@ function Login({ setIsLoggedIn }) {
       await registerFcmToken(authToken);
       setIsLoggedIn(true); // <-- update auth state
 
-      // Store tokens and user info
-      localStorage.setItem("authToken", authToken);
-      localStorage.setItem("userRole", user.role);
-      localStorage.setItem("userName", user.name);
-
-      await registerFcmToken(authToken);
-
-      // Navigate based on role
-      if (user.role === "SuperAdmin") {
-        navigate("/super-admin");
-      } else if (user.role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/login");
-      }
+      navigate("/"); // Redirect after everything is done
     } catch (err) {
       const message =
         err.response?.data?.message || "Login failed. Please try again.";
@@ -100,8 +294,9 @@ function Login({ setIsLoggedIn }) {
 
   return (
     <section className="min-h-screen flex items-center justify-center">
-      <div className="flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-xl space-y-8 p-10 rounded-lg shadow-lg dark:bg-zinc-800 bg-white">
+      {/* Right - Form */}
+      <div className="flex items-center justify-center p-6 sm:p-12 ">
+        <div className="w-full max-w-xl space-y-8  p-10 rounded-lg shadow-lg dark:bg-zinc-800 bg-white">
           <div className="text-center">
             <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
               Welcome Back
@@ -112,7 +307,7 @@ function Login({ setIsLoggedIn }) {
           </div>
 
           <form className="space-y-6" onSubmit={validateForm} noValidate>
-            {/* Email Field */}
+            {/* Email */}
             <div>
               <label
                 htmlFor="email"
@@ -137,7 +332,7 @@ function Login({ setIsLoggedIn }) {
               )}
             </div>
 
-            {/* Password Field */}
+            {/* Password */}
             <div>
               <label
                 htmlFor="password"
@@ -171,7 +366,7 @@ function Login({ setIsLoggedIn }) {
               )}
             </div>
 
-            {/* Forgot Password */}
+            {/* Forgot password */}
             <div className="flex justify-end text-sm">
               <Link
                 to="/forgot-password"
@@ -181,7 +376,6 @@ function Login({ setIsLoggedIn }) {
               </Link>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-black font-semibold rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-600"
@@ -189,7 +383,7 @@ function Login({ setIsLoggedIn }) {
               Sign In
             </button>
 
-            {/* Sign Up */}
+            {/* Footer */}
             <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
               Don’t have an account?{" "}
               <Link

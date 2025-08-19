@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 function AllGames() {
   const [games, setGames] = useState([]);
   const navigate = useNavigate();
-  const BASE_URL = "http://localhost:5000";
+  const BASE_URL = "https://macstormbattle-backend.onrender.com";
   const columns = [
     { key: "id", label: "Sr No." },
     { key: "game_name", label: "Game Name" },
