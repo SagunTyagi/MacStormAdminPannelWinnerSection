@@ -105,7 +105,7 @@ export default function SquadContestForm() {
     };
 
     try {
-      await axiosInstance.post("/api/squid-contests/create", payload, {
+      await axiosInstance.post("/squid-contests/create", payload, {
         headers: {
           "Content-Type": "application/json",
         },

@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import axiosInstance from "../utils/axios"; // Make sure this has baseURL setup
-import { useNavigate } from "react-router-dom";
+import axiosInstance from "../utils/axios"; 
+import { Link } from "react-router-dom";
 
 function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const validateEmail = (email) => /^\S+@\S+\.\S+$/.test(email);
 
@@ -28,7 +27,7 @@ function ForgotPassword() {
       setLoading(true);
       const response = await axiosInstance.post("/auth/admin/forgot-password", { email });
       setMessage(response.data.message || "Reset link sent successfully!");
-      setEmail(""); // clear field
+      setEmail("");
     } catch (error) {
       const msg = error.response?.data?.message || "Failed to send reset link.";
       setEmailError(msg);
@@ -39,45 +38,59 @@ function ForgotPassword() {
 
   return (
     <section className="min-h-screen flex items-center justify-center">
-      <div className="flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-xl space-y-6 bg-white dark:bg-zinc-800 p-10 rounded-lg shadow-lg">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Forgot Password</h1>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Enter your email to receive a reset link
-            </p>
-          </div>
+      {/* Glassmorphism Card */}
+      <div className="w-full max-w-lg p-10 rounded-2xl shadow-2xl bg-gradient-to-b from-slate-400 via-white to-white backdrop-blur-lg">
+        <div className="text-center">
+          <h1 className="text-4xl font-extrabold text-gray-800">Forgot Password 🔑</h1>
+          <p className="text-sm text-gray-800 mt-2">
+            Enter your email to receive a reset link
+          </p>
+        </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+        <form className="space-y-6 mt-8" onSubmit={handleSubmit} noValidate>
+          {/* Email */}
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-800"
+            >
+              Email address
+            </label>
             <input
               type="email"
-              placeholder="Email address"
+              id="email"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className={`mt-1 w-full px-4 py-3 rounded-lg bg-gray-100 border-t-2 border-black text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400 ${
+                emailError ? "border border-red-400" : "border border-white/30"
+              }`}
               required
-              className={`w-full px-4 py-2 rounded-lg border ${
-                emailError ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-              } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
             />
             {emailError && <p className="text-sm text-red-500 mt-1">{emailError}</p>}
             {message && <p className="text-sm text-green-500 mt-1">{message}</p>}
+          </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-zinc-600"
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-slate-400 to-zinc-300 hover:opacity-90 text-gray-800 font-semibold rounded-lg transition duration-200 shadow-lg"
+          >
+            {loading ? "Sending..." : "Send Reset Link"}
+          </button>
+
+          {/* Footer */}
+          <p className="text-center text-sm text-gray-800">
+            Remember your password?{" "}
+            <Link
+              to="/login"
+              className="text-gray-800 font-medium underline hover:text-pink-200"
             >
-              {loading ? "Sending..." : "Send Reset Link"}
-            </button>
-
-            <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-              Remember your password?{" "}
-              <a href="/login" className="text-zinc-800 dark:text-white font-medium hover:underline">
-                Sign in
-              </a>
-            </p>
-          </form>
-        </div>
+              Sign in
+            </Link>
+          </p>
+        </form>
       </div>
     </section>
   );

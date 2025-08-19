@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axiosInstance from "../utils/axios";
 
 function Register() {
@@ -12,6 +11,7 @@ function Register() {
     phone: "",
   });
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -48,22 +48,22 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setServerError("");
+
     if (!validate()) return;
 
     try {
       setLoading(true);
-      const response = await axios.post(
-        "https://macstormbattle-backend.onrender.com/api/auth/admin/register",
+      const response = await axiosInstance.post(
+        "/auth/admin/register",
         formData
-  
       );
-      console.log("Registration successful:", response.data);
-      // Navigate to login or show success message
+      console.log("✅ Registration successful:", response.data);
       navigate("/login");
     } catch (error) {
-      const message = error.response?.data?.message || "Registration failed. Try again.";
-      console.error("❌ Registration error:", message);
-      alert(message);
+      const message =
+        error.response?.data?.message || "Registration failed. Try again.";
+      setServerError(message);
     } finally {
       setLoading(false);
     }
@@ -71,118 +71,140 @@ function Register() {
 
   return (
     <section className="min-h-screen flex items-center justify-center">
-      <div className="flex items-center justify-center p-6 sm:p-12">
-        <div className="w-full max-w-md space-y-6 p-10 dark:bg-zinc-800 bg-white rounded-lg shadow-lg">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">Create Account</h1>
-            <p className="text-sm text-zinc-600 dark:text-zinc-400">
-              Join us and start your journey
-            </p>
+      {/* Glassmorphism Card */}
+      <div className="w-full max-w-lg m-3 p-10 rounded-2xl shadow-2xl bg-gradient-to-b from-slate-400 via-white to-white backdrop-blur-lg">
+        <div className="text-center">
+          <h1 className="text-4xl font-extrabold text-gray-800">
+            Create Account ✨
+          </h1>
+          <p className="text-sm text-gray-800 mt-2">
+            Join us and start your journey
+          </p>
+        </div>
+
+        <form className="space-y-6 mt-8" onSubmit={handleSubmit} noValidate>
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium text-gray-800">
+              Full Name
+            </label>
+            <input
+              type="text"
+              placeholder="John Doe"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className={`mt-1 w-full px-4 py-3 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400 ${
+                errors.name ? "border border-red-400" : "border border-gray-200"
+              }`}
+            />
+            {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
           </div>
 
-          <form className="space-y-5" onSubmit={handleSubmit} noValidate>
-            {/* Name */}
-            <div>
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className={`w-full px-4 py-2 rounded-lg border ${
-                  errors.name ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-                } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
-              />
-              {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name}</p>}
-            </div>
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-800">
+              Email address
+            </label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className={`mt-1 w-full px-4 py-3 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400 ${
+                errors.email ? "border border-red-400" : "border border-gray-200"
+              }`}
+            />
+            {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
+          </div>
 
-            {/* Email */}
-            <div>
-              <input
-                type="email"
-                placeholder="Email address"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className={`w-full px-4 py-2 rounded-lg border ${
-                  errors.email ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-                } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
-              />
-              {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email}</p>}
-            </div>
+          {/* Phone */}
+          <div>
+            <label className="block text-sm font-medium text-gray-800">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              placeholder="1234567890"
+              value={formData.phone}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
+              className={`mt-1 w-full px-4 py-3 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-400 ${
+                errors.phone ? "border border-red-400" : "border border-gray-200"
+              }`}
+            />
+            {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
+          </div>
 
-            {/* Phone */}
-            <div>
-              <input
-                type="tel"
-                placeholder="Phone number"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                className={`w-full px-4 py-2 rounded-lg border ${
-                  errors.phone ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-                } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
-              />
-              {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone}</p>}
-            </div>
-
-            {/* Password */}
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-800">
+              Password
+            </label>
             <div className="relative">
               <input
                 type={passwordVisible ? "text" : "password"}
-                placeholder="Password"
+                placeholder="••••••••"
                 value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className={`w-full px-4 py-2 pr-10 rounded-lg border ${
-                  errors.password ? "border-red-500" : "border-zinc-300 dark:border-zinc-700"
-                } bg-neutral-50 dark:bg-zinc-800 text-zinc-900 dark:text-white focus:ring-2 focus:ring-zinc-500 outline-none`}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                className={`mt-1 w-full px-4 py-3 pr-12 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-400 ${
+                  errors.password
+                    ? "border border-red-400"
+                    : "border border-gray-200"
+                }`}
               />
               <button
                 type="button"
                 onClick={() => setPasswordVisible((prev) => !prev)}
-                className="absolute top-1/2 right-3 transform -translate-y-1/2 text-sm text-zinc-500 dark:text-zinc-300"
+                aria-label={passwordVisible ? "Hide password" : "Show password"}
+                className="absolute top-1/2 right-4 transform -translate-y-1/2 text-sm text-gray-600 hover:text-gray-800"
               >
                 {passwordVisible ? "Hide" : "Show"}
               </button>
-              {errors.password && <p className="text-sm text-red-500 mt-1">{errors.password}</p>}
             </div>
+            {errors.password && (
+              <p className="text-sm text-red-500 mt-1">{errors.password}</p>
+            )}
+          </div>
 
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-black font-semibold rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-zinc-600"
+          {/* Server Error */}
+          {serverError && (
+            <p className="text-center text-sm text-red-600">{serverError}</p>
+          )}
+
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full py-3 bg-gradient-to-r from-slate-400 to-zinc-300 hover:opacity-90 text-gray-800 font-semibold rounded-lg transition duration-200 shadow-lg flex items-center justify-center"
+          >
+            {loading ? (
+              <span className="loader border-2 border-gray-800 border-t-transparent rounded-full w-5 h-5 animate-spin"></span>
+            ) : (
+              "Register"
+            )}
+          </button>
+
+          {/* Footer */}
+          <p className="text-center text-sm text-gray-800">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-gray-800 font-medium underline hover:text-pink-500"
             >
-              {loading ? "Registering..." : "Register"}
-            </button>
-
-            {/* Already have account */}
-            <p className="text-center text-sm text-zinc-600 dark:text-zinc-400">
-              Already have an account?{" "}
-              <a href="/login" className="text-zinc-800 dark:text-white font-medium hover:underline">
-                Sign in
-              </a>
-            </p>
-          </form>
-        </div>
+              Sign in
+            </Link>
+          </p>
+        </form>
       </div>
     </section>
   );
 }
 
 export default Register;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
