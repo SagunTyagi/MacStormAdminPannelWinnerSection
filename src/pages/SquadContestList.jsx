@@ -77,7 +77,7 @@ function SquadContestsList() {
         {/* Filter */}
         <div className="flex items-center mb-6">
           <FilterIcon className="w-5 h-5 mr-3 text-gray-500" />
-          <div className="flex space-x-4">
+          <div className="flex flex-wrap space-x-4">
             {[
               { label: "All", value: "All" },
               { label: "Live", value: "live" },
@@ -88,7 +88,7 @@ function SquadContestsList() {
               <button
                 key={status.value}
                 onClick={() => setFilter(status.value)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                className={`px-4 py-2 my-1 rounded-lg text-sm font-medium transition-colors ${
                   filter === status.value
                     ? "bg-purple-600 text-white"
                     : "bg-white text-gray-600 hover:bg-gray-50"
