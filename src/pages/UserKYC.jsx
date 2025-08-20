@@ -35,8 +35,7 @@ export default function UserKYC() {
     { id: "admin3", name: "Admin Three" },
   ];
   const authToken =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MjM5MDEwLCJleHAiOjE3NTU1MzUwMTB9.lCno1q1Kaf286P6ZQvSKw-CTgU3I-q_Hus2siePX-4g";
-
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU1NTgxMTM1LCJleHAiOjE3NTY4NzcxMzV9.pJPjiFwxhxKH3uMWzCSI456e0zQnBMot_GvLgKwLf-A";
   // API fetching logic
   useEffect(() => {
     const fetchUsersAndTransactions = async () => {
