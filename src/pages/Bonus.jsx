@@ -24,7 +24,8 @@ import {
   Grid,
   Divider,
   CircularProgress,
-  Alert
+  Alert,
+  TablePagination
 } from '@mui/material'
 import {
   Add as AddIcon,
@@ -47,6 +48,10 @@ export default function AdminBonusPanel() {
   const [editingBonus, setEditingBonus] = useState(null)
   const [openEditDialog, setOpenEditDialog] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
+  
+  // Pagination state
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
 
   // Fetch all bonuses
   const fetchBonuses = async () => {
@@ -151,8 +156,12 @@ export default function AdminBonusPanel() {
       setEditingBonus(null)
       toast.success('Bonus updated successfully! ✅')
       
-      // Refresh the bonuses list
-      await fetchBonuses()
+      // Refresh the bonuses list without resetting pagination
+      const response2 = await fetch(`${API_BASE_URL}/all`)
+      if (response2.ok) {
+        const data = await response2.json()
+        setBonuses(data)
+      }
     } catch (err) {
       toast.error('Failed to update bonus: ' + err.message)
       console.error('Update bonus error:', err)
@@ -179,8 +188,18 @@ export default function AdminBonusPanel() {
 
       toast.success('Bonus deleted successfully! 🗑')
       
-      // Refresh the bonuses list
-      await fetchBonuses()
+      // Refresh the bonuses list without resetting pagination
+      const response2 = await fetch(`${API_BASE_URL}/all`)
+      if (response2.ok) {
+        const data = await response2.json()
+        setBonuses(data)
+        
+        // Adjust page if current page is now empty
+        const newTotalPages = Math.ceil(data.length / rowsPerPage)
+        if (page >= newTotalPages && newTotalPages > 0) {
+          setPage(newTotalPages - 1)
+        }
+      }
     } catch (err) {
       toast.error('Failed to delete bonus: ' + err.message)
       console.error('Delete bonus error:', err)
@@ -194,10 +213,24 @@ export default function AdminBonusPanel() {
     toast.info('Refreshing bonus data...')
   }
 
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage)
+  }
+
+  const handleChangeRowsPerPage = (event) => {
+    const newRowsPerPage = parseInt(event.target.value, 10)
+    setRowsPerPage(newRowsPerPage)
+    setPage(0)
+  }
+
   // Calculate statistics
   const totalBonuses = bonuses.length
   const activeBonuses = bonuses.filter(bonus => parseFloat(bonus.bonus_balance) > 0).length
   const totalAmount = bonuses.reduce((sum, bonus) => sum + parseFloat(bonus.bonus_balance || 0), 0)
+
+  // Get paginated data
+  const paginatedBonuses = bonuses.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
 
   if (loading) {
     return (
@@ -322,9 +355,39 @@ export default function AdminBonusPanel() {
       {/* Bonuses Table */}
       <Card sx={{ overflowX: 'auto' }}>
         <CardContent sx={{ p: { xs: 1, sm: 2 } }}>
-          <Typography variant="h6" gutterBottom>
-            All Users and Their Bonuses
+        {/* Heading with Rows per page on the right */}
+        <Box 
+          sx={{ 
+            display: "flex", 
+            justifyContent: "space-between", 
+            alignItems: "center", 
+            mb: 2 
+          }}
+        >
+          <Typography variant="h6">
+            All Users and Their Bonuses ({bonuses.length} total)
           </Typography>
+
+          {/* Rows Per Page Selector */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography variant="body2">Rows per page:</Typography>
+            <TextField
+              select
+              size="small"
+              value={rowsPerPage}
+              onChange={handleChangeRowsPerPage}
+              SelectProps={{ native: true }}
+              sx={{ width: 80 }}
+            >
+              {[5, 10, 25, 50, 100].map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </TextField>
+          </Box>
+        </Box>
+
           <Divider sx={{ mb: 2 }} />
           <TableContainer component={Paper} variant="outlined">
             <Table size="small">
@@ -338,7 +401,7 @@ export default function AdminBonusPanel() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {bonuses.map((bonus) => (
+                {paginatedBonuses.map((bonus) => (
                   <TableRow key={bonus.member_id} hover>
                     <TableCell>{bonus.member_id}</TableCell>
                     <TableCell>
@@ -399,6 +462,43 @@ export default function AdminBonusPanel() {
               </TableBody>
             </Table>
           </TableContainer>
+          
+          {/* Pagination Component */}
+          <TablePagination
+            // rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            component="div"
+            count={bonuses.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            // labelRowsPerPage="Rows per page:"
+            labelDisplayedRows={({ from, to, count }) => 
+              `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
+            }
+            SelectProps={{
+              native: true,
+              'aria-label': 'rows per page',
+            }}
+            sx={{ 
+              mt: 2,
+              '& .MuiTablePagination-toolbar': {
+                paddingLeft: { xs: 1, sm: 2 },
+                paddingRight: { xs: 1, sm: 2 },
+                minHeight: { xs: 52, sm: 64 },
+              },
+              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                margin: 0,
+              },
+              '& .MuiTablePagination-select': {
+                fontSize: { xs: '0.75rem', sm: '0.875rem' },
+              },
+              '& .MuiTablePagination-actions': {
+                marginLeft: { xs: 1, sm: 2 },
+              },
+            }}
+          />
         </CardContent>
       </Card>
 
