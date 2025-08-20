@@ -14,9 +14,7 @@ const FirebaseNotificationHandler = () => {
       }
 
       try {
-        const apiUrl = import.meta.env.PROD
-          ? 'https://yourproductiondomain.com/api/notifications/save-fcm-token'
-          : 'http://localhost:5000/api/notifications/save-fcm-token';
+        const apiUrl = 'https://macstormbattle-backend.onrender.com/api/notifications/save-fcm-token';
 
         const response = await fetch(apiUrl, {
           method: 'POST',

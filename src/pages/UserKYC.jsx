@@ -233,7 +233,7 @@ export default function UserKYC() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/v1/user/member-status/admin/update",
+        "https://macstormbattle-backend.onrender.com/api/v1/user/member-status/admin/update",
         {
           method: "PUT",
           headers: {
@@ -271,7 +271,7 @@ export default function UserKYC() {
     if (deleteUser) {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/v1/user/${deleteUser.id}`,
+          `https://macstormbattle-backend.onrender.com/api/v1/user/${deleteUser.id}`,
           {
             method: "DELETE",
             headers: {

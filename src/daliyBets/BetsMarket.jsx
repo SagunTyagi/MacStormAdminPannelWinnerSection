@@ -125,7 +125,7 @@ const Bets = () => {
       <h1 className="text-3xl font-semibold mb-1">Daily Bets</h1>
       <p className="text-gray-500 mb-6">Manage betting markets and monitor liability</p>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {summary.map((item) => (
           <div key={item.label} className="bg-white p-4 rounded shadow flex items-center space-x-4">
             <div className="text-xl">{item.icon}</div>
@@ -156,7 +156,7 @@ const Bets = () => {
       {activeTab === "markets" && (
         <div className="space-y-6">
           {matches.map((match) => (
-            <div key={match.title} className="bg-white rounded shadow p-4">
+            <div key={match.title} className="bg-white rounded shadow p-2">
               <div className="flex justify-between items-center mb-1">
                 <h2 className="font-semibold text-lg">{match.title}</h2>
                 <span className={`text-xs px-2 py-1 rounded-full font-medium ${

@@ -78,7 +78,7 @@ return (
       </div>
 
       {/* 🔹 Stats Cards Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 mb-4" style={{ rowGap: '2.5rem', columnGap: '1.2rem' }}>
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 mb-4" style={{ rowGap: '2.5rem', columnGap: '1.2rem' }}>
         {/* Total Votes Card */}
         <div className="bg-white px-2 py-4 rounded-lg border border-gray-200 flex items-center gap-1 min-h-0" style={{minHeight:'70px', maxWidth:'230px'}}>
           <div className="flex flex-col items-start justify-center leading-tight">

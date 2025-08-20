@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "../utils/axios";
+import { toast } from "react-toastify";
 
 function Ads() {
   const [tab, setTab] = useState("upload");
@@ -55,10 +56,10 @@ function Ads() {
           headers: { "Authorization": `Bearer ${token}` }
         });
 
-        alert("Ad updated!");
+        toast.success("Ad updated!");
         } else {
         // POST request — with media
-        if (!form.media) return alert("Please select media");
+        if (!form.media) return toast.info("Please select media");
 
         const data = new FormData();
         Object.entries(form).forEach(([key, val]) => data.append(key, val));
@@ -69,7 +70,7 @@ function Ads() {
           }
         });
 
-        alert("Ad uploaded!");
+        toast.success("Ad uploaded!");
         }
 
         // Reset form state
@@ -86,7 +87,7 @@ function Ads() {
         fetchAds();
     } catch (err) {
         console.error("Submit error:", err.response?.data || err.message);
-        alert("Error submitting ad.");
+        toast.error("Error submitting ad.");
     }
     };
 
@@ -100,7 +101,7 @@ function Ads() {
 
       fetchAds();
     } catch (err) {
-      alert("Failed to delete.");
+      toast.error("Failed to delete.");
     }
   };
 
@@ -126,7 +127,7 @@ const filteredAds = ads;
             ⟳ Refresh
             </button>
             <button
-            onClick={() => alert("Coming soon!")} // TEMP action
+            onClick={() => toast.info("Coming soon!")} // TEMP action
             className="bg-black text-white text-sm px-4 py-2 rounded hover:bg-zinc-800"
             >
             ⎙ View Full Stats
@@ -142,7 +143,7 @@ const filteredAds = ads;
             onClick={() => setTab(t.value)}
             className={`py-2 px-4 ${
               tab === t.value
-                ? "border-b-2 border-black font-medium"
+                ? "border-b-2 border-black bg-black/10 font-medium"
                 : "text-zinc-500"
             }`}
           >
@@ -313,7 +314,7 @@ const filteredAds = ads;
                                 )
                               );
                             } catch {
-                              alert("Failed to toggle status");
+                              toast.error("Failed to toggle status");
                             }
                           }}
                           className={`cursor-pointer text-xs font-medium px-2 py-1 rounded ${
@@ -393,7 +394,7 @@ const filteredAds = ads;
                           )
                         );
                       } catch {
-                        alert("Failed to toggle status");
+                        toast.error("Failed to toggle status");
                       }
                     }}
                     className={`inline-block mt-1 text-xs font-medium px-2 py-1 rounded ${

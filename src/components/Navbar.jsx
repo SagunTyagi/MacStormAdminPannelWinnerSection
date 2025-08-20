@@ -14,7 +14,6 @@ const getInitials = (first, last) => {
     .slice(0, 2);
 };
 
-
 const ProfileModal = ({
   open,
   onClose,
@@ -24,8 +23,6 @@ const ProfileModal = ({
   saving,
 }) => {
   if (!open) return null;
-
-
 
   const onField = (key) => (e) =>
     setProfileData((p) => ({ ...p, [key]: e.target.value }));
@@ -39,14 +36,14 @@ const ProfileModal = ({
 
     setProfileData((p) => ({
       ...p,
-      profile_image: file,  // Keep the File object for upload
-      profile_image_preview: previewUrl,  // Temporary URL for UI
+      profile_image: file, // Keep the File object for upload
+      profile_image_preview: previewUrl, // Temporary URL for UI
     }));
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl p-6 w-full max-w-md relative border border-zinc-200 dark:border-zinc-700">
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl mx-2 p-6  relative border border-zinc-200 dark:border-zinc-700">
         <button
           className="absolute top-3 right-3 text-zinc-400 hover:text-zinc-700 dark:hover:text-white transition"
           onClick={onClose}
@@ -60,23 +57,14 @@ const ProfileModal = ({
             {profileData.profile_image ? (
               <img
                 src={profileData.profile_image}
-
                 alt="Avatar"
                 className="w-20 h-20 rounded-full border object-cover"
               />
-
             ) : (
-              <div
-                className="w-20 h-20 rounded-full border bg-pink-200 text-white flex items-center justify-center font-bold text-5xl"
-              >
+              <div className="w-20 h-20 rounded-full border bg-pink-200 text-white flex items-center justify-center font-bold text-5xl">
                 {getInitials(profileData.first_name, profileData.last_name)}
               </div>
-
             )}
-
-
-
-
 
             <label className="absolute bottom-0 right-0 bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-200 rounded-full p-1 cursor-pointer shadow group-hover:scale-105 transition">
               <Edit2 className="w-4 h-4" />
@@ -139,8 +127,6 @@ const ProfileModal = ({
             />
           </div>
 
-
-
           <div className="flex items-center gap-2">
             <label className="w-28 text-sm text-zinc-700 dark:text-zinc-200">
               New Password
@@ -200,13 +186,16 @@ const Navbar = ({ onToggleSidebar }) => {
       const token = localStorage.getItem("authToken");
       if (!token) throw new Error("No token found");
 
-      const res = await fetch("http://localhost:5000/api/admin/profile/me", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        "https://macstormbattle-backend.onrender.com/api/admin/profile/me",
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to fetch profile");
       const data = await res.json();
@@ -216,10 +205,9 @@ const Navbar = ({ onToggleSidebar }) => {
         last_name: data.last_name || "",
         email_id: data.email_id || "",
         mobile_no: data.mobile_no || "",
-        profile_image: data.profile_image || "",   // ✅ just use what backend gives
+        profile_image: data.profile_image || "", // ✅ just use what backend gives
         newPassword: "",
       });
-
     } catch (e) {
       console.error(e);
       toast.error("Could not load profile");
@@ -238,13 +226,16 @@ const Navbar = ({ onToggleSidebar }) => {
         const uploadFormData = new FormData();
         uploadFormData.append("file", profileData.profile_image);
 
-        const uploadRes = await fetch("http://localhost:5000/api/admin/profile/me", {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: uploadFormData,
-        });
+        const uploadRes = await fetch(
+          "https://macstormbattle-backend.onrender.com/api/admin/profile/me",
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+            body: uploadFormData,
+          }
+        );
 
         if (!uploadRes.ok) throw new Error("Failed to upload image");
         const { url } = await uploadRes.json();
@@ -252,21 +243,24 @@ const Navbar = ({ onToggleSidebar }) => {
       }
 
       // Now save profile with the updated URL
-      const res = await fetch("http://localhost:5000/api/admin/profile/me", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          first_name: profileData.first_name,
-          last_name: profileData.last_name,
-          email_id: profileData.email_id,
-          mobile_no: profileData.mobile_no,
-          profile_image: imageUrl, // S3 URL (or existing URL)
-          newPassword: profileData.newPassword || undefined,
-        }),
-      });
+      const res = await fetch(
+        "https://macstormbattle-backend.onrender.com/api/admin/profile/me",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            first_name: profileData.first_name,
+            last_name: profileData.last_name,
+            email_id: profileData.email_id,
+            mobile_no: profileData.mobile_no,
+            profile_image: imageUrl, // S3 URL (or existing URL)
+            newPassword: profileData.newPassword || undefined,
+          }),
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to save profile");
       toast.success("Profile updated!");
@@ -277,7 +271,6 @@ const Navbar = ({ onToggleSidebar }) => {
       setSaving(false);
     }
   };
-
 
   // outside click for dropdown
   useEffect(() => {
@@ -323,7 +316,6 @@ const Navbar = ({ onToggleSidebar }) => {
             className="w-8 h-8 rounded-full border cursor-pointer object-cover"
             onClick={() => setDropdownOpen((p) => !p)}
           />
-
         ) : (
           <div
             onClick={() => setDropdownOpen((p) => !p)}
@@ -332,8 +324,6 @@ const Navbar = ({ onToggleSidebar }) => {
             {getInitials(profileData.first_name, profileData.last_name)}
           </div>
         )}
-
-
 
         {dropdownOpen && (
           <div className="absolute right-0 top-12 mt-2 w-44 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-lg z-50">

@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { User, Mail, Phone, Lock, Globe, Gift, Plus, Trash2, Edit2, RefreshCw, Ban } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  Lock,
+  Globe,
+  Gift,
+  Plus,
+  Trash2,
+  Edit2,
+  RefreshCw,
+  Ban,
+} from "lucide-react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 // CreateUserModal component remains the same as in your original code
 const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
@@ -96,50 +109,79 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
               <User className="mr-2 h-4 w-4" />
               Create New User
             </h2>
-            <button onClick={onClose} className="text-white hover:text-gray-200">
+            <button
+              onClick={onClose}
+              className="text-white hover:text-gray-200"
+            >
               ✕
             </button>
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="p-4 space-y-3">
           {successMessage && (
-            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <div
+              className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative"
+              role="alert"
+            >
               <span className="block sm:inline">{successMessage}</span>
             </div>
           )}
           {errors.general && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <div
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+              role="alert"
+            >
               <span className="block sm:inline">{errors.general}</span>
             </div>
           )}
           <div className="grid grid-cols-2 gap-2">
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">First Name</label>
-                {errors.first_name && <span className="text-xs text-red-500">{errors.first_name}</span>}
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  First Name
+                </label>
+                {errors.first_name && (
+                  <span className="text-xs text-red-500">
+                    {errors.first_name}
+                  </span>
+                )}
               </div>
               <input
                 type="text"
                 name="first_name"
                 value={formData.first_name}
                 onChange={handleChange}
-                className={`w-full px-3 py-1.5 text-sm rounded border ${errors.first_name ? 'border-red-500' : 'border-gray-300 dark:border-zinc-600'} dark:bg-zinc-700`}
+                className={`w-full px-3 py-1.5 text-sm rounded border ${
+                  errors.first_name
+                    ? "border-red-500"
+                    : "border-gray-300 dark:border-zinc-600"
+                } dark:bg-zinc-700`}
                 placeholder="John"
               />
             </div>
-            
+
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Last Name</label>
-                {errors.last_name && <span className="text-xs text-red-500">{errors.last_name}</span>}
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Last Name
+                </label>
+                {errors.last_name && (
+                  <span className="text-xs text-red-500">
+                    {errors.last_name}
+                  </span>
+                )}
               </div>
               <input
                 type="text"
                 name="last_name"
                 value={formData.last_name}
                 onChange={handleChange}
-                className={`w-full px-3 py-1.5 text-sm rounded border ${errors.last_name ? 'border-red-500' : 'border-gray-300 dark:border-zinc-600'} dark:bg-zinc-700`}
+                className={`w-full px-3 py-1.5 text-sm rounded border ${
+                  errors.last_name
+                    ? "border-red-500"
+                    : "border-gray-300 dark:border-zinc-600"
+                } dark:bg-zinc-700`}
                 placeholder="Doe"
               />
             </div>
@@ -147,8 +189,12 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
 
           <div>
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Username</label>
-              {errors.user_name && <span className="text-xs text-red-500">{errors.user_name}</span>}
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Username
+              </label>
+              {errors.user_name && (
+                <span className="text-xs text-red-500">{errors.user_name}</span>
+              )}
             </div>
             <div className="relative">
               <User className="absolute left-2.5 top-2 h-3.5 w-3.5 text-gray-400" />
@@ -157,7 +203,11 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
                 name="user_name"
                 value={formData.user_name}
                 onChange={handleChange}
-                className={`w-full pl-8 px-2.5 py-1.5 text-sm rounded border ${errors.user_name ? 'border-red-500' : 'border-gray-300 dark:border-zinc-600'} dark:bg-zinc-700`}
+                className={`w-full pl-8 px-2.5 py-1.5 text-sm rounded border ${
+                  errors.user_name
+                    ? "border-red-500"
+                    : "border-gray-300 dark:border-zinc-600"
+                } dark:bg-zinc-700`}
                 placeholder="johndoe"
               />
             </div>
@@ -165,8 +215,12 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
 
           <div>
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Email</label>
-              {errors.email_id && <span className="text-xs text-red-500">{errors.email_id}</span>}
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Email
+              </label>
+              {errors.email_id && (
+                <span className="text-xs text-red-500">{errors.email_id}</span>
+              )}
             </div>
             <div className="relative">
               <Mail className="absolute left-2.5 top-2 h-3.5 w-3.5 text-gray-400" />
@@ -175,7 +229,11 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
                 name="email_id"
                 value={formData.email_id}
                 onChange={handleChange}
-                className={`w-full pl-8 px-2.5 py-1.5 text-sm rounded border ${errors.email_id ? 'border-red-500' : 'border-gray-300 dark:border-zinc-600'} dark:bg-zinc-700`}
+                className={`w-full pl-8 px-2.5 py-1.5 text-sm rounded border ${
+                  errors.email_id
+                    ? "border-red-500"
+                    : "border-gray-300 dark:border-zinc-600"
+                } dark:bg-zinc-700`}
                 placeholder="john@example.com"
               />
             </div>
@@ -183,8 +241,12 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
 
           <div>
             <div className="flex items-center justify-between">
-              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Mobile</label>
-              {errors.mobile_no && <span className="text-xs text-red-500">{errors.mobile_no}</span>}
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                Mobile
+              </label>
+              {errors.mobile_no && (
+                <span className="text-xs text-red-500">{errors.mobile_no}</span>
+              )}
             </div>
             <div className="flex">
               <select
@@ -204,7 +266,11 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
                   name="mobile_no"
                   value={formData.mobile_no}
                   onChange={handleChange}
-                  className={`w-full pl-8 px-2.5 py-1.5 text-sm rounded-r border ${errors.mobile_no ? 'border-red-500' : 'border-gray-300 dark:border-zinc-600'} dark:bg-zinc-700`}
+                  className={`w-full pl-8 px-2.5 py-1.5 text-sm rounded-r border ${
+                    errors.mobile_no
+                      ? "border-red-500"
+                      : "border-gray-300 dark:border-zinc-600"
+                  } dark:bg-zinc-700`}
                   placeholder="9876543210"
                 />
               </div>
@@ -214,8 +280,14 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
           <div className="grid grid-cols-2 gap-2">
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Password</label>
-                {errors.password && <span className="text-xs text-red-500">{errors.password}</span>}
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Password
+                </label>
+                {errors.password && (
+                  <span className="text-xs text-red-500">
+                    {errors.password}
+                  </span>
+                )}
               </div>
               <div className="relative">
                 <Lock className="absolute left-2.5 top-2 h-3.5 w-3.5 text-gray-400" />
@@ -224,16 +296,26 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full pl-8 px-2.5 py-1.5 text-sm rounded border ${errors.password ? 'border-red-500' : 'border-gray-300 dark:border-zinc-600'} dark:bg-zinc-700`}
+                  className={`w-full pl-8 px-2.5 py-1.5 text-sm rounded border ${
+                    errors.password
+                      ? "border-red-500"
+                      : "border-gray-300 dark:border-zinc-600"
+                  } dark:bg-zinc-700`}
                   placeholder="••••••••"
                 />
               </div>
             </div>
-            
+
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Confirm</label>
-                {errors.cpassword && <span className="text-xs text-red-500">{errors.cpassword}</span>}
+                <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                  Confirm
+                </label>
+                {errors.cpassword && (
+                  <span className="text-xs text-red-500">
+                    {errors.cpassword}
+                  </span>
+                )}
               </div>
               <div className="relative">
                 <Lock className="absolute left-2.5 top-2 h-3.5 w-3.5 text-gray-400" />
@@ -242,7 +324,11 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
                   name="cpassword"
                   value={formData.cpassword}
                   onChange={handleChange}
-                  className={`w-full pl-8 px-2.5 py-1.5 text-sm rounded border ${errors.cpassword ? 'border-red-500' : 'border-gray-300 dark:border-zinc-600'} dark:bg-zinc-700`}
+                  className={`w-full pl-8 px-2.5 py-1.5 text-sm rounded border ${
+                    errors.cpassword
+                      ? "border-red-500"
+                      : "border-gray-300 dark:border-zinc-600"
+                  } dark:bg-zinc-700`}
                   placeholder="••••••••"
                 />
               </div>
@@ -250,7 +336,9 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
           </div>
 
           <div>
-            <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Referral Code (Optional)</label>
+            <label className="text-xs font-medium text-gray-500 dark:text-gray-400">
+              Referral Code (Optional)
+            </label>
             <div className="relative">
               <Gift className="absolute left-2.5 top-2 h-3.5 w-3.5 text-gray-400" />
               <input
@@ -279,9 +367,25 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
             >
               {isSubmitting ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Creating...
                 </>
@@ -314,6 +418,7 @@ function UserSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const itemsPerPage = 5;
+  const [expandedUserId, setExpandedUserId] = useState(null);
 
   const authToken = localStorage.getItem("authToken");
 
@@ -329,16 +434,18 @@ function UserSettings() {
             },
           }
         );
-        
+
         // Transform the API response to match our expected format
-        const transformedUsers = response.data.users.map(user => ({
+        const transformedUsers = response.data.users.map((user) => ({
           id: user._id || user.id,
           name: `${user.first_name} ${user.last_name}`,
           username: user.user_name,
           email: user.email_id,
           role: user.role || "User",
           status: user.status || "Active",
-          created: user.createdAt ? new Date(user.createdAt).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          created: user.createdAt
+            ? new Date(user.createdAt).toISOString().split("T")[0]
+            : new Date().toISOString().split("T")[0],
           editedBy: user.editedBy || null,
           history: user.history || [],
           first_name: user.first_name,
@@ -347,7 +454,7 @@ function UserSettings() {
           email_id: user.email_id,
           mobile_no: user.mobile_no,
         }));
-        
+
         setUsers(transformedUsers);
         setError(null);
       } catch (err) {
@@ -365,9 +472,10 @@ function UserSettings() {
     .filter((u) =>
       filter === "all" ? true : u.status.toLowerCase() === filter.toLowerCase()
     )
-    .filter((u) =>
-      u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
+    .filter(
+      (u) =>
+        u.name.toLowerCase().includes(search.toLowerCase()) ||
+        u.email.toLowerCase().includes(search.toLowerCase())
     );
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
@@ -379,15 +487,15 @@ function UserSettings() {
   const openModal = (user, type) => {
     const role = user.role;
     if (type === "edit" && !permissions[role].edit) {
-      alert("Edit access is only allowed for Admins or Moderators.");
+      toast.error("Edit access is only allowed for Admins or Moderators.");
       return;
     }
     if (type === "ban" && !permissions[role].ban) {
-      alert("Cannot ban Admins or Moderators.");
+      toast.error("Cannot ban Admins or Moderators.");
       return;
     }
     if (type === "reset" && !permissions[role].reset) {
-      alert("Reset not allowed for this role.");
+      toast.error("Reset not allowed for this role.");
       return;
     }
     setSelectedUser(user);
@@ -411,8 +519,8 @@ function UserSettings() {
       const response = await axios.put(
         `https://macstormbattle-backend.onrender.com/api/auth/user/${selectedUser.id}`,
         {
-          first_name: editedName.split(' ')[0],
-          last_name: editedName.split(' ')[1] || '',
+          first_name: editedName.split(" ")[0],
+          last_name: editedName.split(" ")[1] || "",
           user_name: editedUsername,
           email_id: editedEmail,
           role: editedRole,
@@ -426,29 +534,40 @@ function UserSettings() {
       );
 
       // Update local state with the edited user
-      setUsers(users.map(u => 
-        u.id === selectedUser.id ? {
-          ...u,
-          name: editedName,
-          username: editedUsername,
-          email: editedEmail,
-          role: editedRole,
-          status: editedStatus,
-          editedBy: `Edited by ${selectedUser.role}`,
-          history: [...u.history, { 
-            editedBy: selectedUser.role, 
-            date: new Date().toISOString(), 
-            changes: {
-              name: editedName !== u.name ? editedName : undefined,
-              username: editedUsername !== u.username ? editedUsername : undefined,
-              email: editedEmail !== u.email ? editedEmail : undefined,
-              role: editedRole !== u.role ? editedRole : undefined,
-              status: editedStatus !== u.status ? editedStatus : undefined,
-            }
-          }]
-        } : u
-      ));
-      
+      setUsers(
+        users.map((u) =>
+          u.id === selectedUser.id
+            ? {
+                ...u,
+                name: editedName,
+                username: editedUsername,
+                email: editedEmail,
+                role: editedRole,
+                status: editedStatus,
+                editedBy: `Edited by ${selectedUser.role}`,
+                history: [
+                  ...u.history,
+                  {
+                    editedBy: selectedUser.role,
+                    date: new Date().toISOString(),
+                    changes: {
+                      name: editedName !== u.name ? editedName : undefined,
+                      username:
+                        editedUsername !== u.username
+                          ? editedUsername
+                          : undefined,
+                      email: editedEmail !== u.email ? editedEmail : undefined,
+                      role: editedRole !== u.role ? editedRole : undefined,
+                      status:
+                        editedStatus !== u.status ? editedStatus : undefined,
+                    },
+                  },
+                ],
+              }
+            : u
+        )
+      );
+
       closeModal();
     } catch (err) {
       console.error("Failed to update user:", err);
@@ -489,7 +608,7 @@ function UserSettings() {
     try {
       setIsLoading(true);
       const newStatus = selectedUser.status === "Active" ? "Banned" : "Active";
-      
+
       await axios.put(
         `https://macstormbattle-backend.onrender.com/api/auth/user/${selectedUser.id}`,
         { status: newStatus },
@@ -500,10 +619,12 @@ function UserSettings() {
         }
       );
 
-      setUsers(users.map(u =>
-        u.id === selectedUser.id ? { ...u, status: newStatus } : u
-      ));
-      
+      setUsers(
+        users.map((u) =>
+          u.id === selectedUser.id ? { ...u, status: newStatus } : u
+        )
+      );
+
       closeModal();
     } catch (err) {
       console.error("Failed to update user status:", err);
@@ -532,7 +653,7 @@ function UserSettings() {
     try {
       setIsLoading(true);
       await Promise.all(
-        selectedUsers.map(id => 
+        selectedUsers.map((id) =>
           axios.put(
             `https://macstormbattle-backend.onrender.com/api/auth/user/${id}`,
             { status: "Banned" },
@@ -545,11 +666,13 @@ function UserSettings() {
         )
       );
 
-      setUsers(users.map(u =>
-        selectedUsers.includes(u.id) && permissions[u.role].ban
-          ? { ...u, status: "Banned" }
-          : u
-      ));
+      setUsers(
+        users.map((u) =>
+          selectedUsers.includes(u.id) && permissions[u.role].ban
+            ? { ...u, status: "Banned" }
+            : u
+        )
+      );
       setSelectedUsers([]);
     } catch (err) {
       console.error("Failed to ban users:", err);
@@ -560,7 +683,15 @@ function UserSettings() {
   };
 
   const handleExport = () => {
-    const header = ["Name", "Username", "Email", "Role", "Status", "Created", "Edited By"];
+    const header = [
+      "Name",
+      "Username",
+      "Email",
+      "Role",
+      "Status",
+      "Created",
+      "Edited By",
+    ];
     const rows = users.map((u) => [
       u.name,
       u.username,
@@ -568,7 +699,7 @@ function UserSettings() {
       u.role,
       u.status,
       u.created,
-      u.editedBy || ""
+      u.editedBy || "",
     ]);
     const csv = [header, ...rows].map((r) => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
@@ -593,9 +724,9 @@ function UserSettings() {
           },
         }
       );
-      
+
       // Update the local state with the new user
-      setUsers(prev => [
+      setUsers((prev) => [
         ...prev,
         {
           id: response.data._id || response.data.id,
@@ -604,17 +735,23 @@ function UserSettings() {
           email: newUserData.email_id,
           role: "User",
           status: "Active",
-          created: new Date().toISOString().split('T')[0],
+          created: new Date().toISOString().split("T")[0],
           editedBy: null,
           history: [],
-          ...newUserData
-        }
+          ...newUserData,
+        },
       ]);
-      
+
       return response.data;
     } catch (error) {
-      console.error("Error creating user:", error.response ? error.response.data : error.message);
-      throw new Error(error.response?.data?.message || "Failed to create user. Check your form data.");
+      console.error(
+        "Error creating user:",
+        error.response ? error.response.data : error.message
+      );
+      throw new Error(
+        error.response?.data?.message ||
+          "Failed to create user. Check your form data."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -649,7 +786,11 @@ function UserSettings() {
               setFilter(status);
               setCurrentPage(1);
             }}
-            className={`px-3 py-1 rounded capitalize ${filter === status ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-zinc-600"}`}
+            className={`px-3 py-1 rounded capitalize ${
+              filter === status
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 dark:bg-zinc-600"
+            }`}
           >
             {status}
           </button>
@@ -671,20 +812,26 @@ function UserSettings() {
       </div>
 
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+          role="alert"
+        >
           <span className="block sm:inline">{error}</span>
         </div>
       )}
 
-      <div className="overflow-x-auto rounded shadow bg-white dark:bg-zinc-800">
+      <div className="hidden sm:block overflow-x-auto rounded shadow bg-white dark:bg-zinc-800">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-100 dark:bg-zinc-700">
             <tr>
               <th className="px-4 py-2 text-left">
-                <input 
-                  type="checkbox" 
-                  onChange={selectAll} 
-                  checked={paginatedUsers.length > 0 && paginatedUsers.every(u => selectedUsers.includes(u.id))} 
+                <input
+                  type="checkbox"
+                  onChange={selectAll}
+                  checked={
+                    paginatedUsers.length > 0 &&
+                    paginatedUsers.every((u) => selectedUsers.includes(u.id))
+                  }
                 />
               </th>
               <th className="px-4 py-2 text-left">Name</th>
@@ -702,9 +849,25 @@ function UserSettings() {
               <tr>
                 <td colSpan="9" className="px-4 py-4 text-center">
                   <div className="flex justify-center">
-                    <svg className="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <svg
+                      className="animate-spin h-5 w-5 text-blue-500"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
                     </svg>
                   </div>
                 </td>
@@ -717,44 +880,61 @@ function UserSettings() {
               </tr>
             ) : (
               paginatedUsers.map((user) => (
-                <tr key={user.id} className="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700">
+                <tr
+                  key={user.id}
+                  className="border-t border-gray-200 dark:border-zinc-700 hover:bg-gray-50 dark:hover:bg-zinc-700"
+                >
                   <td className="px-4 py-2">
-                    <input 
-                      type="checkbox" 
-                      checked={selectedUsers.includes(user.id)} 
-                      onChange={() => toggleSelect(user.id)} 
+                    <input
+                      type="checkbox"
+                      checked={selectedUsers.includes(user.id)}
+                      onChange={() => toggleSelect(user.id)}
                     />
                   </td>
                   <td className="px-4 py-2">{user.name}</td>
                   <td className="px-4 py-2">{user.username}</td>
                   <td className="px-4 py-2">{user.email}</td>
-                  <td className="px-4 py-2 capitalize">{user.role.toLowerCase()}</td>
+                  <td className="px-4 py-2 capitalize">
+                    {user.role.toLowerCase()}
+                  </td>
                   <td className="px-4 py-2">
-                    <span className={`px-2 py-1 rounded text-xs ${user.status === 'Active' ? 'bg-green-200 dark:bg-green-600 text-green-800 dark:text-white' : 'bg-red-200 dark:bg-red-600 text-red-800 dark:text-white'}`}>
+                    <span
+                      className={`px-2 py-1 rounded text-xs ${
+                        user.status === "Active"
+                          ? "bg-green-200 dark:bg-green-600 text-green-800 dark:text-white"
+                          : "bg-red-200 dark:bg-red-600 text-red-800 dark:text-white"
+                      }`}
+                    >
                       {user.status}
-                    </span>               
+                    </span>
                   </td>
                   <td className="px-4 py-2">{user.created}</td>
                   <td className="px-4 py-2">{user.editedBy || "-"}</td>
                   <td className="px-4 py-2 space-x-2">
-                    <button 
-                      onClick={() => openModal(user, "edit")} 
+                    <button
+                      onClick={() => openModal(user, "edit")}
                       className="bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600"
                       title="Edit"
                     >
                       <Edit2 className="h-3 w-3" />
                     </button>
-                    <button 
-                      onClick={() => openModal(user, "reset")} 
+                    <button
+                      onClick={() => openModal(user, "reset")}
                       className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600"
                       title="Reset Password"
                     >
                       <RefreshCw className="h-3 w-3" />
                     </button>
-                    <button 
-                      onClick={() => openModal(user, "ban")} 
-                      className={`px-2 py-1 rounded ${user.status === 'Active' ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'} text-white`}
-                      title={user.status === 'Active' ? 'Ban User' : 'Activate User'}
+                    <button
+                      onClick={() => openModal(user, "ban")}
+                      className={`px-2 py-1 rounded ${
+                        user.status === "Active"
+                          ? "bg-red-500 hover:bg-red-600"
+                          : "bg-green-500 hover:bg-green-600"
+                      } text-white`}
+                      title={
+                        user.status === "Active" ? "Ban User" : "Activate User"
+                      }
                     >
                       <Ban className="h-3 w-3" />
                     </button>
@@ -766,51 +946,145 @@ function UserSettings() {
         </table>
       </div>
 
+{/* Mobile View */}
+<div className="block sm:hidden space-y-3">
+  {isLoading ? (
+    <div className="flex justify-center py-6">
+      <svg
+        className="animate-spin h-5 w-5 text-blue-500"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+      >
+        <circle
+          className="opacity-25"
+          cx="12"
+          cy="12"
+          r="10"
+          stroke="currentColor"
+          strokeWidth="4"
+        ></circle>
+        <path
+          className="opacity-75"
+          fill="currentColor"
+          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 
+          0 12h4zm2 5.291A7.962 7.962 0 
+          014 12H0c0 3.042 1.135 5.824 3 
+          7.938l3-2.647z"
+        ></path>
+      </svg>
+    </div>
+  ) : paginatedUsers.length === 0 ? (
+    <p className="text-center text-gray-500">No users found</p>
+  ) : (
+    paginatedUsers.map((user) => {
+      return (
+        <div
+          key={user.id}
+          className="bg-white dark:bg-zinc-800 rounded shadow p-4"
+        >
+          
+            <div className="mt-3 space-y-1 text-sm text-gray-700 dark:text-gray-300">
+              <p>
+                <strong>Name:</strong> {user.name}
+              </p>
+              <p>
+                <strong>Username:</strong> {user.username}
+              </p>
+              <p>
+                <strong>Email:</strong> {user.email}
+              </p>
+              <p>
+                <strong>Role:</strong> {user.role}
+              </p>
+              <p>
+                <strong>Status:</strong> {user.status}
+              </p>
+              <p>
+                <strong>Created:</strong> {user.created}
+              </p>
+              <p>
+                <strong>Edited By:</strong> {user.editedBy || "-"}
+              </p>
+
+              <div className="flex gap-2 mt-3">
+                <button
+                  onClick={() => openModal(user, "edit")}
+                  className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => openModal(user, "reset")}
+                  className="bg-yellow-500 text-white px-2 py-1 rounded text-xs"
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={() => openModal(user, "ban")}
+                  className={`px-2 py-1 rounded text-xs ${
+                    user.status === "Active"
+                      ? "bg-red-500"
+                      : "bg-green-500"
+                  } text-white`}
+                >
+                  {user.status === "Active" ? "Ban" : "Activate"}
+                </button>
+              </div>
+            </div>
+
+        </div>
+      );
+    })
+  )}
+</div>
+
+
       {selectedUser && modalType === "edit" && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-zinc-800 p-6 rounded shadow w-full max-w-sm">
             <h2 className="text-lg font-semibold mb-4">Edit User</h2>
-            <input 
-              id="editName" 
-              defaultValue={selectedUser.name} 
-              className="w-full mb-2 px-3 py-2 border rounded dark:bg-zinc-700" 
+            <input
+              id="editName"
+              defaultValue={selectedUser.name}
+              className="w-full mb-2 px-3 py-2 border rounded dark:bg-zinc-700"
             />
-            <input 
-              id="editUsername" 
-              defaultValue={selectedUser.username} 
-              className="w-full mb-2 px-3 py-2 border rounded dark:bg-zinc-700" 
+            <input
+              id="editUsername"
+              defaultValue={selectedUser.username}
+              className="w-full mb-2 px-3 py-2 border rounded dark:bg-zinc-700"
             />
-            <input 
-              id="editEmail" 
-              defaultValue={selectedUser.email} 
-              className="w-full mb-2 px-3 py-2 border rounded dark:bg-zinc-700" 
+            <input
+              id="editEmail"
+              defaultValue={selectedUser.email}
+              className="w-full mb-2 px-3 py-2 border rounded dark:bg-zinc-700"
             />
-            <select 
-              id="editRole" 
-              defaultValue={selectedUser.role} 
+            <select
+              id="editRole"
+              defaultValue={selectedUser.role}
               className="w-full mb-2 px-3 py-2 border rounded dark:bg-zinc-700"
             >
               <option>User</option>
               <option>Moderator</option>
               <option>Admin</option>
             </select>
-            <select 
-              id="editStatus" 
-              defaultValue={selectedUser.status} 
+            <select
+              id="editStatus"
+              defaultValue={selectedUser.status}
               className="w-full mb-3 px-3 py-2 border rounded dark:bg-zinc-700"
             >
               <option>Active</option>
               <option>Banned</option>
             </select>
-            <button 
-              onClick={handleEdit} 
+            <button
+              onClick={handleEdit}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
               disabled={isLoading}
             >
               {isLoading ? "Saving..." : "Save"}
             </button>
-            <button 
-              onClick={closeModal} 
+            <button
+              onClick={closeModal}
               className="mt-3 text-sm underline text-center w-full text-gray-600 dark:text-gray-300"
             >
               Cancel
@@ -830,7 +1104,11 @@ function UserSettings() {
           <button
             key={i}
             onClick={() => setCurrentPage(i + 1)}
-            className={`px-3 py-1 rounded ${currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-zinc-600 text-gray-800 dark:text-white"}`}
+            className={`px-3 py-1 rounded ${
+              currentPage === i + 1
+                ? "bg-blue-500 text-white"
+                : "bg-gray-200 dark:bg-zinc-600 text-gray-800 dark:text-white"
+            }`}
           >
             {i + 1}
           </button>

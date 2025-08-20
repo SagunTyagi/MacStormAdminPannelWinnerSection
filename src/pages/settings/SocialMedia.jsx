@@ -250,8 +250,6 @@ const SocialMedia = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: "#f8f9fa",
-        padding: { xs: 2, sm: 3, md: 4 },
       }}
     >
       <Box sx={{ maxWidth: "95%", margin: "0 auto" }}>

@@ -172,7 +172,7 @@ const FAQComponent = () => {
   )
 
   return (
-    <Box sx={{ minHeight: "100vh", backgroundColor: "#fafafa", py: { xs: 2, sm: 3, md: 4 } }}>
+    <Box sx={{ minHeight: "100vh", py: { xs: 2, sm: 3, md: 4 } }}>
       <Box sx={{ width: "95%", maxWidth: "95%", mx: "auto", px: { xs: 1, sm: 2 } }}>
         <Card elevation={2} sx={{ borderRadius: 3, border: "1px solid #f0f0f0" }}>
           <CardContent sx={{ p: { xs: 2, sm: 3, md: 4 } }}>

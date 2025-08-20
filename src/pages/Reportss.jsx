@@ -1,5 +1,5 @@
-"use client"
-import { useState, useEffect } from "react"
+"use client";
+import { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -35,7 +35,7 @@ import {
   AvatarGroup,
   Skeleton,
   Snackbar,
-} from "@mui/material"
+} from "@mui/material";
 import {
   ReportProblem,
   FilterList,
@@ -65,38 +65,74 @@ import {
   Bookmark,
   AttachFile,
   AccessTime,
-} from "@mui/icons-material"
+} from "@mui/icons-material";
 
 // Add after the imports and before the component definition
 const ErrorBoundary = ({ children }) => {
-  const [hasError, setHasError] = useState(false)
+  const [hasError, setHasError] = useState(false);
   useEffect(() => {
     const handleError = (error) => {
-      console.error("Component error:", error)
-      setHasError(true)
-    }
-    window.addEventListener("error", handleError)
-    return () => window.removeEventListener("error", handleError)
-  }, [])
+      console.error("Component error:", error);
+      setHasError(true);
+    };
+    window.addEventListener("error", handleError);
+    return () => window.removeEventListener("error", handleError);
+  }, []);
   if (hasError) {
     return (
       <Alert severity="error" sx={{ m: 2 }}>
         Something went wrong. Please refresh the page.
       </Alert>
-    )
+    );
   }
-  return children
-}
+  return children;
+};
 
 const reportCategories = [
   { value: "all", label: "All Reports", count: 0 },
-  { value: "harassment", label: "Harassment", count: 0, icon: Warning, color: "warning" },
-  { value: "cheating", label: "Cheating/Hacking", count: 0, icon: Security, color: "error" },
-  { value: "bug report", label: "Bug Report", count: 0, icon: BugReport, color: "info" },
-  { value: "technical issue", label: "Technical Issue", count: 0, icon: Support, color: "primary" },
-  { value: "inappropriate content", label: "Inappropriate Content", count: 0, icon: Flag, color: "error" },
-  { value: "gameplay issue", label: "Gameplay Issue", count: 0, icon: SportsEsports, color: "secondary" },
-]
+  {
+    value: "harassment",
+    label: "Harassment",
+    count: 0,
+    icon: Warning,
+    color: "warning",
+  },
+  {
+    value: "cheating",
+    label: "Cheating/Hacking",
+    count: 0,
+    icon: Security,
+    color: "error",
+  },
+  {
+    value: "bug report",
+    label: "Bug Report",
+    count: 0,
+    icon: BugReport,
+    color: "info",
+  },
+  {
+    value: "technical issue",
+    label: "Technical Issue",
+    count: 0,
+    icon: Support,
+    color: "primary",
+  },
+  {
+    value: "inappropriate content",
+    label: "Inappropriate Content",
+    count: 0,
+    icon: Flag,
+    color: "error",
+  },
+  {
+    value: "gameplay issue",
+    label: "Gameplay Issue",
+    count: 0,
+    icon: SportsEsports,
+    color: "secondary",
+  },
+];
 
 const reportStatuses = [
   { value: "all", label: "All Status" },
@@ -104,80 +140,86 @@ const reportStatuses = [
   { value: "assigned", label: "Assigned", color: "info" },
   { value: "resolved", label: "Resolved", color: "success" },
   { value: "rejected", label: "Rejected", color: "error" },
-]
+];
 
 const priorities = [
   { value: "all", label: "All Priority" },
   { value: "high", label: "High Priority", color: "error" },
   { value: "medium", label: "Medium Priority", color: "warning" },
   { value: "low", label: "Low Priority", color: "success" },
-]
+];
 
 export default function UserReportsCenter() {
-  const [selectedCategory, setSelectedCategory] = useState("all")
-  const [selectedStatus, setSelectedStatus] = useState("all")
-  const [selectedPriority, setSelectedPriority] = useState("all")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedReport, setSelectedReport] = useState(null)
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [assignDialogOpen, setAssignDialogOpen] = useState(false)
-  const [reportToAssign, setReportToAssign] = useState(null)
-  const [anchorEl, setAnchorEl] = useState(null)
-  const [menuReportId, setMenuReportId] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [actionLoading, setActionLoading] = useState({})
-  const [viewMode, setViewMode] = useState("list") // This state is not used in the provided code, but kept for consistency
-  const [sortBy, setSortBy] = useState("newest")
-  const [filtersExpanded, setFiltersExpanded] = useState(true)
-  const [bookmarkedReports, setBookmarkedReports] = useState(new Set())
-  const [snackbar, setSnackbar] = useState({ open: false, message: "", severity: "success" })
-  const [selectedReports, setSelectedReports] = useState(new Set())
-  const [bulkActionAnchor, setBulkActionAnchor] = useState(null)
-  const [userReports, setUserReports] = useState([])
-  const [categoryCounts, setCategoryCounts] = useState({})
-  const [apiError, setApiError] = useState(null)
-  const [fetchedAdminUsers, setFetchedAdminUsers] = useState([]) // New state for fetched admins
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedPriority, setSelectedPriority] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedReport, setSelectedReport] = useState(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [reportToAssign, setReportToAssign] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [menuReportId, setMenuReportId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState({});
+  const [viewMode, setViewMode] = useState("list"); // This state is not used in the provided code, but kept for consistency
+  const [sortBy, setSortBy] = useState("newest");
+  const [filtersExpanded, setFiltersExpanded] = useState(true);
+  const [bookmarkedReports, setBookmarkedReports] = useState(new Set());
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "success",
+  });
+  const [selectedReports, setSelectedReports] = useState(new Set());
+  const [bulkActionAnchor, setBulkActionAnchor] = useState(null);
+  const [userReports, setUserReports] = useState([]);
+  const [categoryCounts, setCategoryCounts] = useState({});
+  const [apiError, setApiError] = useState(null);
+  const [fetchedAdminUsers, setFetchedAdminUsers] = useState([]); // New state for fetched admins
 
   // API Base URLs
-  const API_BASE_URL = "https://macstormbattle-backend.onrender.com/api/reports"
-  const ADMIN_API_URL = "https://macstormbattle-backend.onrender.com/api/auth/admin/getadmins" // Admin API URL
-  const ADMIN_AUTH_TOKEN = localStorage.getItem("authToken") // Get auth token from local storage
+  const API_BASE_URL =
+    "https://macstormbattle-backend.onrender.com/api/reports";
+  const ADMIN_API_URL =
+    "https://macstormbattle-backend.onrender.com/api/auth/admin/getadmins"; // Admin API URL
+  const ADMIN_AUTH_TOKEN = localStorage.getItem("authToken"); // Get auth token from local storage
   // Calculate category counts from reports
   const calculateCategoryCounts = (reports) => {
-    const counts = { all: reports.length }
+    const counts = { all: reports.length };
     reports.forEach((report) => {
-      const category = report.category.toLowerCase()
-      counts[category] = (counts[category] || 0) + 1
-    })
-    return counts
-  }
+      const category = report.category.toLowerCase();
+      counts[category] = (counts[category] || 0) + 1;
+    });
+    return counts;
+  };
 
   // Get updated categories with counts
   const getUpdatedCategories = () => {
     return reportCategories.map((category) => ({
       ...category,
       count: categoryCounts[category.value] || 0,
-    }))
-  }
+    }));
+  };
 
   // Fetch reports from API
   const fetchReports = async () => {
-    setLoading(true)
-    setApiError(null)
+    setLoading(true);
+    setApiError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/reports`)
+      const response = await fetch(`${API_BASE_URL}/reports`);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json()
+      const data = await response.json();
       // Add null check for data
       if (!data || !Array.isArray(data)) {
-        throw new Error("Invalid data format received from API")
+        throw new Error("Invalid data format received from API");
       }
       // Transform API data with proper null checks
       const transformedReports = data
         .map((report) => {
-          if (!report) return null
+          if (!report) return null;
           return {
             id: `RPT-${(report.id || 0).toString().padStart(3, "0")}`,
             originalId: report.id || 0,
@@ -188,49 +230,63 @@ export default function UserReportsCenter() {
             reportedBy: {
               username: report.user_name || "Unknown User",
               id: report.user_id || 0,
-              avatar: `/placeholder.svg?height=40&width=40&text=${(report.user_name || "UN").slice(0, 2).toUpperCase()}`,
+              avatar: `/placeholder.svg?height=40&width=40&text=${(
+                report.user_name || "UN"
+              )
+                .slice(0, 2)
+                .toUpperCase()}`,
               reputation: 4.0,
             },
             reportedUser: report.reported_user_id
               ? {
                   username: report.reported_user_name || "Unknown User",
                   id: report.reported_user_id,
-                  avatar: `/placeholder.svg?height=40&width=40&text=${(report.reported_user_name || "UN").slice(0, 2).toUpperCase()}`,
+                  avatar: `/placeholder.svg?height=40&width=40&text=${(
+                    report.reported_user_name || "UN"
+                  )
+                    .slice(0, 2)
+                    .toUpperCase()}`,
                   reputation: 2.5,
                 }
               : null,
             description: report.description || "No description provided",
             gameMode: "Unknown Mode", // Default value
             matchName: null, // Default value
-            createdAt: report.createdAt ? new Date(report.createdAt).toLocaleString() : "Unknown Date",
-            evidence: Array.isArray(report.evidence_files) ? report.evidence_files.filter((file) => file !== null) : [],
+            createdAt: report.createdAt
+              ? new Date(report.createdAt).toLocaleString()
+              : "Unknown Date",
+            evidence: Array.isArray(report.evidence_files)
+              ? report.evidence_files.filter((file) => file !== null)
+              : [],
             assignedTo: report.assigned_admin || null,
             assignedBy: report.assigned_by || null,
-            assignedAt: report.assigned_at ? new Date(report.assigned_at).toLocaleString() : null,
+            assignedAt: report.assigned_at
+              ? new Date(report.assigned_at).toLocaleString()
+              : null,
             urgency: report.status === "pending" ? "normal" : "low", // Default urgency
             location: "Global", // Default location
             upvotes: Math.floor(Math.random() * 50), // Random for now
             comments: Math.floor(Math.random() * 20), // Random for now
             views: Math.floor(Math.random() * 200), // Random for now
-          }
+          };
         })
-        .filter(Boolean) // Remove any null entries
-      setUserReports(transformedReports)
+        .filter(Boolean); // Remove any null entries
+      setUserReports(transformedReports);
       // Calculate and set category counts with null check
-      const counts = calculateCategoryCounts(transformedReports)
-      setCategoryCounts(counts)
-      showSnackbar("Reports loaded successfully", "success")
+      const counts = calculateCategoryCounts(transformedReports);
+      setCategoryCounts(counts);
+      showSnackbar("Reports loaded successfully", "success");
     } catch (error) {
-      console.error("Error fetching reports:", error)
-      setApiError(error.message)
-      showSnackbar("Failed to load reports", "error")
+      console.error("Error fetching reports:", error);
+      setApiError(error.message);
+      showSnackbar("Failed to load reports", "error");
       // Set empty state on error
-      setUserReports([])
-      setCategoryCounts({ all: 0 })
+      setUserReports([]);
+      setCategoryCounts({ all: 0 });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Fetch admin users from API
   const fetchAdmins = async () => {
@@ -239,103 +295,112 @@ export default function UserReportsCenter() {
         headers: {
           Authorization: `Bearer ${ADMIN_AUTH_TOKEN}`,
         },
-      })
+      });
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data = await response.json()
+      const data = await response.json();
       if (!data || !Array.isArray(data)) {
-        throw new Error("Invalid admin data format received from API")
+        throw new Error("Invalid admin data format received from API");
       }
       const transformedAdmins = data.map((admin) => ({
         id: admin.id.toString(),
         name: admin.name,
         role: admin.role,
-        avatar: `/placeholder.svg?height=32&width=32&text=${admin.name.slice(0, 2).toUpperCase()}`,
+        avatar: `/placeholder.svg?height=32&width=32&text=${admin.name
+          .slice(0, 2)
+          .toUpperCase()}`,
         status: admin.sessions && admin.sessions.length > 0 ? "online" : "away", // Derive status from sessions
         workload: Math.floor(Math.random() * 20), // Placeholder, as API doesn't provide
         rating: (Math.random() * (5 - 4) + 4).toFixed(1), // Placeholder, random rating between 4.0 and 5.0
-      }))
-      setFetchedAdminUsers(transformedAdmins)
+      }));
+      setFetchedAdminUsers(transformedAdmins);
     } catch (error) {
-      console.error("Error fetching admins:", error)
-      setApiError(`Failed to load admins: ${error.message}`)
-      showSnackbar("Failed to load admin users", "error")
+      console.error("Error fetching admins:", error);
+      setApiError(`Failed to load admins: ${error.message}`);
+      showSnackbar("Failed to load admin users", "error");
     }
-  }
+  };
 
   // Load reports and admins on component mount
   useEffect(() => {
-    fetchReports()
-    fetchAdmins()
-  }, [])
+    fetchReports();
+    fetchAdmins();
+  }, []);
 
   // Update category counts when reports change
   useEffect(() => {
     if (userReports.length > 0) {
-      const counts = calculateCategoryCounts(userReports)
-      setCategoryCounts(counts)
+      const counts = calculateCategoryCounts(userReports);
+      setCategoryCounts(counts);
     }
-  }, [userReports])
+  }, [userReports]);
 
   // Cleanup function to prevent memory leaks
   useEffect(() => {
     return () => {
-      setAnchorEl(null)
-      setBulkActionAnchor(null)
-    }
-  }, [])
+      setAnchorEl(null);
+      setBulkActionAnchor(null);
+    };
+  }, []);
 
   const getStatusColor = (status) => {
-    const statusObj = reportStatuses.find((s) => s.value === status)
-    return statusObj?.color || "default"
-  }
+    const statusObj = reportStatuses.find((s) => s.value === status);
+    return statusObj?.color || "default";
+  };
 
   const getPriorityColor = (priority) => {
-    const priorityObj = priorities.find((p) => p.value === priority)
-    return priorityObj?.color || "default"
-  }
+    const priorityObj = priorities.find((p) => p.value === priority);
+    return priorityObj?.color || "default";
+  };
 
   const getCategoryIcon = (category) => {
-    const categoryObj = reportCategories.find((c) => c.value === category)
-    return categoryObj?.icon || ReportProblem
-  }
+    const categoryObj = reportCategories.find((c) => c.value === category);
+    return categoryObj?.icon || ReportProblem;
+  };
 
   const getAssignedAdmin = (adminName) => {
-    return fetchedAdminUsers.find((admin) => admin.name === adminName)
-  }
+    return fetchedAdminUsers.find((admin) => admin.name === adminName);
+  };
 
   const showSnackbar = (message, severity = "success") => {
-    setSnackbar({ open: true, message, severity })
-  }
+    setSnackbar({ open: true, message, severity });
+  };
 
   const handleViewReport = (report) => {
-    setSelectedReport(report)
-    setDialogOpen(true)
+    setSelectedReport(report);
+    setDialogOpen(true);
     // Update view count locally
-    setUserReports((prev) => prev.map((r) => (r.id === report.id ? { ...r, views: r.views + 1 } : r)))
-  }
+    setUserReports((prev) =>
+      prev.map((r) => (r.id === report.id ? { ...r, views: r.views + 1 } : r))
+    );
+  };
 
   const handleAssignReport = async (reportId, adminName) => {
-    const report = userReports.find((r) => r.id === reportId)
+    const report = userReports.find((r) => r.id === reportId);
     if (!report) {
-      showSnackbar("Report not found", "error")
-      return
+      showSnackbar("Report not found", "error");
+      return;
     }
-    setActionLoading((prev) => ({ ...prev, [reportId]: true }))
+    setActionLoading((prev) => ({ ...prev, [reportId]: true }));
     try {
-      const response = await fetch(`${API_BASE_URL}/reports/${report.originalId}/assign`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ admin_name: adminName }), // Match backend expected field name
-      })
+      const response = await fetch(
+        `${API_BASE_URL}/reports/${report.originalId}/assign`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ admin_name: adminName }), // Match backend expected field name
+        }
+      );
 
       if (!response.ok) {
-        const errorText = await response.text() // Get error message from backend
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`)
+        const errorText = await response.text(); // Get error message from backend
+        throw new Error(
+          `HTTP error! status: ${response.status}, message: ${errorText}`
+        );
       }
 
-      const updatedReportData = await response.json() // This is the updated report object
+      const updatedReportData = await response.json(); // This is the updated report object
 
       // Transform the updated report data to match frontend structure
       const transformedUpdatedReport = {
@@ -348,14 +413,22 @@ export default function UserReportsCenter() {
         reportedBy: {
           username: updatedReportData.user_name || "Unknown User",
           id: updatedReportData.user_id || 0,
-          avatar: `/placeholder.svg?height=40&width=40&text=${(updatedReportData.user_name || "UN").slice(0, 2).toUpperCase()}`,
+          avatar: `/placeholder.svg?height=40&width=40&text=${(
+            updatedReportData.user_name || "UN"
+          )
+            .slice(0, 2)
+            .toUpperCase()}`,
           reputation: 4.0,
         },
         reportedUser: updatedReportData.reported_user_id
           ? {
               username: updatedReportData.reported_user_name || "Unknown User",
               id: updatedReportData.reported_user_id,
-              avatar: `/placeholder.svg?height=40&width=40&text=${(updatedReportData.reported_user_name || "UN").slice(0, 2).toUpperCase()}`,
+              avatar: `/placeholder.svg?height=40&width=40&text=${(
+                updatedReportData.reported_user_name || "UN"
+              )
+                .slice(0, 2)
+                .toUpperCase()}`,
               reputation: 2.5,
             }
           : null,
@@ -370,172 +443,190 @@ export default function UserReportsCenter() {
           : [],
         assignedTo: updatedReportData.assigned_admin || adminName,
         assignedBy: updatedReportData.assigned_by || null, // Assuming backend returns this, otherwise it will be null
-       assignedAt: new Date().toLocaleString(), // Current timestamp for assignment
+        assignedAt: new Date().toLocaleString(), // Current timestamp for assignment
         urgency: updatedReportData.status === "pending" ? "normal" : "low", // Default urgency
         location: "Global", // Default location
         upvotes: Math.floor(Math.random() * 50), // Random for now
         comments: Math.floor(Math.random() * 20), // Random for now
         views: Math.floor(Math.random() * 200), // Random for now
-      }
+      };
 
       // Update local state with the transformed data
-      setUserReports((prev) => prev.map((r) => (r.id === reportId ? transformedUpdatedReport : r)))
+      setUserReports((prev) =>
+        prev.map((r) => (r.id === reportId ? transformedUpdatedReport : r))
+      );
       // showSnackbar(`Assigned to ${transformedUpdatedReport.assignedTo}`, "success")
       if (adminName) {
-  showSnackbar(`Assigned to ${adminName}`, "success")
-} else {
-  showSnackbar("Report unassigned successfully", "success")
-}
+        showSnackbar(`Assigned to ${adminName}`, "success");
+      } else {
+        showSnackbar("Report unassigned successfully", "success");
+      }
     } catch (error) {
-      console.error("Assignment error:", error)
-      showSnackbar(`Failed to assign: ${error.message}`, "error")
+      console.error("Assignment error:", error);
+      showSnackbar(`Failed to assign: ${error.message}`, "error");
     } finally {
-      setActionLoading((prev) => ({ ...prev, [reportId]: false }))
-      setAssignDialogOpen(false)
+      setActionLoading((prev) => ({ ...prev, [reportId]: false }));
+      setAssignDialogOpen(false);
     }
-  }
+  };
 
   const handleAction = async (action, reportId) => {
-    const report = userReports.find((r) => r.id === reportId)
-    if (!report) return
-    setActionLoading((prev) => ({ ...prev, [reportId]: true }))
+    const report = userReports.find((r) => r.id === reportId);
+    if (!report) return;
+    setActionLoading((prev) => ({ ...prev, [reportId]: true }));
     try {
-      const endpoint = action === "resolve" ? "resolve" : "reject"
-      const response = await fetch(`${API_BASE_URL}/reports/${report.originalId}/${endpoint}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      })
+      const endpoint = action === "resolve" ? "resolve" : "reject";
+      const response = await fetch(
+        `${API_BASE_URL}/reports/${report.originalId}/${endpoint}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
       // Update local state
       setUserReports((prev) =>
-        prev.map((r) => (r.id === reportId ? { ...r, status: action === "resolve" ? "resolved" : "rejected" } : r)),
-      )
-      const actionText = action === "resolve" ? "resolved" : "rejected"
-      showSnackbar(`Report ${reportId} has been ${actionText}`, "success")
+        prev.map((r) =>
+          r.id === reportId
+            ? { ...r, status: action === "resolve" ? "resolved" : "rejected" }
+            : r
+        )
+      );
+      const actionText = action === "resolve" ? "resolved" : "rejected";
+      showSnackbar(`Report ${reportId} has been ${actionText}`, "success");
     } catch (error) {
-      console.error(`Error ${action}ing report:`, error)
-      showSnackbar(`Failed to ${action} report`, "error")
+      console.error(`Error ${action}ing report:`, error);
+      showSnackbar(`Failed to ${action} report`, "error");
     } finally {
-      setActionLoading((prev) => ({ ...prev, [reportId]: false }))
-      handleMenuClose() // Close action menu if opened from there
-      setDialogOpen(false) // Close report detail dialog
+      setActionLoading((prev) => ({ ...prev, [reportId]: false }));
+      handleMenuClose(); // Close action menu if opened from there
+      setDialogOpen(false); // Close report detail dialog
     }
-  }
+  };
 
   const handleResetFilters = async () => {
-    setLoading(true)
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    setSelectedCategory("all")
-    setSelectedStatus("all")
-    setSelectedPriority("all")
-    setSearchQuery("")
-    showSnackbar("Filters have been reset", "info")
-    setLoading(false)
-  }
+    setLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setSelectedCategory("all");
+    setSelectedStatus("all");
+    setSelectedPriority("all");
+    setSearchQuery("");
+    showSnackbar("Filters have been reset", "info");
+    setLoading(false);
+  };
 
   const handleRefreshReports = () => {
-    fetchReports()
-    fetchAdmins() // Also refresh admin data
-  }
+    fetchReports();
+    fetchAdmins(); // Also refresh admin data
+  };
 
   const handleMenuClick = (event, reportId) => {
     try {
-      event.preventDefault()
-      event.stopPropagation()
-      setAnchorEl(event.currentTarget)
-      setMenuReportId(reportId)
+      event.preventDefault();
+      event.stopPropagation();
+      setAnchorEl(event.currentTarget);
+      setMenuReportId(reportId);
     } catch (error) {
-      console.error("Menu click error:", error)
+      console.error("Menu click error:", error);
     }
-  }
+  };
 
   const handleMenuClose = () => {
     try {
-      setAnchorEl(null)
-      setMenuReportId(null)
+      setAnchorEl(null);
+      setMenuReportId(null);
     } catch (error) {
-      console.error("Menu close error:", error)
+      console.error("Menu close error:", error);
     }
-  }
+  };
 
   const handleBookmark = (reportId) => {
     setBookmarkedReports((prev) => {
-      const newSet = new Set(prev)
+      const newSet = new Set(prev);
       if (newSet.has(reportId)) {
-        newSet.delete(reportId)
-        showSnackbar("Report removed from bookmarks", "info")
+        newSet.delete(reportId);
+        showSnackbar("Report removed from bookmarks", "info");
       } else {
-        newSet.add(reportId)
-        showSnackbar("Report bookmarked", "success")
+        newSet.add(reportId);
+        showSnackbar("Report bookmarked", "success");
       }
-      return newSet
-    })
-  }
+      return newSet;
+    });
+  };
 
   const handleSelectReport = (reportId) => {
     setSelectedReports((prev) => {
-      const newSet = new Set(prev)
+      const newSet = new Set(prev);
       if (newSet.has(reportId)) {
-        newSet.delete(reportId)
+        newSet.delete(reportId);
       } else {
-        newSet.add(reportId)
+        newSet.add(reportId);
       }
-      return newSet
-    })
-  }
+      return newSet;
+    });
+  };
 
   const handleBulkAction = (action) => {
-    const count = selectedReports.size
-    showSnackbar(`${action} applied to ${count} reports`, "success")
-    setSelectedReports(new Set())
-    setBulkActionAnchor(null)
-  }
+    const count = selectedReports.size;
+    showSnackbar(`${action} applied to ${count} reports`, "success");
+    setSelectedReports(new Set());
+    setBulkActionAnchor(null);
+  };
 
   const handleBulkActionClick = (event) => {
-    event.preventDefault()
-    event.stopPropagation()
-    setBulkActionAnchor(event.currentTarget)
-  }
+    event.preventDefault();
+    event.stopPropagation();
+    setBulkActionAnchor(event.currentTarget);
+  };
 
   const handleBulkActionClose = () => {
-    setBulkActionAnchor(null)
-  }
+    setBulkActionAnchor(null);
+  };
 
   const filteredReports = userReports.filter((report) => {
-    const categoryMatch = selectedCategory === "all" || report.category === selectedCategory.toLowerCase()
-    const statusMatch = selectedStatus === "all" || report.status === selectedStatus
-    const priorityMatch = selectedPriority === "all" || report.priority === selectedPriority
+    const categoryMatch =
+      selectedCategory === "all" ||
+      report.category === selectedCategory.toLowerCase();
+    const statusMatch =
+      selectedStatus === "all" || report.status === selectedStatus;
+    const priorityMatch =
+      selectedPriority === "all" || report.priority === selectedPriority;
     const searchMatch =
       searchQuery === "" ||
       report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      report.reportedBy.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (report.reportedUser && report.reportedUser.username.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      report.id.toLowerCase().includes(searchQuery.toLowerCase())
-    return categoryMatch && statusMatch && priorityMatch && searchMatch
-  })
+      report.reportedBy.username
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (report.reportedUser &&
+        report.reportedUser.username
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase())) ||
+      report.id.toLowerCase().includes(searchQuery.toLowerCase());
+    return categoryMatch && statusMatch && priorityMatch && searchMatch;
+  });
 
   const sortedReports = [...filteredReports].sort((a, b) => {
     switch (sortBy) {
       case "newest":
-        return new Date(b.createdAt) - new Date(a.createdAt)
+        return new Date(b.createdAt) - new Date(a.createdAt);
       case "oldest":
-        return new Date(a.createdAt) - new Date(b.createdAt)
+        return new Date(a.createdAt) - new Date(b.createdAt);
       case "priority":
-        const priorityOrder = { high: 3, medium: 2, low: 1 }
-        return priorityOrder[b.priority] - priorityOrder[a.priority]
+        const priorityOrder = { high: 3, medium: 2, low: 1 };
+        return priorityOrder[b.priority] - priorityOrder[a.priority];
       case "upvotes":
-        return b.upvotes - a.upvotes
+        return b.upvotes - a.upvotes;
       default:
-        return 0
+        return 0;
     }
-  })
+  });
 
   // Get updated categories with current counts
-  const updatedCategories = getUpdatedCategories()
+  const updatedCategories = getUpdatedCategories();
 
   return (
     <ErrorBoundary>
@@ -549,7 +640,17 @@ export default function UserReportsCenter() {
         <Container maxWidth="xl">
           {/* Header */}
           <Box sx={{ mb: 4 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 3, mb: 3 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-center",
+                gap: 3,
+                mb: 3,
+                flexWrap: "wrap",
+              }}
+            >
+              {/* Icon Box */}
               <Box
                 sx={{
                   p: 2,
@@ -559,69 +660,122 @@ export default function UserReportsCenter() {
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
+                  flexShrink: 0,
+                  mx: 16,
                 }}
               >
                 <ReportProblem sx={{ fontSize: 32 }} />
               </Box>
-              <Box sx={{ flex: 1 }}>
-                <Typography variant="h4" component="h1" fontWeight="600" color="text.primary" sx={{ mb: 1 }}>
+
+              {/* Content */}
+              <Box sx={{ flex: 1, minWidth: "250px" }}>
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  fontWeight={600}
+                  color="text.primary"
+                  sx={{ mb: 1 }}
+                >
                   User Reports Center
                 </Typography>
+
                 <Typography variant="body1" color="text.secondary">
                   Manage and review user reports efficiently
                 </Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1 }}>
+
+                {/* Actions */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    mt: 1,
+                    flexWrap: "wrap",
+                  }}
+                >
                   <Button
                     variant="outlined"
                     size="small"
-                    startIcon={loading ? <CircularProgress size={16} /> : <Refresh />}
+                    startIcon={
+                      loading ? <CircularProgress size={16} /> : <Refresh />
+                    }
                     onClick={handleRefreshReports}
                     disabled={loading}
                   >
                     Refresh
                   </Button>
+
                   {apiError && (
-                    <Alert severity="error" sx={{ py: 0 }}>
+                    <Alert severity="error" sx={{ py: 0, flex: 1 }}>
                       API Error: {apiError}
                     </Alert>
                   )}
                 </Box>
+
                 {/* Stats */}
                 <Grid container spacing={2} sx={{ mt: 2 }}>
-                  <Grid item xs={6} sm={3}>
+                  <Grid item xs={12} sm={6} md={3}>
                     <Card sx={{ p: 2, textAlign: "center" }}>
-                      <Typography variant="h5" color="primary.main" fontWeight="600">
-                        {categoryCounts.all || 0}
+                      <Typography
+                        variant="h5"
+                        color="primary.main"
+                        fontWeight={600}
+                      >
+                        {categoryCounts?.all || 0}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Total Reports
                       </Typography>
                     </Card>
                   </Grid>
-                  <Grid item xs={6} sm={3}>
+
+                  <Grid item xs={12} sm={6} md={3}>
                     <Card sx={{ p: 2, textAlign: "center" }}>
-                      <Typography variant="h5" color="warning.main" fontWeight="600">
-                        {userReports.filter((r) => r.status === "pending").length}
+                      <Typography
+                        variant="h5"
+                        color="warning.main"
+                        fontWeight={600}
+                      >
+                        {
+                          userReports.filter((r) => r.status === "pending")
+                            .length
+                        }
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Pending
                       </Typography>
                     </Card>
                   </Grid>
-                  <Grid item xs={6} sm={3}>
+
+                  <Grid item xs={12} sm={6} md={3}>
                     <Card sx={{ p: 2, textAlign: "center" }}>
-                      <Typography variant="h5" color="success.main" fontWeight="600">
-                        {fetchedAdminUsers.filter((a) => a.status === "online").length}
+                      <Typography
+                        variant="h5"
+                        color="success.main"
+                        fontWeight={600}
+                      >
+                        {
+                          fetchedAdminUsers.filter((a) => a.status === "online")
+                            .length
+                        }
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Admins Online
                       </Typography>
                     </Card>
                   </Grid>
-                  <Grid item xs={6} sm={3}>
+
+                  <Grid item xs={12} sm={6} md={3}>
                     <Card sx={{ p: 2, textAlign: "center" }}>
-                      <Typography variant="h5" color="info.main" fontWeight="600">
-                        {userReports.filter((r) => r.status === "assigned").length}
+                      <Typography
+                        variant="h5"
+                        color="info.main"
+                        fontWeight={600}
+                      >
+                        {
+                          userReports.filter((r) => r.status === "assigned")
+                            .length
+                        }
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         Assigned
@@ -646,14 +800,23 @@ export default function UserReportsCenter() {
                   }}
                   onClick={() => setFiltersExpanded(!filtersExpanded)}
                 >
-                  <Typography variant="h6" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  >
                     <FilterList color="primary" />
                     Filters & Search
                     {loading && <CircularProgress size={20} sx={{ ml: 1 }} />}
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Chip label={`${filteredReports.length} results`} color="primary" size="small" />
-                    <IconButton size="small">{filtersExpanded ? <ExpandLess /> : <ExpandMore />}</IconButton>
+                    <Chip
+                      label={`${filteredReports.length} results`}
+                      color="primary"
+                      size="small"
+                    />
+                    <IconButton size="small">
+                      {filtersExpanded ? <ExpandLess /> : <ExpandMore />}
+                    </IconButton>
                   </Box>
                 </Box>
                 {filtersExpanded && (
@@ -682,12 +845,25 @@ export default function UserReportsCenter() {
                           <Select
                             value={selectedCategory}
                             label="Category"
-                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            onChange={(e) =>
+                              setSelectedCategory(e.target.value)
+                            }
                           >
                             {updatedCategories.map((category) => (
-                              <MenuItem key={category.value} value={category.value}>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                  {category.icon && <category.icon sx={{ fontSize: 16 }} />}
+                              <MenuItem
+                                key={category.value}
+                                value={category.value}
+                              >
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 1,
+                                  }}
+                                >
+                                  {category.icon && (
+                                    <category.icon sx={{ fontSize: 16 }} />
+                                  )}
                                   {category.label} ({category.count})
                                 </Box>
                               </MenuItem>
@@ -717,10 +893,15 @@ export default function UserReportsCenter() {
                           <Select
                             value={selectedPriority}
                             label="Priority"
-                            onChange={(e) => setSelectedPriority(e.target.value)}
+                            onChange={(e) =>
+                              setSelectedPriority(e.target.value)
+                            }
                           >
                             {priorities.map((priority) => (
-                              <MenuItem key={priority.value} value={priority.value}>
+                              <MenuItem
+                                key={priority.value}
+                                value={priority.value}
+                              >
                                 {priority.label}
                               </MenuItem>
                             ))}
@@ -731,7 +912,13 @@ export default function UserReportsCenter() {
                         <Button
                           fullWidth
                           variant="outlined"
-                          startIcon={loading ? <CircularProgress size={16} /> : <Refresh />}
+                          startIcon={
+                            loading ? (
+                              <CircularProgress size={16} />
+                            ) : (
+                              <Refresh />
+                            )
+                          }
                           onClick={handleResetFilters}
                           disabled={loading}
                           sx={{ height: "40px" }}
@@ -740,11 +927,22 @@ export default function UserReportsCenter() {
                         </Button>
                       </Grid>
                     </Grid>
-                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mt: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mt: 2,
+                      }}
+                    >
                       <Box sx={{ display: "flex", gap: 2 }}>
                         <FormControl size="small" sx={{ minWidth: 120 }}>
                           <InputLabel>Sort By</InputLabel>
-                          <Select value={sortBy} label="Sort By" onChange={(e) => setSortBy(e.target.value)}>
+                          <Select
+                            value={sortBy}
+                            label="Sort By"
+                            onChange={(e) => setSortBy(e.target.value)}
+                          >
                             <MenuItem value="newest">Newest First</MenuItem>
                             <MenuItem value="oldest">Oldest First</MenuItem>
                             <MenuItem value="priority">High Priority</MenuItem>
@@ -753,11 +951,17 @@ export default function UserReportsCenter() {
                         </FormControl>
                       </Box>
                       {selectedReports.size > 0 && (
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
                           <Typography variant="body2" color="primary.main">
                             {selectedReports.size} selected
                           </Typography>
-                          <Button variant="contained" size="small" onClick={handleBulkActionClick}>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            onClick={handleBulkActionClick}
+                          >
                             Bulk Actions
                           </Button>
                         </Box>
@@ -770,10 +974,17 @@ export default function UserReportsCenter() {
             {/* Categories Overview */}
             <Grid container spacing={2}>
               {updatedCategories.map((category) => {
-                const IconComponent = category.icon || ReportProblem
-                const isSelected = selectedCategory === category.value
+                const IconComponent = category.icon || ReportProblem;
+                const isSelected = selectedCategory === category.value;
                 return (
-                  <Grid item xs={12} sm={6} md={3} lg={12 / 7} key={category.value}>
+                  <Grid
+                    item
+                    xs={12}
+                    sm={6}
+                    md={3}
+                    lg={12 / 7}
+                    key={category.value}
+                  >
                     <Card
                       sx={{
                         cursor: "pointer",
@@ -791,37 +1002,64 @@ export default function UserReportsCenter() {
                       onClick={() => setSelectedCategory(category.value)}
                     >
                       <CardContent sx={{ textAlign: "center", py: 2 }}>
-                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
                           <Box
                             sx={{
                               p: 1.5,
                               borderRadius: "50%",
-                              bgcolor: isSelected ? "rgba(255, 255, 255, 0.2)" : "grey.100",
+                              bgcolor: isSelected
+                                ? "rgba(255, 255, 255, 0.2)"
+                                : "grey.100",
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
                             }}
                           >
-                            <IconComponent sx={{ fontSize: 24, color: isSelected ? "white" : "primary.main" }} />
+                            <IconComponent
+                              sx={{
+                                fontSize: 24,
+                                color: isSelected ? "white" : "primary.main",
+                              }}
+                            />
                           </Box>
                           <Typography variant="h5" fontWeight="600">
                             {category.count}
                           </Typography>
-                          <Typography variant="body2" sx={{ opacity: isSelected ? 0.9 : 0.7 }}>
+                          <Typography
+                            variant="body2"
+                            sx={{ opacity: isSelected ? 0.9 : 0.7 }}
+                          >
                             {category.label}
                           </Typography>
                         </Box>
                       </CardContent>
                     </Card>
                   </Grid>
-                )
+                );
               })}
             </Grid>
             {/* Reports List */}
             <Card sx={{ boxShadow: 1 }}>
               <CardContent>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                  <Typography variant="h6" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 3,
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                  >
                     <Description color="primary" />
                     Reports ({sortedReports.length})
                     {sortedReports.some((r) => r.urgency === "critical") && (
@@ -831,12 +1069,21 @@ export default function UserReportsCenter() {
                     )}
                   </Typography>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <AvatarGroup max={4} sx={{ "& .MuiAvatar-root": { width: 28, height: 28 } }}>
+                    <AvatarGroup
+                      max={4}
+                      sx={{ "& .MuiAvatar-root": { width: 28, height: 28 } }}
+                    >
                       {fetchedAdminUsers
                         .filter((admin) => admin.status === "online")
                         .map((admin) => (
-                          <Tooltip key={admin.id} title={admin.name + " - " + admin.role}>
-                            <Avatar src={admin.avatar} sx={{ border: "2px solid #4caf50" }}>
+                          <Tooltip
+                            key={admin.id}
+                            title={admin.name + " - " + admin.role}
+                          >
+                            <Avatar
+                              src={admin.avatar}
+                              sx={{ border: "2px solid #4caf50" }}
+                            >
                               {admin.name.slice(0, 2)}
                             </Avatar>
                           </Tooltip>
@@ -845,7 +1092,9 @@ export default function UserReportsCenter() {
                   </Box>
                 </Box>
                 {loading ? (
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+                  >
                     {[...Array(3)].map((_, index) => (
                       <Card key={index} sx={{ p: 2 }}>
                         <Box sx={{ display: "flex", gap: 2 }}>
@@ -861,11 +1110,17 @@ export default function UserReportsCenter() {
                   </Box>
                 ) : sortedReports.length === 0 ? (
                   <Paper sx={{ p: 4, textAlign: "center", bgcolor: "grey.50" }}>
-                    <Warning sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
+                    <Warning
+                      sx={{ fontSize: 48, color: "text.secondary", mb: 2 }}
+                    />
                     <Typography variant="h6" gutterBottom>
                       No reports found
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ mb: 2 }}
+                    >
                       No reports match your current filters.
                     </Typography>
                     <Button variant="contained" onClick={handleResetFilters}>
@@ -876,17 +1131,21 @@ export default function UserReportsCenter() {
                   <Box sx={{ maxHeight: 600, overflow: "auto" }}>
                     <Stack spacing={2}>
                       {sortedReports.map((report) => {
-                        const IconComponent = getCategoryIcon(report.category)
-                        const assignedAdmin = getAssignedAdmin(report.assignedTo)
-                        const isLoading = actionLoading[report.id]
-                        const isBookmarked = bookmarkedReports.has(report.id)
-                        const isSelected = selectedReports.has(report.id)
+                        const IconComponent = getCategoryIcon(report.category);
+                        const assignedAdmin = getAssignedAdmin(
+                          report.assignedTo
+                        );
+                        const isLoading = actionLoading[report.id];
+                        const isBookmarked = bookmarkedReports.has(report.id);
+                        const isSelected = selectedReports.has(report.id);
                         return (
                           <Card
                             key={report.id}
                             sx={{
                               border: isSelected ? "2px solid" : "1px solid",
-                              borderColor: isSelected ? "primary.main" : "divider",
+                              borderColor: isSelected
+                                ? "primary.main"
+                                : "divider",
                               bgcolor: isSelected ? "primary.50" : "white",
                               position: "relative",
                               "&:hover": {
@@ -913,25 +1172,39 @@ export default function UserReportsCenter() {
                                   <CircularProgress />
                                 </Box>
                               )}
-                              <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "flex-start",
+                                  gap: 2,
+                                }}
+                              >
                                 {/* Selection Checkbox */}
                                 <Box
                                   sx={{
                                     width: 20,
                                     height: 20,
                                     border: "2px solid",
-                                    borderColor: isSelected ? "primary.main" : "divider",
+                                    borderColor: isSelected
+                                      ? "primary.main"
+                                      : "divider",
                                     borderRadius: 1,
                                     display: "flex",
                                     alignItems: "center",
                                     justifyContent: "center",
                                     cursor: "pointer",
-                                    bgcolor: isSelected ? "primary.main" : "transparent",
+                                    bgcolor: isSelected
+                                      ? "primary.main"
+                                      : "transparent",
                                     mt: 0.5,
                                   }}
                                   onClick={() => handleSelectReport(report.id)}
                                 >
-                                  {isSelected && <CheckCircle sx={{ fontSize: 16, color: "white" }} />}
+                                  {isSelected && (
+                                    <CheckCircle
+                                      sx={{ fontSize: 16, color: "white" }}
+                                    />
+                                  )}
                                 </Box>
                                 {/* Report Icon */}
                                 <Box
@@ -945,24 +1218,54 @@ export default function UserReportsCenter() {
                                     flexShrink: 0,
                                   }}
                                 >
-                                  <IconComponent sx={{ fontSize: 18, color: "white" }} />
+                                  <IconComponent
+                                    sx={{ fontSize: 18, color: "white" }}
+                                  />
                                 </Box>
                                 {/* Report Content */}
                                 <Box sx={{ flex: 1, minWidth: 0 }}>
-                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                                    <Typography variant="h6" sx={{ fontWeight: 600, flexGrow: 1 }}>
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 1,
+                                      mb: 1,
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="h6"
+                                      sx={{ fontWeight: 600, flexGrow: 1 }}
+                                    >
                                       {report.title}
                                       {report.urgency === "critical" && (
-                                        <Chip label="CRITICAL" size="small" color="error" sx={{ ml: 1 }} />
+                                        <Chip
+                                          label="CRITICAL"
+                                          size="small"
+                                          color="error"
+                                          sx={{ ml: 1 }}
+                                        />
                                       )}
                                     </Typography>
-                                    <Chip label={report.id} size="small" variant="outlined" color="primary" />
+                                    <Chip
+                                      label={report.id}
+                                      size="small"
+                                      variant="outlined"
+                                      color="primary"
+                                    />
                                   </Box>
                                   {/* Status Chips */}
-                                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 1 }}>
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      flexWrap: "wrap",
+                                      gap: 1,
+                                      mb: 1,
+                                    }}
+                                  >
                                     <Chip
                                       label={
-                                        report.status === "assigned" && report.assignedTo
+                                        report.status === "assigned" &&
+                                        report.assignedTo
                                           ? `Assigned to ${report.assignedTo}`
                                           : report.status.replace("-", " ")
                                       }
@@ -986,9 +1289,17 @@ export default function UserReportsCenter() {
                                       color={getPriorityColor(report.priority)}
                                       variant="outlined"
                                     />
-                                    <Chip label={report.category} size="small" color="secondary" />
+                                    <Chip
+                                      label={report.category}
+                                      size="small"
+                                      color="secondary"
+                                    />
                                     {report.location && (
-                                      <Chip label={report.location} size="small" variant="outlined" />
+                                      <Chip
+                                        label={report.location}
+                                        size="small"
+                                        variant="outlined"
+                                      />
                                     )}
                                   </Box>
                                   <Typography
@@ -1007,46 +1318,108 @@ export default function UserReportsCenter() {
                                   {/* User Information */}
                                   <Grid container spacing={2} sx={{ mb: 1 }}>
                                     <Grid item xs={12} sm={6}>
-                                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <Avatar src={report.reportedBy.avatar} sx={{ width: 20, height: 20 }}>
-                                          {report.reportedBy.username.slice(0, 2)}
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <Avatar
+                                          src={report.reportedBy.avatar}
+                                          sx={{ width: 20, height: 20 }}
+                                        >
+                                          {report.reportedBy.username.slice(
+                                            0,
+                                            2
+                                          )}
                                         </Avatar>
                                         <Typography variant="caption">
-                                          <strong>{report.reportedBy.username}</strong>
+                                          <strong>
+                                            {report.reportedBy.username}
+                                          </strong>
                                         </Typography>
                                       </Box>
                                     </Grid>
                                     {report.reportedUser && (
                                       <Grid item xs={12} sm={6}>
-                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                          <Avatar src={report.reportedUser.avatar} sx={{ width: 20, height: 20 }}>
-                                            {report.reportedUser.username.slice(0, 2)}
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 1,
+                                          }}
+                                        >
+                                          <Avatar
+                                            src={report.reportedUser.avatar}
+                                            sx={{ width: 20, height: 20 }}
+                                          >
+                                            {report.reportedUser.username.slice(
+                                              0,
+                                              2
+                                            )}
                                           </Avatar>
-                                          <Typography variant="caption" color="error.main">
-                                            <strong>{report.reportedUser.username}</strong>
+                                          <Typography
+                                            variant="caption"
+                                            color="error.main"
+                                          >
+                                            <strong>
+                                              {report.reportedUser.username}
+                                            </strong>
                                           </Typography>
                                         </Box>
                                       </Grid>
                                     )}
                                     <Grid item xs={12} sm={6}>
-                                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                        <AccessTime sx={{ fontSize: 14, color: "text.secondary" }} />
-                                        <Typography variant="caption">{report.createdAt}</Typography>
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 1,
+                                        }}
+                                      >
+                                        <AccessTime
+                                          sx={{
+                                            fontSize: 14,
+                                            color: "text.secondary",
+                                          }}
+                                        />
+                                        <Typography variant="caption">
+                                          {report.createdAt}
+                                        </Typography>
                                       </Box>
                                     </Grid>
                                     {report.assignedTo && (
                                       <Grid item xs={12} sm={6}>
-                                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                          <People sx={{ fontSize: 14, color: "text.secondary" }} />
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 1,
+                                          }}
+                                        >
+                                          <People
+                                            sx={{
+                                              fontSize: 14,
+                                              color: "text.secondary",
+                                            }}
+                                          />
                                           <Typography variant="caption">
-                                            <strong>Assigned to: {report.assignedTo}</strong>
+                                            <strong>
+                                              Assigned to: {report.assignedTo}
+                                            </strong>
                                             {report.assignedBy && (
                                               <Typography
                                                 variant="caption"
                                                 color="text.secondary"
-                                                sx={{ display: "block", fontSize: "0.7rem" }}
+                                                sx={{
+                                                  display: "block",
+                                                  fontSize: "0.7rem",
+                                                }}
                                               >
-                                                by {report.assignedBy} {report.assignedAt && `• ${report.assignedAt}`}
+                                                by {report.assignedBy}{" "}
+                                                {report.assignedAt &&
+                                                  `• ${report.assignedAt}`}
                                               </Typography>
                                             )}
                                           </Typography>
@@ -1055,17 +1428,41 @@ export default function UserReportsCenter() {
                                     )}
                                   </Grid>
                                   {/* Evidence Files Count */}
-                                  {report.evidence && report.evidence.length > 0 && (
-                                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
-                                      <AttachFile sx={{ fontSize: 14, color: "text.secondary" }} />
-                                      <Typography variant="caption" color="text.secondary">
-                                        {report.evidence.length} evidence files
-                                      </Typography>
-                                    </Box>
-                                  )}
+                                  {report.evidence &&
+                                    report.evidence.length > 0 && (
+                                      <Box
+                                        sx={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 0.5,
+                                          mb: 1,
+                                        }}
+                                      >
+                                        <AttachFile
+                                          sx={{
+                                            fontSize: 14,
+                                            color: "text.secondary",
+                                          }}
+                                        />
+                                        <Typography
+                                          variant="caption"
+                                          color="text.secondary"
+                                        >
+                                          {report.evidence.length} evidence
+                                          files
+                                        </Typography>
+                                      </Box>
+                                    )}
                                 </Box>
                                 {/* Action Buttons */}
-                                <Box sx={{ display: "flex", flexDirection: "column", gap: 1, flexShrink: 0 }}>
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: 1,
+                                    flexShrink: 0,
+                                  }}
+                                >
                                   <Button
                                     size="small"
                                     variant="outlined"
@@ -1080,15 +1477,26 @@ export default function UserReportsCenter() {
                                     sx={{
                                       border: "1px solid",
                                       borderColor: "divider",
-                                      color: isBookmarked ? "warning.main" : "text.secondary",
+                                      color: isBookmarked
+                                        ? "warning.main"
+                                        : "text.secondary",
                                     }}
                                   >
-                                    {isBookmarked ? <Bookmark /> : <BookmarkBorder />}
+                                    {isBookmarked ? (
+                                      <Bookmark />
+                                    ) : (
+                                      <BookmarkBorder />
+                                    )}
                                   </IconButton>
                                   <IconButton
                                     size="small"
-                                    onClick={(e) => handleMenuClick(e, report.id)}
-                                    sx={{ border: "1px solid", borderColor: "divider" }}
+                                    onClick={(e) =>
+                                      handleMenuClick(e, report.id)
+                                    }
+                                    sx={{
+                                      border: "1px solid",
+                                      borderColor: "divider",
+                                    }}
                                   >
                                     <MoreHoriz />
                                   </IconButton>
@@ -1096,7 +1504,7 @@ export default function UserReportsCenter() {
                               </Box>
                             </CardContent>
                           </Card>
-                        )
+                        );
                       })}
                     </Stack>
                   </Box>
@@ -1121,10 +1529,10 @@ export default function UserReportsCenter() {
             <MenuList>
               <MenuItem
                 onClick={() => {
-                  const report = userReports.find((r) => r.id === menuReportId)
-                  setReportToAssign(report)
-                  setAssignDialogOpen(true)
-                  handleMenuClose()
+                  const report = userReports.find((r) => r.id === menuReportId);
+                  setReportToAssign(report);
+                  setAssignDialogOpen(true);
+                  handleMenuClose();
                 }}
               >
                 <ListItemIcon>
@@ -1132,16 +1540,21 @@ export default function UserReportsCenter() {
                 </ListItemIcon>
                 <ListItemText>Assign to Admin</ListItemText>
               </MenuItem>
-              {userReports.find((r) => r.id === menuReportId)?.status === "pending" && (
+              {userReports.find((r) => r.id === menuReportId)?.status ===
+                "pending" && (
                 <>
                   <Divider />
-                  <MenuItem onClick={() => handleAction("resolve", menuReportId)}>
+                  <MenuItem
+                    onClick={() => handleAction("resolve", menuReportId)}
+                  >
                     <ListItemIcon>
                       <CheckCircle color="success" />
                     </ListItemIcon>
                     <ListItemText>Mark Resolved</ListItemText>
                   </MenuItem>
-                  <MenuItem onClick={() => handleAction("reject", menuReportId)}>
+                  <MenuItem
+                    onClick={() => handleAction("reject", menuReportId)}
+                  >
                     <ListItemIcon>
                       <Close color="error" />
                     </ListItemIcon>
@@ -1197,165 +1610,97 @@ export default function UserReportsCenter() {
             {selectedReport && (
               <>
                 <DialogTitle>
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: { xs: "column", sm: "row" },
+                      alignItems: { xs: "flex-start", sm: "center" },
+                      justifyContent: "space-between",
+                      gap: 1,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1,
+                        flexWrap: "wrap",
+                      }}
+                    >
                       <ReportProblem />
-                      <Typography variant="h6">{selectedReport.title}</Typography>
+                      <Typography
+                        variant="h6"
+                        sx={{ fontSize: { xs: "1rem", sm: "1.25rem" } }}
+                      >
+                        {selectedReport.title}
+                      </Typography>
                     </Box>
-                    <IconButton onClick={() => setDialogOpen(false)}>
+                    <IconButton
+                      onClick={() => setDialogOpen(false)}
+                      sx={{ alignSelf: { xs: "flex-end", sm: "center" } }}
+                    >
                       <Close />
                     </IconButton>
                   </Box>
-                  <Typography variant="body2" color="text.secondary">
-                    Report ID: {selectedReport.id} • Created: {selectedReport.createdAt}
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                      mt: { xs: 1, sm: 0 },
+                    }}
+                  >
+                    Report ID: {selectedReport.id} • Created:{" "}
+                    {selectedReport.createdAt}
                   </Typography>
                 </DialogTitle>
+
                 <DialogContent>
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 3 }}
+                  >
+                    {/* Description */}
                     <Box>
-                      <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="bold"
+                        gutterBottom
+                      >
                         Description
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {selectedReport.description}
                       </Typography>
                     </Box>
-                    <Grid container spacing={3}>
+
+                    {/* Two-column layout on desktop, single column on mobile */}
+                    <Grid container spacing={2}>
                       <Grid item xs={12} md={6}>
-                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                          Report Details
-                        </Typography>
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                          <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Category
-                            </Typography>
-                            <Box sx={{ mt: 0.5 }}>
-                              <Chip label={selectedReport.category} size="small" />
-                            </Box>
-                          </Box>
-                          <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Status
-                            </Typography>
-                            <Box sx={{ mt: 0.5 }}>
-                              <Chip
-                                label={selectedReport.status.replace("-", " ")}
-                                size="small"
-                                color={getStatusColor(selectedReport.status)}
-                              />
-                            </Box>
-                          </Box>
-                          <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Priority
-                            </Typography>
-                            <Box sx={{ mt: 0.5 }}>
-                              <Chip
-                                label={selectedReport.priority}
-                                size="small"
-                                color={getPriorityColor(selectedReport.priority)}
-                              />
-                            </Box>
-                          </Box>
-                          <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Game Mode
-                            </Typography>
-                            <Typography variant="body2">{selectedReport.gameMode}</Typography>
-                          </Box>
-                          <Box>
-                            <Typography variant="caption" color="text.secondary">
-                              Location
-                            </Typography>
-                            <Typography variant="body2">{selectedReport.location}</Typography>
-                          </Box>
-                        </Box>
+                        {/* Report Details */}
+                        ...
                       </Grid>
+
                       <Grid item xs={12} md={6}>
-                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                          Users Involved
-                        </Typography>
-                        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                          <Paper sx={{ p: 2, bgcolor: "grey.50" }}>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                              <Avatar src={selectedReport.reportedBy.avatar}>
-                                {selectedReport.reportedBy.username.slice(0, 2)}
-                              </Avatar>
-                              <Box sx={{ flex: 1 }}>
-                                <Typography variant="body2" fontWeight="bold">
-                                  {selectedReport.reportedBy.username}
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  Reporter • {selectedReport.reportedBy.id}
-                                </Typography>
-                              </Box>
-                            </Box>
-                          </Paper>
-                          {selectedReport.reportedUser && (
-                            <Paper sx={{ p: 2, bgcolor: "error.50" }}>
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                                <Avatar src={selectedReport.reportedUser.avatar}>
-                                  {selectedReport.reportedUser.username.slice(0, 2)}
-                                </Avatar>
-                                <Box sx={{ flex: 1 }}>
-                                  <Typography variant="body2" fontWeight="bold">
-                                    {selectedReport.reportedUser.username}
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    Reported User • {selectedReport.reportedUser.id}
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </Paper>
-                          )}
-                          {selectedReport.assignedTo && (
-                            <Paper sx={{ p: 2, bgcolor: "primary.50" }}>
-                              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                                <Avatar>{selectedReport.assignedTo.slice(0, 2)}</Avatar>
-                                <Box sx={{ flex: 1 }}>
-                                  <Typography variant="body2" fontWeight="bold">
-                                    {selectedReport.assignedTo}
-                                  </Typography>
-                                  <Typography variant="caption" color="text.secondary">
-                                    Assigned Admin
-                                  </Typography>
-                                </Box>
-                              </Box>
-                            </Paper>
-                          )}
-                        </Box>
+                        {/* Users Involved */}
+                        ...
                       </Grid>
                     </Grid>
+
+                    {/* Assignment History */}
                     {selectedReport.assignedTo && (
                       <Grid item xs={12}>
-                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                          Assignment History
-                        </Typography>
-                        <Paper sx={{ p: 2, bgcolor: "info.50" }}>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
-                            <Avatar sx={{ bgcolor: "info.main", width: 32, height: 32 }}>
-                              <People />
-                            </Avatar>
-                            <Box sx={{ flex: 1 }}>
-                              <Typography variant="body2" fontWeight="bold">
-                                Currently assigned to: {selectedReport.assignedTo}
-                              </Typography>
-                              {selectedReport.assignedBy && (
-                                <Typography variant="caption" color="text.secondary">
-                                  Assigned by {selectedReport.assignedBy}
-                                  {selectedReport.assignedAt && ` on ${selectedReport.assignedAt}`}
-                                </Typography>
-                              )}
-                            </Box>
-                            <Chip label="Active" size="small" color="info" icon={<PlayArrow />} />
-                          </Box>
-                        </Paper>
+                        ...
                       </Grid>
                     )}
-                    {selectedReport.evidence && selectedReport.evidence.length > 0 && (
+
+                    {/* Evidence Files */}
+                    {selectedReport.evidence?.length > 0 && (
                       <Box>
-                        <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
+                        <Typography
+                          variant="subtitle1"
+                          fontWeight="bold"
+                          gutterBottom
+                        >
                           Evidence Files
                         </Typography>
                         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
@@ -1375,16 +1720,22 @@ export default function UserReportsCenter() {
                     )}
                   </Box>
                 </DialogContent>
-                <DialogActions sx={{ gap: 1, p: 2 }}>
-                  <Button variant="outlined" onClick={() => setDialogOpen(false)}>
+
+                <DialogActions
+                  sx={{ flexWrap: "wrap", gap: 1, p: { xs: 1, sm: 2 } }}
+                >
+                  <Button
+                    variant="outlined"
+                    onClick={() => setDialogOpen(false)}
+                  >
                     Close
                   </Button>
                   <Button
                     variant="contained"
                     startIcon={<People />}
                     onClick={() => {
-                      setReportToAssign(selectedReport)
-                      setAssignDialogOpen(true)
+                      setReportToAssign(selectedReport);
+                      setAssignDialogOpen(true);
                     }}
                   >
                     Assign to Admin
@@ -1395,7 +1746,9 @@ export default function UserReportsCenter() {
                         variant="contained"
                         color="success"
                         startIcon={<CheckCircle />}
-                        onClick={() => handleAction("resolve", selectedReport.id)}
+                        onClick={() =>
+                          handleAction("resolve", selectedReport.id)
+                        }
                       >
                         Resolve
                       </Button>
@@ -1403,7 +1756,9 @@ export default function UserReportsCenter() {
                         variant="contained"
                         color="error"
                         startIcon={<Close />}
-                        onClick={() => handleAction("reject", selectedReport.id)}
+                        onClick={() =>
+                          handleAction("reject", selectedReport.id)
+                        }
                       >
                         Reject
                       </Button>
@@ -1438,13 +1793,16 @@ export default function UserReportsCenter() {
                       {reportToAssign.title}
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Report ID: {reportToAssign.id} • Priority: {reportToAssign.priority}
+                      Report ID: {reportToAssign.id} • Priority:{" "}
+                      {reportToAssign.priority}
                     </Typography>
                   </Paper>
                   <Typography variant="subtitle2" gutterBottom>
                     Available Admins
                   </Typography>
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", gap: 1 }}
+                  >
                     {fetchedAdminUsers.map((admin) => (
                       <Paper
                         key={admin.id}
@@ -1453,15 +1811,24 @@ export default function UserReportsCenter() {
                           cursor: "pointer",
                           "&:hover": { bgcolor: "primary.50" },
                         }}
-                        onClick={() => handleAssignReport(reportToAssign.id, admin.name)}
+                        onClick={() =>
+                          handleAssignReport(reportToAssign.id, admin.name)
+                        }
                       >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                          <Avatar src={admin.avatar}>{admin.name.slice(0, 2)}</Avatar>
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <Avatar src={admin.avatar}>
+                            {admin.name.slice(0, 2)}
+                          </Avatar>
                           <Box sx={{ flex: 1 }}>
                             <Typography variant="body2" fontWeight="bold">
                               {admin.name}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               {admin.role} • {admin.workload} active reports
                             </Typography>
                           </Box>
@@ -1469,7 +1836,11 @@ export default function UserReportsCenter() {
                             label={admin.status}
                             size="small"
                             color={
-                              admin.status === "online" ? "success" : admin.status === "busy" ? "warning" : "default"
+                              admin.status === "online"
+                                ? "success"
+                                : admin.status === "busy"
+                                ? "warning"
+                                : "default"
                             }
                           />
                         </Box>
@@ -1481,9 +1852,13 @@ export default function UserReportsCenter() {
                         cursor: "pointer",
                         "&:hover": { bgcolor: "error.50" },
                       }}
-                      onClick={() => handleAssignReport(reportToAssign.id, null)}
+                      onClick={() =>
+                        handleAssignReport(reportToAssign.id, null)
+                      }
                     >
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                      >
                         <Avatar sx={{ bgcolor: "grey.300" }}>
                           <PersonOff />
                         </Avatar>
@@ -1502,7 +1877,10 @@ export default function UserReportsCenter() {
               )}
             </DialogContent>
             <DialogActions>
-              <Button variant="outlined" onClick={() => setAssignDialogOpen(false)}>
+              <Button
+                variant="outlined"
+                onClick={() => setAssignDialogOpen(false)}
+              >
                 Cancel
               </Button>
             </DialogActions>
@@ -1525,12 +1903,13 @@ export default function UserReportsCenter() {
           {/* Footer */}
           <Alert severity="info" sx={{ mt: 3 }}>
             <Typography variant="body2">
-              <strong>Report Management System:</strong> Efficiently manage and review user reports with advanced
-              filtering and assignment capabilities. Connected to live API endpoints.
+              <strong>Report Management System:</strong> Efficiently manage and
+              review user reports with advanced filtering and assignment
+              capabilities. Connected to live API endpoints.
             </Typography>
           </Alert>
         </Container>
       </Box>
     </ErrorBoundary>
-  )
+  );
 }
