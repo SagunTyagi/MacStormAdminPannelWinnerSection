@@ -290,20 +290,20 @@ const LegalDocuments = () => {
   )
 
   return (
-    <Box sx={{ minHeight: "100vh", backgroundColor: "#fafafa", py: 4 }}>
-      <Box sx={{ width: "95%", maxWidth: "95%", mx: "auto" }}>
-        <Card elevation={2} sx={{ borderRadius: 3, backgroundColor: "#ffffff", border: "1px solid #f0f0f0" }}>
-          <CardContent sx={{ p: 3 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 4 }}>
+    <Box sx={{ minHeight: "100vh"}}>
+      <Box>
+        <Card elevation={2} >
+          <CardContent >
+            <Stack direction="column" alignItems="center" justifyContent="space-between" sx={{ mb: 4 }}>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Box sx={{ p: 1.5, borderRadius: 2, backgroundColor: "#e3f2fd" }}>
                   <FileText size={isMobile ? 20 : 24} color="#1976d2" />
                 </Box>
                 <Box>
-                  <Typography variant={isMobile ? "h5" : "h4"} fontWeight={700}>
+                  <Typography variant={isMobile ? "h5" : "h4"} fontWeight={700} >
                     Legal Documents
                   </Typography>
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography mb={2} variant="body2" color="text.secondary">
                     Manage legal documents with version control and markdown editing
                   </Typography>
                 </Box>

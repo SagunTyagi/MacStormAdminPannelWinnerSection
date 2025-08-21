@@ -300,8 +300,6 @@ export default function Branding({ sidebarOpen = true }) {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: "#fafafa",
-        p: 3,
         transition: "all 0.3s ease",
       }}
     >

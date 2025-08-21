@@ -44,7 +44,7 @@ const Setting = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-gray-100 ">
       <Paper elevation={3} className="max-w-full mx-auto">
         {/* Header Nav: Tabs (desktop) or Select (mobile) */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', p: 2 }}>

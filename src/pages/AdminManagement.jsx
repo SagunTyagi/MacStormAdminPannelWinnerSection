@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { Eye, Pencil, ShieldCheck, Crown, RefreshCcw, Trash2 } from "lucide-react";
+import {
+  Eye,
+  Pencil,
+  ShieldCheck,
+  Crown,
+  RefreshCcw,
+  Trash2,
+} from "lucide-react";
 import axiosInstance from "../utils/axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -22,32 +29,30 @@ const AdminManagement = () => {
   const [adminToDelete, setAdminToDelete] = useState(null);
 
   const getRelativeTime = (dateString) => {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffMs = now - date;
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
 
-  const seconds = Math.floor(diffMs / 1000);
-  const minutes = Math.floor(diffMs / (1000 * 60));
-  const hours = Math.floor(diffMs / (1000 * 60 * 60));
-  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const seconds = Math.floor(diffMs / 1000);
+    const minutes = Math.floor(diffMs / (1000 * 60));
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (seconds < 60) return "just now";
-  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-  return `${days} day${days > 1 ? "s" : ""} ago`;
-};
+    if (seconds < 60) return "just now";
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    return `${days} day${days > 1 ? "s" : ""} ago`;
+  };
 
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleString("en-IN", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+    });
 
-const formatDate = (dateString) =>
-  new Date(dateString).toLocaleString("en-IN", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-  });
-
-  
   const allPermissions = [
     "user_management",
     "content_management",
@@ -162,7 +167,8 @@ const formatDate = (dateString) =>
     }
   };
 
-  
+  if (loading) return <h1>loading....</h1>;
+
   return (
     <div className="container mx-auto p-4 sm:p-6 bg-gray-50 text-gray-900 min-h-screen dark:bg-zinc-900 dark:text-white">
       <ToastContainer />
@@ -207,7 +213,7 @@ const formatDate = (dateString) =>
         {admins.map((admin) => (
           <div
             key={admin.id}
-            className="bg-gray-50 dark:bg-zinc-700 p-4 rounded border dark:border-zinc-600 shadow-sm flex justify-between items-center mb-2"
+            className="bg-gray-50 dark:bg-zinc-700 p-4 rounded border dark:border-zinc-600 shadow-sm flex justify-between flex-wrap items-center mb-2"
           >
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-zinc-600" />
@@ -217,29 +223,25 @@ const formatDate = (dateString) =>
                   <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
                     {admin.role}
                   </span>
-            
                 </div>
                 <div className="text-sm text-gray-500 dark:text-gray-300">
                   {admin.email}
                 </div>
                 <div
-  className="text-xs text-gray-400 dark:text-gray-300"
-  title={
-    admin.lastLogin
-      ? formatDate(admin.lastLogin)
-      : formatDate(admin.createdAt)
-  }
->
-  {admin.lastLogin
-    ? `Last login: ${getRelativeTime(admin.lastLogin)}`
-    : `Created on: ${getRelativeTime(admin.createdAt)}`}
-</div>
-
-
-
+                  className="text-xs text-gray-400 dark:text-gray-300"
+                  title={
+                    admin.lastLogin
+                      ? formatDate(admin.lastLogin)
+                      : formatDate(admin.createdAt)
+                  }
+                >
+                  {admin.lastLogin
+                    ? `Last login: ${getRelativeTime(admin.lastLogin)}`
+                    : `Created on: ${getRelativeTime(admin.createdAt)}`}
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-4 text-sm">
+            <div className="flex flex-wrap items-center m-5 gap-4 text-sm">
               <button
                 onClick={() => handleViewPermissions(admin.permissions)}
                 className="text-sm text-blue-600 underline hover:text-blue-800"
@@ -268,7 +270,7 @@ const formatDate = (dateString) =>
                   }
                 }}
               />
-              
+
               <Trash2
                 className="w-4 h-4 cursor-pointer text-red-500 hover:text-red-700"
                 onClick={() => {
@@ -295,23 +297,21 @@ const formatDate = (dateString) =>
             <div className="mb-3">
               <strong>Role:</strong> {selectedAdmin.role}
             </div>
-            
+
             <div className="mb-3">
-  <strong>Activity:</strong>{" "}
-<span
-  title={
-    selectedAdmin.lastLogin
-      ? formatDate(selectedAdmin.lastLogin)
-      : formatDate(selectedAdmin.createdAt)
-  }
->
-  {selectedAdmin.lastLogin
-    ? `Last login: ${getRelativeTime(selectedAdmin.lastLogin)}`
-    : `Created on: ${getRelativeTime(selectedAdmin.createdAt)}`}
-</span>
-
-</div>
-
+              <strong>Activity:</strong>{" "}
+              <span
+                title={
+                  selectedAdmin.lastLogin
+                    ? formatDate(selectedAdmin.lastLogin)
+                    : formatDate(selectedAdmin.createdAt)
+                }
+              >
+                {selectedAdmin.lastLogin
+                  ? `Last login: ${getRelativeTime(selectedAdmin.lastLogin)}`
+                  : `Created on: ${getRelativeTime(selectedAdmin.createdAt)}`}
+              </span>
+            </div>
 
             <div className="mb-3">
               <strong>Permissions:</strong>
@@ -617,8 +617,6 @@ const formatDate = (dateString) =>
           </div>
         </div>
       )}
-
-      
     </div>
   );
 };

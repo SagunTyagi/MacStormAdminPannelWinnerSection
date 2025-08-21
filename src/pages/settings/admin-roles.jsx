@@ -260,15 +260,12 @@ const AdminRoles = () => {
     <Box
       sx={{
         minHeight: "100vh",
-        backgroundColor: "#f9fafb",
-        py: 3,
       }}
     >
       <Box
         sx={{
           width: "95%",
           mx: "auto",
-          px: 3,
         }}
       >
         {/* Header Card */}
@@ -326,12 +323,11 @@ const AdminRoles = () => {
         <Card
           elevation={0}
           sx={{
-            border: "1px solid #e5e7eb",
             borderRadius: 2,
             backgroundColor: "#ffffff",
           }}
         >
-          <CardContent sx={{ p: 4 }}>
+          <CardContent>
             {/* Section Header */}
             <Stack
               direction={{ xs: "column", sm: "row" }}

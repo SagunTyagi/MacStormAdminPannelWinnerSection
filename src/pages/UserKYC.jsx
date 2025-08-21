@@ -155,25 +155,74 @@ export default function UserKYC() {
     fetchUsersAndTransactions();
   }, []); // Empty dependency array to run only once on mount
 
-  const handleBan = (id) => {
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === id
-          ? {
-              ...u,
-              status: u.status === "Active" ? "Suspended" : "Active",
-            }
-          : u
-      )
-    );
-  };
+  const handleBan = async (userId, currentStatus) => {
+    const newMemberStatus = currentStatus === "Active" ? 0 : 1;
+    const newStatusText = newMemberStatus === 0 ? "Suspended" : "Active";
 
-  const handleDeleteConfirm = () => {
-    if (deleteUser) {
-      setUsers((prev) => prev.filter((u) => u.id !== deleteUser.id));
-      setDeleteUser(null);
+    try {
+      const response = await fetch(
+        "https://macstormbattle-backend.onrender.com/api/v1/user/member-status/admin/update",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            member_status: newMemberStatus,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to update user status: ${response.statusText}`);
+      }
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === userId
+            ? {
+                ...u,
+                status: newStatusText,
+              }
+            : u
+        )
+      );
+    } catch (err) {
+      console.error("Error updating user status:", err);
+      setError(`Failed to update user status: ${err.message}`);
     }
   };
+
+ const handleDeleteConfirm = async () => {
+  if (deleteUser) {
+    try {
+      const response = await fetch(
+        `https://macstormbattle-backend.onrender.com/api/v1/user/${deleteUser.id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete user: ${response.statusText}`);
+      }
+
+      setUsers((prev) => prev.filter((u) => u.id !== deleteUser.id));
+    } catch (err) {
+      console.error("Error deleting user:", err);
+      setError(`Failed to delete user: ${err.message}`);
+    } finally {
+      setDeleteUser(null);
+    }
+  }
+};
+
 
   const handleKycStatusChange = (userId, newStatus) => {
     setUsers((prevUsers) =>

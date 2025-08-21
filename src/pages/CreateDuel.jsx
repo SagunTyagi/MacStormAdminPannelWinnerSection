@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
+import axiosInstance from "../utils/axios";
 
 
 function CreateDuel() {
@@ -24,7 +25,7 @@ function CreateDuel() {
   // ✅ If editing, fetch duel details
   useEffect(() => {
     if (duelId) {
-      axios.get(`http://localhost:5000/api/duels/${duelId}`)
+      axiosInstance.get(`/duels/${duelId}`)
         .then(res => {
           const d = res.data;
           setForm({
@@ -60,7 +61,7 @@ function CreateDuel() {
       data.set("players", `0/${form.players}`);
 
       if (duelId) {
-      await axios.put(`http://localhost:5000/api/duels/${duelId}`, data, {
+      await axiosInstance.put(`/duels/${duelId}`, data, {
         headers: { 
           "Content-Type": "multipart/form-data",
           "Authorization": `Bearer ${token}`
@@ -69,7 +70,7 @@ function CreateDuel() {
 
         toast.success(" Duel updated!");
       } else {
-      await axios.post("http://localhost:5000/api/duels", data, {
+      await axiosInstance.post("/duels", data, {
         headers: { 
           "Content-Type": "multipart/form-data",
           "Authorization": `Bearer ${token}`

@@ -245,7 +245,7 @@ const HowToPlay = () => {
   )
 
   return (
-    <Box sx={{ minHeight: "100vh", backgroundColor: "#fafafa", py: { xs: 1.5, sm: 2, md: 3 } }}>
+    <Box sx={{ minHeight: "100vh" }}>
       <Box sx={{ width: "95%", maxWidth: "95%", mx: "auto", px: { xs: 1, sm: 1.5, md: 2 } }}>
         <Card elevation={2} sx={{ mb: 2, borderRadius: 2, backgroundColor: "#ffffff", border: "1px solid #f0f0f0" }}>
           <CardContent>

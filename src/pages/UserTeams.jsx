@@ -1,11 +1,5 @@
 import React, { useState } from "react";
-import {
-  UsersIcon,
-  EyeIcon,
-  EditIcon,
-  MoreHorizontal,
-  X,
-} from "lucide-react";
+import { UsersIcon, EyeIcon, EditIcon, MoreHorizontal, X } from "lucide-react";
 import RosterModal from "./RosterModal";
 
 export default function UserTeams() {
@@ -114,7 +108,6 @@ export default function UserTeams() {
           </p>
         </div>
         <div className="space-x-2">
-          
           <button
             className="px-4 py-2 bg-black text-white rounded"
             onClick={() => setShowCreateModal(true)}
@@ -125,6 +118,7 @@ export default function UserTeams() {
       </div>
 
       <div className="bg-white dark:bg-zinc-800 rounded p-4 shadow">
+        {/* Search */}
         <div className="mb-4">
           <input
             type="text"
@@ -135,64 +129,132 @@ export default function UserTeams() {
           />
         </div>
 
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-100 dark:bg-zinc-700">
-            <tr>
-              <th className="text-left px-3 py-2">Team ID</th>
-              <th className="text-left px-3 py-2">Name</th>
-              <th className="text-left px-3 py-2">State</th>
-              <th className="text-left px-3 py-2">Votes (State)</th>
-              <th className="text-left px-3 py-2">Votes (National)</th>
-              <th className="text-left px-3 py-2">Reg Users</th>
-              <th className="text-left px-3 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTeams.map((team) => (
-              <tr key={team.id} className="border-t dark:border-zinc-700">
-                <td className="px-3 py-2">{team.id}</td>
-                <td className="px-3 py-2 font-medium">{team.name}</td>
-                <td className="px-3 py-2">{team.state}</td>
-                <td className="px-3 py-2 text-blue-500">
-                  {team.votesState.toLocaleString()}
-                </td>
-                <td className="px-3 py-2 text-purple-500">
-                  {team.votesNational.toLocaleString()}
-                </td>
-                <td className="px-3 py-2">
-                  {team.members.filter((m) => m.active).length}
-                </td>
-                <td className="px-3 py-2 space-x-2 relative">
-                  <button
-                    onClick={() => setOpenTeam(team)}
-                    className="inline-flex items-center px-3 py-1 bg-gray-100 dark:bg-zinc-700 border rounded hover:bg-gray-200"
-                  >
-                    <UsersIcon className="w-4 h-4 mr-1" /> Roster
-                  </button>
-                  <button onClick={() => setViewTeam(team)}>
-                    <EyeIcon className="w-5 h-5 inline" />
-                  </button>
-                  <button onClick={() => setEditTeam(team)}>
-                    <EditIcon className="w-5 h-5 inline" />
-                  </button>
-                  <button onClick={() => setMoreMenuId(team.id)}>
-                    <MoreHorizontal className="w-5 h-5 inline" />
-                  </button>
-                  {moreMenuId === team.id && (
-                    <div className="absolute right-0 z-10 bg-white dark:bg-zinc-700 border rounded shadow p-2 mt-2">
-                      <button
-                        onClick={() => setTeamToDelete(team)}
-                        className="text-red-600 dark:text-red-400 block w-full text-left hover:underline"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </td>
+        {/* Desktop Table */}
+        <div className="hidden sm:block overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-100 dark:bg-zinc-700">
+              <tr>
+                <th className="text-left px-3 py-2">Team ID</th>
+                <th className="text-left px-3 py-2">Name</th>
+                <th className="text-left px-3 py-2">State</th>
+                <th className="text-left px-3 py-2">Votes (State)</th>
+                <th className="text-left px-3 py-2">Votes (National)</th>
+                <th className="text-left px-3 py-2">Reg Users</th>
+                <th className="text-left px-3 py-2">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredTeams.map((team) => (
+                <tr key={team.id} className="border-t dark:border-zinc-700">
+                  <td className="px-3 py-2">{team.id}</td>
+                  <td className="px-3 py-2 font-medium">{team.name}</td>
+                  <td className="px-3 py-2">{team.state}</td>
+                  <td className="px-3 py-2 text-blue-500">
+                    {team.votesState.toLocaleString()}
+                  </td>
+                  <td className="px-3 py-2 text-purple-500">
+                    {team.votesNational.toLocaleString()}
+                  </td>
+                  <td className="px-3 py-2">
+                    {team.members.filter((m) => m.active).length}
+                  </td>
+                  <td className="px-3 py-2 space-x-2 relative">
+                    <button
+                      onClick={() => setOpenTeam(team)}
+                      className="inline-flex items-center px-3 py-1 bg-gray-100 dark:bg-zinc-700 border rounded hover:bg-gray-200"
+                    >
+                      <UsersIcon className="w-4 h-4 mr-1" /> Roster
+                    </button>
+                    <button onClick={() => setViewTeam(team)}>
+                      <EyeIcon className="w-5 h-5 inline" />
+                    </button>
+                    <button onClick={() => setEditTeam(team)}>
+                      <EditIcon className="w-5 h-5 inline" />
+                    </button>
+                    <button onClick={() => setMoreMenuId(team.id)}>
+                      <MoreHorizontal className="w-5 h-5 inline" />
+                    </button>
+                    {moreMenuId === team.id && (
+                      <div className="absolute right-0 z-10 bg-white dark:bg-zinc-700 border rounded shadow p-2 mt-2">
+                        <button
+                          onClick={() => setTeamToDelete(team)}
+                          className="text-red-600 dark:text-red-400 block w-full text-left hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile View */}
+        <div className="block sm:hidden space-y-3">
+          {filteredTeams.map((team) => {
+            return (
+              <div
+                key={team.id}
+                className="bg-white dark:bg-zinc-800 rounded shadow p-4"
+              >
+                <div className="mt-1 space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                  <p className="font-semibold">
+                    <strong>Team Name: </strong>
+                    {team.name}
+                  </p>
+                  <p>
+                    <strong>State: </strong>
+                    {team.state}
+                  </p>
+                  <p>
+                    <strong>Team ID:</strong> {team.id}
+                  </p>
+                  <p>
+                    <strong>Votes (State):</strong>{" "}
+                    {team.votesState.toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>Votes (National):</strong>{" "}
+                    {team.votesNational.toLocaleString()}
+                  </p>
+                  <p>
+                    <strong>Reg Users:</strong>{" "}
+                    {team.members.filter((m) => m.active).length}
+                  </p>
+
+                  <div className="flex gap-2 mt-3">
+                    <button
+                      onClick={() => setOpenTeam(team)}
+                      className="bg-gray-100 dark:bg-zinc-700 px-2 py-1 rounded text-xs"
+                    >
+                      <UsersIcon className="w-4 h-4 inline mr-1" /> Roster
+                    </button>
+                    <button
+                      onClick={() => setViewTeam(team)}
+                      className="px-2 py-1 bg-blue-500 text-white rounded text-xs"
+                    >
+                      <EyeIcon className="w-4 h-4 inline" /> View
+                    </button>
+                    <button
+                      onClick={() => setEditTeam(team)}
+                      className="px-2 py-1 bg-yellow-500 text-white rounded text-xs"
+                    >
+                      <EditIcon className="w-4 h-4 inline" /> Edit
+                    </button>
+                    <button
+                      onClick={() => setTeamToDelete(team)}
+                      className="px-2 py-1 bg-red-500 text-white rounded text-xs"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {/* Roster Modal */}

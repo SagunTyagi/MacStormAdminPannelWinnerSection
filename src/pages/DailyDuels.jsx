@@ -138,7 +138,7 @@ const renderCard = (duel) => {
       {/* Banner */}
       {duel.banner && (
         <img
-          src={`http://localhost:5000${duel.banner}`}
+          src={`https://macstormbattle-backend.onrender.com/api/${duel.banner}`}
           alt="Duel Banner"
           className="w-full h-40 object-cover rounded mb-3"
         />

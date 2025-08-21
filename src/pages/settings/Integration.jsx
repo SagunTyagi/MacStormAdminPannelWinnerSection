@@ -225,8 +225,8 @@ const Integration = () => {
   )
 
   return (
-    <Box sx={{ minHeight: "100vh", backgroundColor: "#f9fafb", py: 3 }}>
-      <Box sx={{ width: "95%", maxWidth: "95%", mx: "auto", px: 3 }}>
+    <Box sx={{ minHeight: "100vh", py: 3 }}>
+      <Box sx={{ width: "95%", maxWidth: "95%", mx: "auto" }}>
         <Card
           elevation={0}
           sx={{
