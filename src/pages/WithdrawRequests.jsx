@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 // Directly hardcoded for now (not recommended for production)
 const API_BASE = "https://macstormbattle-backend.onrender.com";
-const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjcsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0MzY5NzkwLCJleHAiOjE3NTU2NjU3OTB9.B6xvX5qEONmozHu-3pmDu7e0nzBzmMj89AtQ60MM9-I";
+const token = localStorage.getItem("authToken") || "";
 
 function WithdrawRequests() {
   const [requests, setRequests] = useState([]);
