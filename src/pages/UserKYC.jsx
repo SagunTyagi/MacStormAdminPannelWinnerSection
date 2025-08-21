@@ -238,6 +238,7 @@ export default function UserKYC() {
         user={selectedUser}
         onBack={() => setSelectedUser(null)}
         onKycStatusUpdate={handleKycStatusChange}
+        authToken={authToken} 
       />
     );
   }
