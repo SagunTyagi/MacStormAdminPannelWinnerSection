@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Trash2, Plus, ChevronDown } from "lucide-react";
+import { ArrowLeft, Trash2, Plus, ChevronDown, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -30,6 +30,11 @@ export default function DuoContestForm() {
   const [showImageDropdown, setShowImageDropdown] = useState(false);
   const [filteredImages, setFilteredImages] = useState([]);
   
+  // New states for selected image display
+  const [selectedImageTitle, setSelectedImageTitle] = useState("");
+  const [selectedImageUrl, setSelectedImageUrl] = useState("");
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  
   const navigate = useNavigate();
 
   const totalPercent = winners.reduce((s, w) => s + Number(w.percent || 0), 0);
@@ -53,7 +58,7 @@ export default function DuoContestForm() {
         const result = await response.json();
         if (result.status === "success" && result.data) {
           setBannerImages(result.data);
-          setFilteredImages(result.data); // Initialize filtered images
+          setFilteredImages(result.data);
         }
       } catch (error) {
         console.error("Error fetching banner images:", error);
@@ -67,9 +72,12 @@ export default function DuoContestForm() {
   }, []);
 
   // Handle image selection from dropdown
-  const handleImageSelect = (imageUrl) => {
-    setBannerUrl(imageUrl);
+  const handleImageSelect = (image) => {
+    setSelectedImageTitle(image.title);
+    setSelectedImageUrl(image.imageUrl);
+    setBannerUrl(image.imageUrl); // This is what gets sent to backend
     setShowImageDropdown(false);
+    setShowImagePreview(true);
   };
 
   // Filter images based on search input
@@ -86,16 +94,33 @@ export default function DuoContestForm() {
     setFilteredImages(filtered);
   };
 
-  // Handle banner URL input changes
-  const handleBannerUrlChange = (value) => {
-    setBannerUrl(value);
+  // Handle banner title input changes (for searching)
+  const handleBannerTitleChange = (value) => {
+    setSelectedImageTitle(value);
     filterImages(value);
+    
+    // If user types something that doesn't match any title exactly, clear the URL
+    const exactMatch = bannerImages.find(img => img.title === value);
+    if (!exactMatch) {
+      setBannerUrl("");
+      setSelectedImageUrl("");
+      setShowImagePreview(false);
+    }
   };
 
   // Handle input focus
   const handleBannerInputFocus = () => {
     setShowImageDropdown(true);
-    filterImages(bannerUrl);
+    filterImages(selectedImageTitle);
+  };
+
+  // Clear selected image
+  const clearSelectedImage = () => {
+    setSelectedImageTitle("");
+    setSelectedImageUrl("");
+    setBannerUrl("");
+    setShowImagePreview(false);
+    setShowImageDropdown(false);
   };
 
   // Close dropdown when clicking outside
@@ -116,20 +141,17 @@ export default function DuoContestForm() {
   // Update winners array based on total winners count
   const updateWinnersCount = (count) => {
     const numCount = parseInt(count) || 0;
-    if (numCount === winners.length) return; // No change needed
+    if (numCount === winners.length) return;
 
     if (numCount > winners.length) {
-      // Add more winner fields
       const newWinners = [...winners];
       for (let i = winners.length; i < numCount; i++) {
         newWinners.push({ id: Date.now() + i, percent: "" });
       }
       setWinners(newWinners);
     } else if (numCount < winners.length && numCount > 0) {
-      // Remove excess winner fields
       setWinners(winners.slice(0, numCount));
     } else if (numCount === 0) {
-      // Clear all winners
       setWinners([]);
     }
   };
@@ -189,7 +211,6 @@ export default function DuoContestForm() {
   };
 
   const formatScheduleForAPI = (scheduleString) => {
-    // Convert local datetime to ISO string
     const date = new Date(scheduleString);
     return date.toISOString();
   };
@@ -201,7 +222,6 @@ export default function DuoContestForm() {
     setIsSubmitting(true);
 
     try {
-      // Create payload in the required API format
       const payload = {
         event_name: eventName,
         room_size: Number(roomSize),
@@ -210,9 +230,9 @@ export default function DuoContestForm() {
         distribution: createDistributionObject(),
         match_schedule: formatScheduleForAPI(schedule),
         game: game,
-        team: "DUO", // Fixed value for duo contests
-        map: map.toUpperCase(), // API expects uppercase
-        banner_image_url: bannerUrl || null,
+        team: "DUO",
+        map: map.toUpperCase(),
+        banner_image_url: bannerUrl || null, // Send the actual URL to backend
         prize_description: prizeDesc || null,
         match_sponsor: sponsor || null,
         match_description: description || null,
@@ -238,7 +258,6 @@ export default function DuoContestForm() {
       const result = await response.json();
       console.log("Contest created successfully:", result);
 
-      // Show success message
       toast.success("Contest created successfully!");
 
       // Reset form
@@ -254,10 +273,12 @@ export default function DuoContestForm() {
       setSponsor("");
       setPrizeDesc("");
       setMatchPrivateDesc("");
+      setSelectedImageTitle("");
+      setSelectedImageUrl("");
+      setShowImagePreview(false);
       setWinners(DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, percent: p })));
       setErrors({});
 
-      // Navigate back to duo contests page
       navigate("/duoContests");
 
     } catch (error) {
@@ -349,7 +370,6 @@ export default function DuoContestForm() {
               </div>
             </div>
 
-            {/* Room size */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Room Size *</label>
               <input
@@ -366,7 +386,6 @@ export default function DuoContestForm() {
               {errors.roomSize && <p className="text-xs text-red-600 mt-1">{errors.roomSize}</p>}
             </div>
 
-            {/* Total winners */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Total Winners *</label>
               <input
@@ -456,65 +475,108 @@ export default function DuoContestForm() {
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-900">Additional Information (Optional)</h3>
 
-              {/* Banner Image URL with Dropdown */}
+              {/* Enhanced Banner Image Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Banner Image URL</label>
-                <div className="relative banner-dropdown-container">
-                  <input
-                    value={bannerUrl}
-                    onChange={(e) => handleBannerUrlChange(e.target.value)}
-                    onFocus={handleBannerInputFocus}
-                    type="text"
-                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    placeholder="https://example.com/banner.jpg or type to search images"
-                    disabled={isSubmitting}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowImageDropdown(!showImageDropdown);
-                      if (!showImageDropdown) {
-                        filterImages(bannerUrl);
-                      }
-                    }}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    disabled={isSubmitting || isLoadingImages}
-                  >
-                    <ChevronDown className={`w-5 h-5 transition-transform ${showImageDropdown ? 'rotate-180' : ''}`} />
-                  </button>
-                
-                  {/* Dropdown for Banner Images */}
-                  {showImageDropdown && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                      {isLoadingImages ? (
-                        <div className="px-4 py-2 text-gray-500">Loading images...</div>
-                      ) : filteredImages.length > 0 ? (
-                        filteredImages.map((image) => (
-                          <button
-                            key={image.id}
-                            type="button"
-                            onClick={() => handleImageSelect(image.imageUrl)}
-                            className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 border-b border-gray-100 last:border-b-0"
-                            disabled={isSubmitting}
-                          >
-                            <img
-                              src={image.imageUrl}
-                              alt={image.title}
-                              className="w-12 h-12 object-cover rounded-md"
-                              onError={(e) => {
-                                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21,15 16,10 5,21'/%3E%3C/svg%3E";
-                              }}
-                            />
-                            <div className="flex-1">
-                              <div className="font-medium text-gray-900">{image.title}</div>
-                              <div className="text-sm text-gray-500 truncate">{image.imageUrl}</div>
-                            </div>
-                          </button>
-                        ))
-                      ) : bannerUrl.trim() ? (
-                        <div className="px-4 py-2 text-gray-500">No images found matching "{bannerUrl}"</div>
-                      ) : (
-                        <div className="px-4 py-2 text-gray-500">No images available</div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Banner Image</label>
+                <div className="space-y-3">
+                  {/* Search/Selection Input */}
+                  <div className="relative banner-dropdown-container">
+                    <input
+                      value={selectedImageTitle}
+                      onChange={(e) => handleBannerTitleChange(e.target.value)}
+                      onFocus={handleBannerInputFocus}
+                      type="text"
+                      className="w-full px-3 py-2 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                      placeholder="Search and select banner image"
+                      disabled={isSubmitting}
+                    />
+                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                      {selectedImageTitle && (
+                        <button
+                          type="button"
+                          onClick={clearSelectedImage}
+                          className="text-gray-400 hover:text-gray-600"
+                          disabled={isSubmitting}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowImageDropdown(!showImageDropdown);
+                          if (!showImageDropdown) {
+                            filterImages(selectedImageTitle);
+                          }
+                        }}
+                        className="text-gray-400 hover:text-gray-600"
+                        disabled={isSubmitting || isLoadingImages}
+                      >
+                        <ChevronDown className={`w-5 h-5 transition-transform ${showImageDropdown ? 'rotate-180' : ''}`} />
+                      </button>
+                    </div>
+                  
+                    {/* Dropdown for Banner Images */}
+                    {showImageDropdown && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {isLoadingImages ? (
+                          <div className="px-4 py-2 text-gray-500">Loading images...</div>
+                        ) : filteredImages.length > 0 ? (
+                          filteredImages.map((image) => (
+                            <button
+                              key={image.id}
+                              type="button"
+                              onClick={() => handleImageSelect(image)}
+                              className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 border-b border-gray-100 last:border-b-0"
+                              disabled={isSubmitting}
+                            >
+                              <img
+                                src={image.imageUrl}
+                                alt={image.title}
+                                className="w-12 h-12 object-cover rounded-md"
+                                onError={(e) => {
+                                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21,15 16,10 5,21'/%3E%3C/svg%3E";
+                                }}
+                              />
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900">{image.title}</div>
+                                {/* <div className="text-sm text-gray-500 truncate">{image.imageUrl}</div> */}
+                              </div>
+                            </button>
+                          ))
+                        ) : selectedImageTitle.trim() ? (
+                          <div className="px-4 py-2 text-gray-500">No images found matching "{selectedImageTitle}"</div>
+                        ) : (
+                          <div className="px-4 py-2 text-gray-500">No images available</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Image Preview */}
+                  {showImagePreview && selectedImageUrl && (
+                    <div className="mt-3">
+                      <div className="relative inline-block">
+                        <img
+                          src={selectedImageUrl}
+                          alt={selectedImageTitle || "Banner preview"}
+                          className="h-32 w-auto rounded-lg border border-gray-300 object-cover"
+                          onError={(e) => {
+                            console.error("Failed to load image preview");
+                            setShowImagePreview(false);
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={clearSelectedImage}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                          disabled={isSubmitting}
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                      {selectedImageTitle && (
+                        <p className="text-sm text-gray-600 mt-2">Selected: {selectedImageTitle}</p>
                       )}
                     </div>
                   )}

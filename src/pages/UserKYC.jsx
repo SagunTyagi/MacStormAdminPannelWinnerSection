@@ -381,10 +381,16 @@ export default function UserKYC() {
     window.URL.revokeObjectURL(url);
   };
 
-  const handleViewDetails = (user) => {
-    setSelectedUserDetail(user);
-    setShowUserDetail(true);
-  };
+  if (selectedUser) {
+    return (
+      <UserDetail
+        user={selectedUser}
+        onBack={() => setSelectedUser(null)}
+        onKycStatusUpdate={handleKycStatusChange}
+        authToken={authToken} 
+      />
+    );
+  }
 
   if (loading) {
     return (
