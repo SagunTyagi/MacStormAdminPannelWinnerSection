@@ -64,21 +64,33 @@ export default function SquadContestForm() {
   };
 
     // ✅ Auto-generate winners array when totalWinners changes
-  useEffect(() => {
-    const count = Number(totalWinners);
-    if (!count || count <= 0) return;
+  // useEffect(() => {
+  //   const count = Number(totalWinners);
+  //   if (!count || count <= 0) return;
 
-    setWinners((prev) => {
-      const newArr = [];
-      for (let i = 0; i < count; i++) {
-        newArr.push({
-          id: prev[i]?.id || Date.now() + i,
-          percent: prev[i]?.percent || 0,
-        });
-      }
-      return newArr;
-    });
-  }, [totalWinners]);
+  //   setWinners((prev) => {
+  //     const newArr = [];
+  //     for (let i = 0; i < count; i++) {
+  //       newArr.push({
+  //         id: prev[i]?.id || Date.now() + i,
+  //         percent: prev[i]?.percent || 0,
+  //       });
+  //     }
+  //     return newArr;
+  //   });
+  // }, [totalWinners]);
+useEffect(() => {
+  const count = Number(totalWinners);
+  if (!count || count <= 0) return;
+
+  setWinners((prev) =>
+    Array.from({ length: count }, (_, i) => ({
+      id: prev[i]?.id ?? Date.now() + i,
+      percent: prev[i]?.percent ?? 0,
+      rank: prev[i]?.rank ?? (i + 1).toString(),
+    }))
+  );
+}, [totalWinners]);
 
   const handleSubmit = async (ev) => {
     ev.preventDefault();
