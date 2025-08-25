@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axios";
 
-const DEFAULT_WINNERS = [100];
+const DEFAULT_WINNERS = [3];
 
 export default function SquadContestForm() {
   const [eventName, setEventName] = useState("");

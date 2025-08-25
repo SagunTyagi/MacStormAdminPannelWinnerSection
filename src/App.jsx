@@ -57,6 +57,9 @@ import SquadContestsList from "./pages/SquadContestList";
 import SquadContest from "./pages/SquadContest";
 import SquadContestDeclareResult from "./pages/SquadContestDeclareResult";
 import ContestResultDeclaration from "./pages/content-Result";
+import MegaContestList from "./pages/MegaContestList";
+import MegaContestForm from "./pages/MegaContestForm";
+import MegaContest from "./pages/MegaContest";
 
 // ✅ ProtectedRoute component
 function ProtectedRoute({ children }) {
@@ -185,6 +188,12 @@ function App() {
             <Route path="/squad/create" element={<SquadContestForm />} />
             <Route path="/squad/:id" element={<SquadContest />} />
             <Route path="/squad/:id/declare-result" element={<SquadContestDeclareResult />} />
+            <Route path="/mega" element={<MegaContestList />} />
+            <Route path="/mega/create" element={<MegaContestForm />} />
+            <Route path="/mega/:id" element={<MegaContest />} />
+
+
+
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>

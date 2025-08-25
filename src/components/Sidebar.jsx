@@ -95,9 +95,10 @@ const menuItems = [
       { label: "All Games", path: "/games" },
       { label: "Matches", path: "/matches" },
       { label: "Contest" , subItems: [
-          { label: "Solo", path: "/solo" },
+          { label: "Solo Contests", path: "/solo" },
          { label: "Duo Contests", path: "/duoContests" },
-          { label: "Squad", path: "/squad" },
+          { label: "Squad Contests", path: "/squad" },
+          { label: "Mega Contest", path: "/mega" },
         ] },
     ],
   },
