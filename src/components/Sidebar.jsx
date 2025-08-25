@@ -151,6 +151,11 @@ const menuItems = [
     icon: Gift,
     path: "/bonus",
   },
+  {
+    label: "Referral System",
+    icon: Gift,
+    path: "/referral-system",
+  },
 ];
 
 const Sidebar = () => {

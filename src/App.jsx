@@ -60,6 +60,7 @@ import ContestResultDeclaration from "./pages/content-Result";
 import MegaContestList from "./pages/MegaContestList";
 import MegaContestForm from "./pages/MegaContestForm";
 import MegaContest from "./pages/MegaContest";
+import ReferralSystem from "./pages/ReferralSystem";
 
 // ✅ ProtectedRoute component
 function ProtectedRoute({ children }) {
@@ -191,6 +192,7 @@ function App() {
             <Route path="/mega" element={<MegaContestList />} />
             <Route path="/mega/create" element={<MegaContestForm />} />
             <Route path="/mega/:id" element={<MegaContest />} />
+            <Route path="/referral-system" element={<ReferralSystem />} />
 
 
 
