@@ -1,385 +1,518 @@
-import React, { useState } from "react";
-import RosterManagementModal from "./RosterManagementModal";
-import {
-  Plus,
-  Download,
-  Search,
-  Users,
-  Eye,
-  Edit,
-  MoreHorizontal,
-  BarChart2,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Plus, Download, Search, Edit, Trash2, X } from "lucide-react";
 
+// You can change this to your actual API base URL
+const API_BASE_URL = "https://macstormbattle-backend-2.onrender.com/api";
+
+// Custom Confirmation Modal component to replace window.confirm
+const ConfirmationModal = ({ message, onConfirm, onCancel }) => {
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+        <div className="flex justify-between items-center border-b pb-3 mb-4">
+          <h3 className="text-xl font-semibold text-gray-900">
+            Confirm Action
+          </h3>
+          <button
+            onClick={onCancel}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <p className="text-gray-700 mb-4">{message}</p>
+        <div className="flex justify-end space-x-2">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Edit Team Modal
+const EditTeamModal = ({ team, onClose, onSave }) => {
+  const [name, setName] = useState(team.name);
+  const [registrationAmount, setRegistrationAmount] = useState(
+    team.registrationAmount
+  );
+  // Join the rules array into a single string for the textarea
+  const [rules, setRules] = useState(
+    (team.rules || [])
+      .sort((a, b) => a.order - b.order)
+      .map((r) => r.text)
+      .join("\n")
+  );
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    // Split rules into array and filter out empty lines
+    const updatedRules = rules
+      .split("\n")
+      .map(text => text.trim())
+      .filter(text => text.length > 0);
+
+    // Call the onSave prop with the correctly formatted data
+    await onSave({
+      ...team,
+      name,
+      registrationAmount,
+      rules: updatedRules,
+    });
+    setIsSaving(false);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50 p-4">
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full md:w-1/2 lg:w-1/3">
+        <div className="flex justify-between items-center border-b pb-3 mb-4">
+          <h3 className="text-xl font-semibold text-gray-900">Edit Team</h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600"
+          >
+            <X size={24} />
+          </button>
+        </div>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSave();
+          }}
+        >
+          <div className="mb-4">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Team Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              htmlFor="registrationAmount"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Registration Amount
+            </label>
+            <input
+              type="text"
+              id="registrationAmount"
+              value={registrationAmount}
+              onChange={(e) => setRegistrationAmount(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+            />
+          </div>
+          <div className="mb-4">
+            <label
+              htmlFor="rules"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Rules (one per line)
+            </label>
+            <textarea
+              id="rules"
+              rows="4"
+              value={rules}
+              onChange={(e) => setRules(e.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+            ></textarea>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
+            >
+              {isSaving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Main Teams Component
 const Teams = () => {
+  const [teams, setTeams] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-  const [showRosterModal, setShowRosterModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
 
-  // Demo roster data (shared for all teams for now)
-  const demoRoster = [
-    {
-      id: 1,
-      name: "Alice",
-      avatar: "https://placehold.co/40x40/ffb6b6/333333?text=A",
-      role: "Captain",
-      isActive: true,
-    },
-    {
-      id: 2,
-      name: "Bob",
-      avatar: "https://placehold.co/40x40/ffd6a5/333333?text=B",
-      role: "Player",
-      isActive: true,
-    },
-    {
-      id: 3,
-      name: "Charlie",
-      avatar: "https://placehold.co/40x40/9ad0ec/333333?text=C",
-      role: "Sub",
-      isActive: false,
-    },
-    {
-      id: 4,
-      name: "Diana",
-      avatar: "https://placehold.co/40x40/ffecb3/333333?text=D",
-      role: "Player",
-      isActive: true,
-    },
-    {
-      id: 5,
-      name: "Ethan",
-      avatar: "https://placehold.co/40x40/c3ffd9/333333?text=E",
-      role: "Sub",
-      isActive: false,
-    },
-    {
-      id: 6,
-      name: "Fiona",
-      avatar: "https://placehold.co/40x40/b3c6ff/333333?text=F",
-      role: "Player",
-      isActive: true,
-    },
-    {
-      id: 7,
-      name: "George",
-      avatar: "https://placehold.co/40x40/ffc3e0/333333?text=G",
-      role: "Sub",
-      isActive: false,
-    },
-    {
-      id: 8,
-      name: "Hannah",
-      avatar: "https://placehold.co/40x40/e0ffc3/333333?text=H",
-      role: "Player",
-      isActive: true,
-    },
-    {
-      id: 9,
-      name: "Ivan",
-      avatar: "https://placehold.co/40x40/c3e0ff/333333?text=I",
-      role: "Sub",
-      isActive: false,
-    },
-    {
-      id: 10,
-      name: "Julia",
-      avatar: "https://placehold.co/40x40/ffe0c3/333333?text=J",
-      role: "Player",
-      isActive: true,
-    },
-    {
-      id: 11,
-      name: "Kevin",
-      avatar: "https://placehold.co/40x40/e0c3ff/333333?text=K",
-      role: "Sub",
-      isActive: false,
-    },
-    {
-      id: 12,
-      name: "Lily",
-      avatar: "https://placehold.co/40x40/c3ffe0/333333?text=L",
-      role: "Player",
-      isActive: true,
-    },
-    {
-      id: 13,
-      name: "Mike",
-      avatar: "https://placehold.co/40x40/ffc3c3/333333?text=M",
-      role: "Sub",
-      isActive: false,
-    },
-    {
-      id: 14,
-      name: "Nina",
-      avatar: "https://placehold.co/40x40/c3c3ff/333333?text=N",
-      role: "Player",
-      isActive: true,
-    },
-    {
-      id: 15,
-      name: "Oscar",
-      avatar: "https://placehold.co/40x40/fffac3/333333?text=O",
-      role: "Sub",
-      isActive: false,
-    },
-  ];
+  // Utility function to normalize incoming rules data
+  const normalizeRules = (rules) => {
+    if (!Array.isArray(rules)) return [];
+    return rules.map((r, i) => {
+      // Handle cases where the data might be corrupted
+      if (typeof r === "string") {
+        return { text: r, order: i };
+      }
+      return {
+        text: typeof r.text === "string" ? r.text : "",
+        order: r.order ?? i,
+      };
+    });
+  };
 
-  const teams = [
-    {
-      id: 1,
-      name: "Phoenix Warriors",
-      avatar: "https://placehold.co/40x40/f0f0f0/888888?text=PW",
-      state: "California",
-      votesState: 1250,
-      votesNational: 3420,
-      regUsers: 5,
-      roster: demoRoster,
-      maxMembers: 15,
-    },
-    {
-      id: 2,
-      name: "Thunder Bolts",
-      avatar: "https://placehold.co/40x40/e0e0e0/777777?text=TB",
-      state: "Texas",
-      votesState: 1580,
-      votesNational: 4200,
-      regUsers: 4,
-      roster: demoRoster,
-      maxMembers: 15,
-    },
-    {
-      id: 3,
-      name: "Shadow Hunters",
-      avatar: "https://placehold.co/40x40/d0d0d0/666666?text=SH",
-      state: "New York",
-      votesState: 890,
-      votesNational: 2100,
-      regUsers: 5,
-      roster: demoRoster,
-      maxMembers: 15,
-    },
-  ];
+  const fetchTeams = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/admin/teams`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      const teamsData = Array.isArray(data) ? data : [data];
 
+      setTeams(
+        teamsData.map((team) => ({
+          ...team,
+          rules: normalizeRules(team.rules),
+        }))
+      );
+    } catch (e) {
+      console.error("Failed to fetch teams:", e);
+      setError(
+        "Failed to load teams. Please ensure the API is running and the URL is correct."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTeams();
+  }, []);
+
+  const handleDeleteTeam = (id) => {
+    setConfirmAction(() => async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/admin/teams/${id}`, {
+          method: "DELETE",
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        setTeams(teams.filter((team) => team.id !== id));
+      } catch (e) {
+        console.error("Failed to delete team:", e);
+        setError("Failed to delete the team. Please try again.");
+      } finally {
+        setShowConfirmModal(false);
+      }
+    });
+    setShowConfirmModal(true);
+  };
+
+  const handleEditTeam = (team) => {
+    setSelectedTeam(team);
+    setShowEditModal(true);
+  };
+
+const handleSaveTeam = async (updatedTeam) => {
+  try {
+    // Only send necessary fields to the API
+    const payload = {
+      id: updatedTeam.id,
+      name: updatedTeam.name,
+      registrationAmount: updatedTeam.registrationAmount,
+      rules: updatedTeam.rules // Rules are already simple strings from EditTeamModal
+    };
+
+    const response = await fetch(`${API_BASE_URL}/admin/teams/${updatedTeam.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const savedTeam = await response.json();
+    // Normalize the rules from the response for frontend display
+    const normalizedTeam = {
+      ...savedTeam,
+      rules: savedTeam.rules.map(rule => {
+        // If the rule is already an object with text property, use it as is
+        if (typeof rule === 'object' && rule.text) {
+          return rule;
+        }
+        // If it's a string, convert it to our expected format
+        return {
+          text: String(rule),
+          order: savedTeam.rules.indexOf(rule)
+        };
+      })
+    };
+    
+    setTeams(teams.map((t) => t.id === updatedTeam.id ? normalizedTeam : t));
+    setShowEditModal(false);
+  } catch (e) {
+    console.error("Failed to save changes:", e);
+    setError("Failed to save changes. Please check the API and try again.");
+  }
+};
   const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // No longer needed: getTeamWithRoster
-
   return (
-    <section className="p-8 bg-gray-50 min-h-screen">
-      {/* Roster Modal */}
-      {showRosterModal && selectedTeam && (
-        <RosterManagementModal
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8 font-sans antialiased text-gray-800">
+      {showEditModal && selectedTeam && (
+        <EditTeamModal
           team={selectedTeam}
-          onClose={() => {
-            setShowRosterModal(false);
-            setSelectedTeam(null);
-          }}
+          onClose={() => setShowEditModal(false)}
+          onSave={handleSaveTeam}
         />
       )}
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Team Management</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Manage team rosters, votes, and performance
-          </p>
-        </div>
-        <div className="mt-4 md:mt-0 flex gap-3">
-          <button className="flex items-center px-4 py-2 border border-gray-300 text-sm rounded-md shadow-sm bg-white hover:bg-gray-100 text-gray-800">
-            <Download className="w-4 h-4 mr-2" />
-            Export Teams
-          </button>
-          <button className="flex items-center px-4 py-2 bg-black text-white text-sm rounded-md shadow-sm hover:bg-gray-800">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Team
-          </button>
-        </div>
-      </div>
 
-      {/* Team Directory Card */}
-      <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-x-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-center p-6 border-b border-white gap-4">
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Team Directory
-          </h2>
-          <div className="relative w-full max-w-64">
-            <Search
-              className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"
-              size={12}
-            />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search teams..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm text-gray-800 placeholder-gray-400 focus:outline-double focus:border-blue-500 focus:ring-1 focus:ring-blue-100"
-            />
+      {showConfirmModal && (
+        <ConfirmationModal
+          message="Are you sure you want to delete this team?"
+          onConfirm={confirmAction}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+      )}
+
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">
+              Team Management
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Manage team details, registration, and rules
+            </p>
+          </div>
+          <div className="mt-4 md:mt-0 flex flex-wrap gap-3">
+            <button className="flex items-center px-4 py-2 border border-gray-300 text-sm rounded-md shadow-sm bg-white hover:bg-gray-100 text-gray-800 transition-colors duration-200">
+              <Download className="w-4 h-4 mr-2" />
+              Export Teams
+            </button>
+            <button className="flex items-center px-4 py-2 bg-black text-white text-sm rounded-md shadow-sm hover:bg-gray-800 transition-colors duration-200">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Team
+            </button>
           </div>
         </div>
 
-        {/* Desktop Table */}
-        <div className="hidden sm:block my-2 p-4 mx-4">
-          <table className="min-w-full divide-y divide-gray-200 text-base">
-            <thead className="bg-white text-gray-700 uppercase tracking-wider text-sm font-medium">
-              <tr>
-                <th className="px-6 py-3 text-left">Team ID</th>
-                <th className="px-6 py-3 text-left">Name</th>
-                <th className="px-6 py-3 text-left">State</th>
-                <th className="px-6 py-3 text-left">Votes (State)</th>
-                <th className="px-6 py-3 text-left">Votes (National)</th>
-                <th className="px-6 py-3 text-left">Reg Users</th>
-                <th className="px-6 py-3 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredTeams.map((team) => (
-                <tr key={team.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">
-                    {team.id}
-                  </td>
-                  <td className="px-6 py-4">
+        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+          <div className="flex flex-col md:flex-row justify-between items-center p-6 border-b border-gray-200 gap-4">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
+              Team Directory
+            </h2>
+            <div className="relative w-full md:w-64">
+              <Search
+                className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"
+                size={16}
+              />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search teams..."
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="p-6 text-center text-gray-500">
+              Loading teams...
+            </div>
+          ) : error ? (
+            <div className="p-6 text-center text-red-500">{error}</div>
+          ) : filteredTeams.length === 0 ? (
+            <div className="p-6 text-center text-gray-500">
+              No teams found matching your search.
+            </div>
+          ) : (
+            <>
+              <div className="hidden sm:block overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 text-sm">
+                  <thead className="bg-gray-50 text-gray-700 uppercase tracking-wider font-medium">
+                    <tr>
+                      <th className="px-6 py-3 text-left">Team ID</th>
+                      <th className="px-6 py-3 text-left">Name</th>
+                      <th className="px-6 py-3 text-left">
+                        Registration Amount
+                      </th>
+                      <th className="px-6 py-3 text-left">Registration Date</th>
+                      <th className="px-6 py-3 text-left">Rules</th>
+                      <th className="px-6 py-3 text-left">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {filteredTeams.map((team) => (
+                      <tr
+                        key={team.id}
+                        className="hover:bg-gray-50 transition-colors duration-200"
+                      >
+                        <td className="px-6 py-4 font-medium text-gray-900 truncate max-w-[150px]">
+                          {team.id}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <img
+                              src={
+                                team.imageUrl ||
+                                `https://placehold.co/40x40/f0f0f0/888888?text=${team.name
+                                  .charAt(0)
+                                  .toUpperCase()}`
+                              }
+                              alt="Team avatar"
+                              className="w-10 h-10 rounded-full object-cover"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = `https://placehold.co/40x40/f0f0f0/888888?text=${team.name
+                                  .charAt(0)
+                                  .toUpperCase()}`;
+                              }}
+                            />
+                            <span className="ml-3 font-medium text-gray-900">
+                              {team.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {team.registrationAmount}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {new Date(
+                            team.lastRegistrationDate
+                          ).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 text-gray-700">
+                          {team.rules.length > 0
+                            ? `${team.rules[0]?.text || ""}...`
+                            : "No rules"}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <button
+                              className="text-gray-500 hover:text-green-600 transition-colors duration-200"
+                              onClick={() => handleEditTeam(team)}
+                            >
+                              <Edit size={18} />
+                            </button>
+                            <button
+                              className="text-gray-500 hover:text-red-600 transition-colors duration-200"
+                              onClick={() => handleDeleteTeam(team.id)}
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="block sm:hidden p-4 space-y-4">
+                {filteredTeams.map((team) => (
+                  <div
+                    key={team.id}
+                    className="border border-gray-200 rounded-lg shadow-sm p-4 bg-white"
+                  >
                     <div className="flex items-center">
                       <img
-                        src={team.avatar}
-                        alt="avatar"
-                        className="w-10 h-10 rounded-full"
-                      />
-                      <span className="ml-3 font-medium text-gray-900">
-                        {team.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-500">{team.state}</td>
-                  <td className="px-6 py-4 text-blue-600 font-medium">
-                    <a
-                      href="#"
-                      className="flex items-center gap-1 hover:text-blue-800"
-                    >
-                      <BarChart2 size={16} />
-                      {team.votesState.toLocaleString()}
-                    </a>
-                  </td>
-                  <td className="px-6 py-4 text-purple-600 font-medium">
-                    <a
-                      href="#"
-                      className="flex items-center gap-1 hover:text-purple-800"
-                    >
-                      <BarChart2 size={16} />
-                      {team.votesNational.toLocaleString()}
-                    </a>
-                  </td>
-                  <td className="px-6 py-4 text-gray-700">{team.regUsers}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <button
-                        className="flex items-center text-xs px-3 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 shadow-sm"
-                        onClick={() => {
-                          setSelectedTeam(team);
-                          setShowRosterModal(true);
+                        src={
+                          team.imageUrl ||
+                          `https://placehold.co/40x40/f0f0f0/888888?text=${team.name
+                            .charAt(0)
+                            .toUpperCase()}`
+                        }
+                        alt="Team avatar"
+                        className="w-10 h-10 rounded-full object-cover"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = `https://placehold.co/40x40/f0f0f0/888888?text=${team.name
+                            .charAt(0)
+                            .toUpperCase()}`;
                         }}
+                      />
+                      <div className="ml-3">
+                        <p className="font-semibold text-gray-900">
+                          {team.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {team.registrationAmount
+                            ? `$${team.registrationAmount}`
+                            : "N/A"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-3 space-y-1 text-sm text-gray-700">
+                      <p>
+                        <strong>Team ID:</strong>{" "}
+                        <span className="truncate max-w-[150px] inline-block">
+                          {team.id}
+                        </span>
+                      </p>
+                      <p>
+                        <strong>Reg. Date:</strong>{" "}
+                        {new Date(
+                          team.lastRegistrationDate
+                        ).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <button
+                        onClick={() => handleEditTeam(team)}
+                        className="flex-1 text-center px-2 py-1 bg-green-500 text-white rounded text-xs transition-colors duration-200 hover:bg-green-600"
                       >
-                        <Users className="w-3.5 h-3.5 mr-1" /> Roster
+                        <Edit size={14} className="inline mr-1" /> Edit
                       </button>
-                      <button className="text-gray-500 hover:text-blue-600">
-                        <Eye size={18} />
-                      </button>
-                      <button className="text-gray-500 hover:text-green-600">
-                        <Edit size={18} />
-                      </button>
-                      <button className="text-gray-500 hover:text-gray-800">
-                        <MoreHorizontal size={18} />
+                      <button
+                        onClick={() => handleDeleteTeam(team.id)}
+                        className="flex-1 text-center px-2 py-1 bg-red-500 text-white rounded text-xs transition-colors duration-200 hover:bg-red-600"
+                      >
+                        <Trash2 size={14} className="inline mr-1" /> Delete
                       </button>
                     </div>
-                  </td>
-                </tr>
-              ))}
-              {filteredTeams.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-6 py-10 text-center text-gray-500"
-                  >
-                    No teams found matching your search.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile Card View */}
-        <div className="block sm:hidden p-4 space-y-4">
-          {filteredTeams.map((team) => {
-            return (
-              <div
-                key={team.id}
-                className="border border-gray-200 rounded-lg shadow-sm p-4 bg-white"
-              >
-                {/* Header */}
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center">
-                    <img
-                      src={team.avatar}
-                      alt="avatar"
-                      className="w-10 h-10 rounded-full"
-                    />
-                    <div className="ml-3">
-                      <p className="font-semibold text-gray-900">{team.name}</p>
-                      <p className="text-xs text-gray-500">{team.state}</p>
-                    </div>
                   </div>
-                </div>
-
-                {/* Details */}
-
-                <div className="mt-3 space-y-1 text-sm text-gray-700">
-                  <p>
-                    <strong>Team ID:</strong> {team.id}
-                  </p>
-                  <p>
-                    <strong>Votes (State):</strong>{" "}
-                    {team.votesState.toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>Votes (National):</strong>{" "}
-                    {team.votesNational.toLocaleString()}
-                  </p>
-                  <p>
-                    <strong>Reg Users:</strong> {team.regUsers}
-                  </p>
-
-                  {/* Actions */}
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    <button
-                      onClick={() => {
-                        setSelectedTeam(team);
-                        setShowRosterModal(true);
-                      }}
-                      className="flex items-center text-xs px-3 py-1.5 rounded-md border border-gray-300 bg-white hover:bg-gray-100 text-gray-700 shadow-sm"
-                    >
-                      <Users className="w-3.5 h-3.5 mr-1" /> Roster
-                    </button>
-                    <button className="px-2 py-1 bg-blue-500 text-white rounded text-xs">
-                      <Eye size={14} className="inline mr-1" /> View
-                    </button>
-                    <button className="px-2 py-1 bg-green-500 text-white rounded text-xs">
-                      <Edit size={14} className="inline mr-1" /> Edit
-                    </button>
-                    <button className="px-2 py-1 bg-red-500 text-white rounded text-xs">
-                      Delete
-                    </button>
-                  </div>
-                </div>
+                ))}
               </div>
-            );
-          })}
+            </>
+          )}
         </div>
       </div>
-    </section>
+    </div>
   );
 };
 
