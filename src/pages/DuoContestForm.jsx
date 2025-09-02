@@ -245,7 +245,7 @@ export default function DuoContestForm() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0OTgxNDk5LCJleHAiOjE3NTYyNzc0OTl9.xPlZ7KmQNNYAux0BzumgoQ1GI3ESdvgMDXMfRx6F53Q",
+          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjI5LCJyb2xlIjoiU3VwZXJBZG1pbiIsImlhdCI6MTc1NTgzOTc3MywiZXhwIjoxNzU3MTM1NzczfQ.l9VAdMTXZKtM-3V-ugrlb5X509eQeShddD_l-m1r3hQ",
         },
         body: JSON.stringify(payload),
       });

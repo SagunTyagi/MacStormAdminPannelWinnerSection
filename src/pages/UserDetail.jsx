@@ -14,6 +14,8 @@ import {
   Clock,
   TrendingUp,
   TrendingDown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react"
 import jsPDF from "jspdf"
 import html2canvas from "html2canvas"
@@ -31,6 +33,12 @@ export default function UserDetail({ user, onBack, onKycStatusChange, authToken 
   const [transactionsData, setTransactionsData] = useState([])
   const [loadingTransactions, setLoadingTransactions] = useState(false)
   const overviewRef = useRef(null)
+
+  // Pagination states
+  const [currentDepositPage, setCurrentDepositPage] = useState(1)
+  const [currentWithdrawalPage, setCurrentWithdrawalPage] = useState(1)
+  const [currentTransactionPage, setCurrentTransactionPage] = useState(1)
+  const itemsPerPage = 5
 
   useEffect(() => {
     const fetchKycData = async () => {
@@ -89,8 +97,11 @@ export default function UserDetail({ user, onBack, onKycStatusChange, authToken 
 
       if (depositResponse.ok) {
         const depositResult = await depositResponse.json()
-        setDepositData(depositResult.data || [])
-        console.log("Deposit Data:", depositResult.data)
+        // Sort deposits by date in descending order (latest first)
+        const sortedDeposits = (depositResult.data || []).sort((a, b) => new Date(b.date) - new Date(a.date))
+        setDepositData(sortedDeposits)
+        setCurrentDepositPage(1) // Reset to first page when data loads
+        console.log("Deposit Data:", sortedDeposits)
       } else {
         console.error("Failed to fetch deposit data:", depositResponse.status)
         setDepositData([])
@@ -98,8 +109,11 @@ export default function UserDetail({ user, onBack, onKycStatusChange, authToken 
 
       if (withdrawalResponse.ok) {
         const withdrawalResult = await withdrawalResponse.json()
-        setWithdrawalData(withdrawalResult.data || [])
-        console.log("Withdrawal Data:", withdrawalResult.data)
+        // Sort withdrawals by date in descending order (latest first)
+        const sortedWithdrawals = (withdrawalResult.data || []).sort((a, b) => new Date(b.date) - new Date(a.date))
+        setWithdrawalData(sortedWithdrawals)
+        setCurrentWithdrawalPage(1) // Reset to first page when data loads
+        console.log("Withdrawal Data:", sortedWithdrawals)
       } else {
         console.error("Failed to fetch withdrawal data:", withdrawalResponse.status)
         setWithdrawalData([])
@@ -135,8 +149,11 @@ export default function UserDetail({ user, onBack, onKycStatusChange, authToken 
 
       if (response.ok) {
         const result = await response.json()
-        setTransactionsData(result.matchTransactionsLog || [])
-        console.log("Transactions Data:", result.matchTransactionsLog)
+        // Sort transactions by date in descending order (latest first)
+        const sortedTransactions = (result.matchTransactionsLog || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        setTransactionsData(sortedTransactions)
+        setCurrentTransactionPage(1) // Reset to first page when data loads
+        console.log("Transactions Data:", sortedTransactions)
       } else {
         console.error("Failed to fetch transactions data:", response.status)
         setTransactionsData([])
@@ -167,6 +184,47 @@ export default function UserDetail({ user, onBack, onKycStatusChange, authToken 
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight)
       pdf.save(`User_Overview_${safeUser.name || "User"}.pdf`)
     })
+  }
+
+  // Pagination helper functions
+  const paginateData = (data, currentPage) => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    return data.slice(startIndex, startIndex + itemsPerPage)
+  }
+
+  const getTotalPages = (dataLength) => {
+    return Math.ceil(dataLength / itemsPerPage)
+  }
+
+  const PaginationControls = ({ currentPage, totalPages, onPageChange, dataType }) => {
+    return (
+      <div className="flex items-center justify-between mt-4 p-3 border-t dark:border-zinc-600">
+        <div className="text-sm text-gray-500">
+          Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalPages * itemsPerPage)} of {totalPages * itemsPerPage} {dataType}
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="flex items-center gap-1 px-3 py-1 text-sm border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-700 dark:border-zinc-600"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            Previous
+          </button>
+          <span className="text-sm text-gray-500">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="flex items-center gap-1 px-3 py-1 text-sm border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-zinc-700 dark:border-zinc-600"
+          >
+            Next
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+    )
   }
 
   const tabs = [
@@ -523,100 +581,124 @@ export default function UserDetail({ user, onBack, onKycStatusChange, authToken 
                 </div>
 
                 {/* Deposits Section */}
-                <div className="border rounded-lg p-4 dark:border-zinc-700">
-                  <h3 className="text-lg font-semibold mb-4 text-green-700 dark:text-green-400 flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5" />
-                    Deposits ({depositData.length})
-                  </h3>
+                <div className="border rounded-lg dark:border-zinc-700">
+                  <div className="p-4 border-b dark:border-zinc-700">
+                    <h3 className="text-lg font-semibold text-green-700 dark:text-green-400 flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5" />
+                      Deposits ({depositData.length})
+                    </h3>
+                  </div>
 
                   {depositData.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full text-sm">
-                        <thead>
-                          <tr className="border-b dark:border-zinc-600">
-                            <th className="text-left p-2 font-medium">ID</th>
-                            <th className="text-left p-2 font-medium">Amount</th>
-                            <th className="text-left p-2 font-medium">Description</th>
-                            <th className="text-left p-2 font-medium">Date</th>
-                            <th className="text-left p-2 font-medium">User</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y dark:divide-zinc-700">
-                          {depositData.map((deposit, index) => (
-                            <tr key={deposit.id} className={index % 2 === 0 ? "bg-gray-50 dark:bg-zinc-800" : ""}>
-                              <td className="p-2 font-mono text-xs">{deposit.id}</td>
-                              <td className="p-2 font-semibold text-green-600 dark:text-green-400">
-                                ₹{Number.parseFloat(deposit.amount).toFixed(2)}
-                              </td>
-                              <td className="p-2">{deposit.description}</td>
-                              <td className="p-2 text-xs text-gray-500">{deposit.date}</td>
-                              <td className="p-2">
-                                <div className="text-xs">
-                                  <p className="font-medium">
-                                    {deposit.user.first_name} {deposit.user.last_name}
-                                  </p>
-                                  <p className="text-gray-500">{deposit.user.user_name}</p>
-                                </div>
-                              </td>
+                    <>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full text-sm">
+                          <thead>
+                            <tr className="border-b dark:border-zinc-600 bg-gray-50 dark:bg-zinc-800">
+                              <th className="text-left p-3 font-medium">#</th>
+                              <th className="text-left p-3 font-medium">Amount</th>
+                              <th className="text-left p-3 font-medium">Description</th>
+                              <th className="text-left p-3 font-medium">Date</th>
+                              <th className="text-left p-3 font-medium">User</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody className="divide-y dark:divide-zinc-700">
+                            {paginateData(depositData, currentDepositPage).map((deposit, index) => (
+                              <tr key={deposit.id} className={index % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-gray-50 dark:bg-zinc-800"}>
+                                <td className="p-3 font-medium text-gray-600 dark:text-gray-400">
+                                  {(currentDepositPage - 1) * itemsPerPage + index + 1}
+                                </td>
+                                <td className="p-3 font-semibold text-green-600 dark:text-green-400">
+                                  ₹{Number.parseFloat(deposit.amount).toFixed(2)}
+                                </td>
+                                <td className="p-3">{deposit.description}</td>
+                                <td className="p-3 text-xs text-gray-500">{deposit.date}</td>
+                                <td className="p-3">
+                                  <div className="text-xs">
+                                    <p className="font-medium">
+                                      {deposit.user.first_name} {deposit.user.last_name}
+                                    </p>
+                                    <p className="text-gray-500">{deposit.user.user_name}</p>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <PaginationControls 
+                        currentPage={currentDepositPage}
+                        totalPages={getTotalPages(depositData.length)}
+                        onPageChange={setCurrentDepositPage}
+                        dataType="deposits"
+                      />
+                    </>
                   ) : (
                     <p className="text-gray-500 text-center py-8">No deposit transactions found</p>
                   )}
                 </div>
 
                 {/* Withdrawals Section */}
-                <div className="border rounded-lg p-4 dark:border-zinc-700">
-                  <h3 className="text-lg font-semibold mb-4 text-red-700 dark:text-red-400 flex items-center gap-2">
-                    <TrendingDown className="w-5 h-5" />
-                    Withdrawals ({withdrawalData.length})
-                  </h3>
+                <div className="border rounded-lg dark:border-zinc-700">
+                  <div className="p-4 border-b dark:border-zinc-700">
+                    <h3 className="text-lg font-semibold text-red-700 dark:text-red-400 flex items-center gap-2">
+                      <TrendingDown className="w-5 h-5" />
+                      Withdrawals ({withdrawalData.length})
+                    </h3>
+                  </div>
 
                   {withdrawalData.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full text-sm">
-                        <thead>
-                          <tr className="border-b dark:border-zinc-600">
-                            <th className="text-left p-2 font-medium">ID</th>
-                            <th className="text-left p-2 font-medium">Amount</th>
-                            <th className="text-left p-2 font-medium">Method</th>
-                            <th className="text-left p-2 font-medium">Description</th>
-                            <th className="text-left p-2 font-medium">Status</th>
-                            <th className="text-left p-2 font-medium">Date</th>
-                            <th className="text-left p-2 font-medium">User</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y dark:divide-zinc-700">
-                          {withdrawalData.map((withdrawal, index) => (
-                            <tr key={withdrawal.id} className={index % 2 === 0 ? "bg-gray-50 dark:bg-zinc-800" : ""}>
-                              <td className="p-2 font-mono text-xs">{withdrawal.id}</td>
-                              <td className="p-2 font-semibold text-red-600 dark:text-red-400">
-                                ₹{Number.parseFloat(withdrawal.amount).toFixed(2)}
-                              </td>
-                              <td className="p-2">
-                                <span className="px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white rounded text-xs">
-                                  {withdrawal.payment_method || "N/A"}
-                                </span>
-                              </td>
-                              <td className="p-2">{withdrawal.description}</td>
-                              <td className="p-2">{renderPaymentStatus(withdrawal.status)}</td>
-                              <td className="p-2 text-xs text-gray-500">{withdrawal.date}</td>
-                              <td className="p-2">
-                                <div className="text-xs">
-                                  <p className="font-medium">
-                                    {withdrawal.user.first_name} {withdrawal.user.last_name}
-                                  </p>
-                                  <p className="text-gray-500">{withdrawal.user.user_name}</p>
-                                </div>
-                              </td>
+                    <>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full text-sm">
+                          <thead>
+                            <tr className="border-b dark:border-zinc-600 bg-gray-50 dark:bg-zinc-800">
+                              <th className="text-left p-3 font-medium">#</th>
+                              <th className="text-left p-3 font-medium">Amount</th>
+                              <th className="text-left p-3 font-medium">Method</th>
+                              <th className="text-left p-3 font-medium">Description</th>
+                              <th className="text-left p-3 font-medium">Status</th>
+                              <th className="text-left p-3 font-medium">Date</th>
+                              <th className="text-left p-3 font-medium">User</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody className="divide-y dark:divide-zinc-700">
+                            {paginateData(withdrawalData, currentWithdrawalPage).map((withdrawal, index) => (
+                              <tr key={withdrawal.id} className={index % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-gray-50 dark:bg-zinc-800"}>
+                                <td className="p-3 font-medium text-gray-600 dark:text-gray-400">
+                                  {(currentWithdrawalPage - 1) * itemsPerPage + index + 1}
+                                </td>
+                                <td className="p-3 font-semibold text-red-600 dark:text-red-400">
+                                  ₹{Number.parseFloat(withdrawal.amount).toFixed(2)}
+                                </td>
+                                <td className="p-3">
+                                  <span className="px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-white rounded text-xs">
+                                    {withdrawal.payment_method || "N/A"}
+                                  </span>
+                                </td>
+                                <td className="p-3">{withdrawal.description}</td>
+                                <td className="p-3">{renderPaymentStatus(withdrawal.status)}</td>
+                                <td className="p-3 text-xs text-gray-500">{withdrawal.date}</td>
+                                <td className="p-3">
+                                  <div className="text-xs">
+                                    <p className="font-medium">
+                                      {withdrawal.user.first_name} {withdrawal.user.last_name}
+                                    </p>
+                                    <p className="text-gray-500">{withdrawal.user.user_name}</p>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <PaginationControls 
+                        currentPage={currentWithdrawalPage}
+                        totalPages={getTotalPages(withdrawalData.length)}
+                        onPageChange={setCurrentWithdrawalPage}
+                        dataType="withdrawals"
+                      />
+                    </>
                   ) : (
                     <p className="text-gray-500 text-center py-8">No withdrawal transactions found</p>
                   )}
@@ -688,68 +770,80 @@ export default function UserDetail({ user, onBack, onKycStatusChange, authToken 
                 </div>
 
                 {/* Transactions Table */}
-                <div className="border rounded-lg p-4 dark:border-zinc-700">
-                  <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white flex items-center gap-2">
-                    <CreditCard className="w-5 h-5" />
-                    Match Transactions ({transactionsData.length})
-                  </h3>
+                <div className="border rounded-lg dark:border-zinc-700">
+                  <div className="p-4 border-b dark:border-zinc-700">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                      <CreditCard className="w-5 h-5" />
+                      Match Transactions ({transactionsData.length})
+                    </h3>
+                  </div>
 
                   {transactionsData.length > 0 ? (
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full text-sm">
-                        <thead>
-                          <tr className="border-b dark:border-zinc-600">
-                            <th className="text-left p-2 font-medium">ID</th>
-                            <th className="text-left p-2 font-medium">Contest</th>
-                            <th className="text-left p-2 font-medium">Type</th>
-                            <th className="text-left p-2 font-medium">Entry Fee</th>
-                            <th className="text-left p-2 font-medium">Refund</th>
-                            <th className="text-left p-2 font-medium">Balance After</th>
-                            <th className="text-left p-2 font-medium">Description</th>
-                            <th className="text-left p-2 font-medium">Date</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y dark:divide-zinc-700">
-                          {transactionsData.map((transaction, index) => (
-                            <tr key={transaction.id} className={index % 2 === 0 ? "bg-gray-50 dark:bg-zinc-800" : ""}>
-                              <td className="p-2 font-mono text-xs">{transaction.id}</td>
-                              <td className="p-2">
-                                <div className="text-xs">
-                                  <p className="font-medium">{transaction.contest_name}</p>
-                                  <p className="text-gray-500">ID: {transaction.contest_id}</p>
-                                </div>
-                              </td>
-                              <td className="p-2">
-                                <span
-                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                    transaction.transaction_type === "join"
-                                      ? "bg-orange-100 text-orange-700 dark:bg-orange-700 dark:text-white"
-                                      : "bg-green-100 text-green-700 dark:bg-green-700 dark:text-white"
-                                  }`}
-                                >
-                                  {transaction.transaction_type.charAt(0).toUpperCase() +
-                                    transaction.transaction_type.slice(1)}
-                                </span>
-                              </td>
-                              <td className="p-2 font-semibold text-orange-600 dark:text-orange-400">
-                                ₹{Number.parseFloat(transaction.entry_fee).toFixed(2)}
-                              </td>
-                              <td className="p-2 font-semibold text-green-600 dark:text-green-400">
-                                ₹{Number.parseFloat(transaction.refund_amount).toFixed(2)}
-                              </td>
-                              <td className="p-2 font-semibold text-blue-600 dark:text-blue-400">
-                                ₹{Number.parseFloat(transaction.wallet_balance_after).toFixed(2)}
-                              </td>
-                              <td className="p-2 text-xs">{transaction.description}</td>
-                              <td className="p-2 text-xs text-gray-500">
-                                {new Date(transaction.createdAt).toLocaleDateString()}{" "}
-                                {new Date(transaction.createdAt).toLocaleTimeString()}
-                              </td>
+                    <>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full text-sm">
+                          <thead>
+                            <tr className="border-b dark:border-zinc-600 bg-gray-50 dark:bg-zinc-800">
+                              <th className="text-left p-3 font-medium">#</th>
+                              <th className="text-left p-3 font-medium">Contest</th>
+                              <th className="text-left p-3 font-medium">Type</th>
+                              <th className="text-left p-3 font-medium">Entry Fee</th>
+                              <th className="text-left p-3 font-medium">Refund</th>
+                              <th className="text-left p-3 font-medium">Balance After</th>
+                              <th className="text-left p-3 font-medium">Description</th>
+                              <th className="text-left p-3 font-medium">Date</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                          </thead>
+                          <tbody className="divide-y dark:divide-zinc-700">
+                            {paginateData(transactionsData, currentTransactionPage).map((transaction, index) => (
+                              <tr key={transaction.id} className={index % 2 === 0 ? "bg-white dark:bg-zinc-900" : "bg-gray-50 dark:bg-zinc-800"}>
+                                <td className="p-3 font-medium text-gray-600 dark:text-gray-400">
+                                  {(currentTransactionPage - 1) * itemsPerPage + index + 1}
+                                </td>
+                                <td className="p-3">
+                                  <div className="text-xs">
+                                    <p className="font-medium">{transaction.contest_name}</p>
+                                    <p className="text-gray-500">ID: {transaction.contest_id}</p>
+                                  </div>
+                                </td>
+                                <td className="p-3">
+                                  <span
+                                    className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                      transaction.transaction_type === "join"
+                                        ? "bg-orange-100 text-orange-700 dark:bg-orange-700 dark:text-white"
+                                        : "bg-green-100 text-green-700 dark:bg-green-700 dark:text-white"
+                                    }`}
+                                  >
+                                    {transaction.transaction_type.charAt(0).toUpperCase() +
+                                      transaction.transaction_type.slice(1)}
+                                  </span>
+                                </td>
+                                <td className="p-3 font-semibold text-orange-600 dark:text-orange-400">
+                                  ₹{Number.parseFloat(transaction.entry_fee).toFixed(2)}
+                                </td>
+                                <td className="p-3 font-semibold text-green-600 dark:text-green-400">
+                                  ₹{Number.parseFloat(transaction.refund_amount).toFixed(2)}
+                                </td>
+                                <td className="p-3 font-semibold text-blue-600 dark:text-blue-400">
+                                  ₹{Number.parseFloat(transaction.wallet_balance_after).toFixed(2)}
+                                </td>
+                                <td className="p-3 text-xs">{transaction.description}</td>
+                                <td className="p-3 text-xs text-gray-500">
+                                  {new Date(transaction.createdAt).toLocaleDateString()}{" "}
+                                  {new Date(transaction.createdAt).toLocaleTimeString()}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      <PaginationControls 
+                        currentPage={currentTransactionPage}
+                        totalPages={getTotalPages(transactionsData.length)}
+                        onPageChange={setCurrentTransactionPage}
+                        dataType="transactions"
+                      />
+                    </>
                   ) : (
                     <p className="text-gray-500 text-center py-8">No match transactions found</p>
                   )}
