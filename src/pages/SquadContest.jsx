@@ -287,43 +287,41 @@ export default function SquadContest() {
           </div>
         </div>
 
-          <div className="my-8 bg-white rounded-2xl shadow-xl p-5 border border-gray-100 transition-all duration-300 hover:shadow-2xl">
-            <div className="flex flex-wrap justify-between">
-              <h2 className="text-xl font-semibold mb-5 flex items-center gap-2">
+        <div className="my-8 bg-white rounded-2xl shadow-xl p-5 border border-gray-100 transition-all duration-300 hover:shadow-2xl">
+          <div className="flex flex-wrap justify-between">
+            <h2 className="text-xl font-semibold mb-5 flex items-center gap-2">
               <span className="inline-block w-2 h-6 bg-purple-600"></span>
               Room Details
             </h2>
             <button
               onClick={() => {
-              setRoomForm({
-                room_id: contest?.room_id || "",
-                room_password: contest?.room_password || "",
-                room_created_by: contest?.room_created_by || "",
-              });
-              setEditingRoom(true);
-            }}
-            className=" px-5 py-2 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 transition-colors duration-200"
-          >
-            Edit
-          </button>
-            </div>
+                setRoomForm({
+                  room_id: contest?.room_id || "",
+                  room_password: contest?.room_password || "",
+                  room_created_by: contest?.room_created_by || "",
+                });
+                setEditingRoom(true);
+              }}
+              className=" px-5 py-2 bg-purple-600 text-white rounded-lg shadow-md hover:bg-purple-700 transition-colors duration-200"
+            >
+              Edit
+            </button>
+          </div>
 
-            <div className="flex flex-wrap gap-8 text-gray-700 items-center justify-self-start">
-              <div>
-                <span className="font-medium">Room ID:</span>
-                <span className="ml-2">{contest?.room_id || "—"}</span>
-              </div>
-              <div>
-                <span className="font-medium">Room Password:</span>
-                <span className="ml-2">{contest?.room_password || "—"}</span>
-              </div>
-              <div>
-                <span className="font-medium">Created By:</span>
-                <span className="ml-2">{contest?.room_created_by || "—"}</span>
-              </div>
+          <div className="flex flex-wrap gap-8 text-gray-700 items-center justify-self-start">
+            <div>
+              <span className="font-medium">Room ID:</span>
+              <span className="ml-2">{contest?.room_id || "—"}</span>
             </div>
-
-            
+            <div>
+              <span className="font-medium">Room Password:</span>
+              <span className="ml-2">{contest?.room_password || "—"}</span>
+            </div>
+            <div>
+              <span className="font-medium">Created By:</span>
+              <span className="ml-2">{contest?.room_created_by || "—"}</span>
+            </div>
+          </div>
         </div>
 
         {/* Edit Modal */}
@@ -451,7 +449,10 @@ export default function SquadContest() {
         </div>
 
         <div className="mt-8 flex justify-center">
-          <Link to={`/squad/${contest.contest_id}/declare-result`} className=" px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 ">
+          <Link
+            to={`/squad/${contest.contest_id}/declare-result`}
+            className=" px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 "
+          >
             Declare Result
           </Link>
         </div>
