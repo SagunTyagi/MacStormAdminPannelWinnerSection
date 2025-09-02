@@ -76,27 +76,13 @@ const menuItems = [
     submenuKey: "tournaments",
     subItems: [{ label: "Add Tournaments", path: "/tournaments" }],
   },
-  {
-    label: "Daily Duels",
-    icon: Sword,
-    path: "/admin/duels",
-  },
+
   {
     label: "Images", // ✅ NEW
     icon: ImageIcon, // (You can replace with a better one if needed)
     path: "/admin/images",
   },
-  {
-    label: "Voting Centre",
-    icon: ThumbsUp,
-    submenuKey: "voting",
-    subItems: [
-      { label: "All Votes", path: "/voting-centre" },
-      // { label: "User Settings", path: "/user-settings" },
-      // { label: "User KYC", path: "/user-kyc" },
-      // { label: "User Teams", path: "/user-teams" },
-    ],
-  },
+
   {
     label: "Games",
     icon: Gamepad2,
@@ -117,23 +103,7 @@ const menuItems = [
       },
     ],
   },
-  {
-    label: "Daily Bets",
-    icon: DollarSign,
-    submenuKey: "dailyBets",
-    subItems: [{ label: "Overview", path: "/admin/bets" }],
-  },
-  {
-    label: "Sponsor Ads",
-    icon: Monitor,
-    path: "/admin/ads",
-  },
-  {
-    label: "Problem Center",
-    icon: AlertTriangle,
-    submenuKey: "problemCenter",
-    subItems: [{ label: "Problems", path: "/admin/problemcenter" }],
-  },
+
   {
     label: "Notification Center",
     icon: Bell,
