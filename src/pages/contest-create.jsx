@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { ArrowLeft, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, Trash2, Plus, ChevronDown, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../utils/axios";
@@ -26,12 +25,122 @@ export default function ContestCreate() {
   const [winners, setWinners] = useState(
     DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, percent: p, rank: (i + 1).toString() }))
   );
+  
+  // New states for banner images
+  const [bannerImages, setBannerImages] = useState([]);
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
+  const [showImageDropdown, setShowImageDropdown] = useState(false);
+  const [filteredImages, setFilteredImages] = useState([]);
+  
+  // New states for selected image display
+  const [selectedImageTitle, setSelectedImageTitle] = useState("");
+  const [selectedImageUrl, setSelectedImageUrl] = useState("");
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditMode = !!id;
 
   const totalPercent = winners.reduce((s, w) => s + Number(w.percent || 0), 0);
 
+  // Fetch banner images from API
+  useEffect(() => {
+    const fetchBannerImages = async () => {
+      setIsLoadingImages(true);
+      try {
+        const response = await fetch("https://macstormbattle-backend.onrender.com/api/auth/admin/images", {
+          method: "GET",
+          headers: {
+            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0OTgxNDk5LCJleHAiOjE3NTYyNzc0OTl9.xPlZ7KmQNNYAux0BzumgoQ1GI3ESdvgMDXMfRx6F53Q",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch images: ${response.status}`);
+        }
+
+        const result = await response.json();
+        if (result.status === "success" && result.data) {
+          setBannerImages(result.data);
+          setFilteredImages(result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching banner images:", error);
+        toast.error("Failed to load banner images");
+      } finally {
+        setIsLoadingImages(false);
+      }
+    };
+
+    fetchBannerImages();
+  }, []);
+
+  // Handle image selection from dropdown
+  const handleImageSelect = (image) => {
+    setSelectedImageTitle(image.title);
+    setSelectedImageUrl(image.imageUrl);
+    setBannerUrl(image.imageUrl); // This is what gets sent to backend
+    setShowImageDropdown(false);
+    setShowImagePreview(true);
+  };
+
+  // Filter images based on search input
+  const filterImages = (searchTerm) => {
+    if (!searchTerm.trim()) {
+      setFilteredImages(bannerImages);
+      return;
+    }
+
+    const filtered = bannerImages.filter(image =>
+      image.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      image.imageUrl.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredImages(filtered);
+  };
+
+  // Handle banner title input changes (for searching)
+  const handleBannerTitleChange = (value) => {
+    setSelectedImageTitle(value);
+    filterImages(value);
+    
+    // If user types something that doesn't match any title exactly, clear the URL
+    const exactMatch = bannerImages.find(img => img.title === value);
+    if (!exactMatch) {
+      setBannerUrl("");
+      setSelectedImageUrl("");
+      setShowImagePreview(false);
+    }
+  };
+
+  // Handle input focus
+  const handleBannerInputFocus = () => {
+    setShowImageDropdown(true);
+    filterImages(selectedImageTitle);
+  };
+
+  // Clear selected image
+  const clearSelectedImage = () => {
+    setSelectedImageTitle("");
+    setSelectedImageUrl("");
+    setBannerUrl("");
+    setShowImagePreview(false);
+    setShowImageDropdown(false);
+  };
+
+  // Close dropdown when clicking outside
+  const handleClickOutside = (event) => {
+    if (!event.target.closest('.banner-dropdown-container')) {
+      setShowImageDropdown(false);
+    }
+  };
+
+  // Add event listener for clicks outside
+  useEffect(() => {
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // helper to update a winner's percent or rank
   const updateWinner = (index, field, value) => {
@@ -131,6 +240,17 @@ useEffect(() => {
         setPrizeDesc(contestData.prize_description || "");
         setPrivateDesc(contestData.match_private_description || "");
         setTeam(contestData.team || "");
+        
+        // Set banner image display if URL exists
+        if (contestData.banner_image_url) {
+          const matchingImage = bannerImages.find(img => img.imageUrl === contestData.banner_image_url);
+          if (matchingImage) {
+            setSelectedImageTitle(matchingImage.title);
+            setSelectedImageUrl(matchingImage.imageUrl);
+            setShowImagePreview(true);
+          }
+        }
+        
         setWinners(
           (prizeData || []).map((p, i) => ({
             id: Date.now() + i,
@@ -145,7 +265,7 @@ useEffect(() => {
     };
     fetchData();
     // eslint-disable-next-line
-  }, [isEditMode, id]);
+  }, [isEditMode, id, bannerImages]);
 
   const handleSubmit = async (ev) => {
     ev.preventDefault();
@@ -435,17 +555,107 @@ useEffect(() => {
                 Additional Information (Optional)
               </h3>
 
+              {/* Enhanced Banner Image Selection */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Banner Image URL
-                </label>
-                <input
-                  value={bannerUrl}
-                  onChange={(e) => setBannerUrl(e.target.value)}
-                  type="url"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  placeholder="https://example.com/banner.jpg"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-2">Banner Image</label>
+                <div className="space-y-3">
+                  {/* Search/Selection Input */}
+                  <div className="relative banner-dropdown-container">
+                    <input
+                      value={selectedImageTitle}
+                      onChange={(e) => handleBannerTitleChange(e.target.value)}
+                      onFocus={handleBannerInputFocus}
+                      type="text"
+                      className="w-full px-3 py-2 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                      placeholder="Search and select banner image"
+                    />
+                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                      {selectedImageTitle && (
+                        <button
+                          type="button"
+                          onClick={clearSelectedImage}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowImageDropdown(!showImageDropdown);
+                          if (!showImageDropdown) {
+                            filterImages(selectedImageTitle);
+                          }
+                        }}
+                        className="text-gray-400 hover:text-gray-600"
+                        disabled={isLoadingImages}
+                      >
+                        <ChevronDown className={`w-5 h-5 transition-transform ${showImageDropdown ? 'rotate-180' : ''}`} />
+                      </button>
+                    </div>
+                  
+                    {/* Dropdown for Banner Images */}
+                    {showImageDropdown && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {isLoadingImages ? (
+                          <div className="px-4 py-2 text-gray-500">Loading images...</div>
+                        ) : filteredImages.length > 0 ? (
+                          filteredImages.map((image) => (
+                            <button
+                              key={image.id}
+                              type="button"
+                              onClick={() => handleImageSelect(image)}
+                              className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 border-b border-gray-100 last:border-b-0"
+                            >
+                              <img
+                                src={image.imageUrl}
+                                alt={image.title}
+                                className="w-12 h-12 object-cover rounded-md"
+                                onError={(e) => {
+                                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'/%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'/%3E%3Cpolyline points='21,15 16,10 5,21'/%3E%3C/svg%3E";
+                                }}
+                              />
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900">{image.title}</div>
+                              </div>
+                            </button>
+                          ))
+                        ) : selectedImageTitle.trim() ? (
+                          <div className="px-4 py-2 text-gray-500">No images found matching "{selectedImageTitle}"</div>
+                        ) : (
+                          <div className="px-4 py-2 text-gray-500">No images available</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Image Preview */}
+                  {showImagePreview && selectedImageUrl && (
+                    <div className="mt-3">
+                      <div className="relative inline-block">
+                        <img
+                          src={selectedImageUrl}
+                          alt={selectedImageTitle || "Banner preview"}
+                          className="h-32 w-auto rounded-lg border border-gray-300 object-cover"
+                          onError={(e) => {
+                            console.error("Failed to load image preview");
+                            setShowImagePreview(false);
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={clearSelectedImage}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      </div>
+                      {selectedImageTitle && (
+                        <p className="text-sm text-gray-600 mt-2">Selected: {selectedImageTitle}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div>

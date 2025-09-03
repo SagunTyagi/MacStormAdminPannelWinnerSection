@@ -19,9 +19,11 @@ import {
   Gift,
   Sword,
   Users as UsersIcon,
+   Radio,  
+  Users,
+  Trophy,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-
 
 const menuItems = [
   {
@@ -49,31 +51,39 @@ const menuItems = [
     subItems: [
       { label: "All Users", path: "/users" },
       { label: "User Settings", path: "/user-settings" },
-      { 
-        label: "User KYC", 
+      {
+        label: "User KYC",
         path: "/user-kyc",
         submenuKey: "userKyc",
-        subItems: [
-          { label: "KYC", path: "/kyc" }, 
-        ]  
+        subItems: [{ label: "KYC", path: "/kyc" }],
       },
       { label: "User Teams", path: "/user-teams" },
+      { label: "All Withdraw", path: "/all-withdraw" },
     ],
   },
   {
     label: "Teams",
     icon: UsersIcon,
     submenuKey: "teams",
-    subItems: [{ label: "All Teams", path: "/teams" }],
+    subItems: [
+      { label: "All Teams", path: "/teams" },
+      { label: "Add Teams", path: "/add-teams" },
+    ],
   },
-   {
+  {
+    label: "Tournaments",
+    icon: Trophy,
+    submenuKey: "tournaments",
+    subItems: [{ label: "Add Tournaments", path: "/tournaments" }],
+  },
+  {
     label: "Daily Duels",
     icon: Sword,
     path: "/admin/duels",
   },
-    {
+  {
     label: "Images", // ✅ NEW
-    icon: ImageIcon,   // (You can replace with a better one if needed)
+    icon: ImageIcon, // (You can replace with a better one if needed)
     path: "/admin/images",
   },
   {
@@ -92,13 +102,19 @@ const menuItems = [
     icon: Gamepad2,
     submenuKey: "games",
     subItems: [
+      { label: "Games Registration", path: "/games-registation" },
+      { label: "Registration Details", path: "/registation-details" },
       { label: "All Games", path: "/games" },
       { label: "Matches", path: "/matches" },
-      { label: "Contest" , subItems: [
-          { label: "Solo", path: "/solo" },
-         { label: "Duo Contests", path: "/duoContests" },
-          { label: "Squad", path: "/squad" },
-        ] },
+      {
+        label: "Contest",
+        subItems: [
+          { label: "Solo Contests", path: "/solo" },
+          { label: "Duo Contests", path: "/duoContests" },
+          { label: "Squad Contests", path: "/squad" },
+          { label: "Mega Contest", path: "/mega" },
+        ],
+      },
     ],
   },
   {
@@ -140,10 +156,25 @@ const menuItems = [
     icon: Headphones,
     path: "/support",
   },
+    {
+    label: "Stream",
+    icon: Radio,
+    path: "/stream",
+  },
+  {
+    label: "App Settings",
+    icon: Settings,
+    path: "/app-settings",
+  },
   {
     label: "Setting",
     icon: Settings,
     path: "/settings",
+  },
+      {
+    label: "Suscription",
+    icon: Radio,
+    path: "/suscription",
   },
   {
     label: "Bonus",
@@ -151,10 +182,10 @@ const menuItems = [
     path: "/bonus",
   },
   {
-    label:"Subscription",
-    icon: DollarSign,
-    path :"/subscription-create"
-  }
+    label: "Referral System",
+    icon: Users,
+    path: "/referral-system",
+  },
 ];
 
 const Sidebar = () => {
@@ -168,7 +199,7 @@ const Sidebar = () => {
   const renderMenuItem = (item, depth = 0) => {
     const Icon = item.icon;
     const isSubmenuOpen = openMenus[item.submenuKey];
-    const marginClass = depth > 0 ? `ml-${depth * 5}` : '';
+    const marginClass = depth > 0 ? `ml-${depth * 5}` : "";
 
     // If item has both path and subItems (like User KYC)
     if (item.path && item.subItems) {

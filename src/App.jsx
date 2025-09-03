@@ -57,7 +57,19 @@ import SquadContestsList from "./pages/SquadContestList";
 import SquadContest from "./pages/SquadContest";
 import SquadContestDeclareResult from "./pages/SquadContestDeclareResult";
 import ContestResultDeclaration from "./pages/content-Result";
-import Subscriptioncreate from "./pages/Subscriptioncreate"
+import AllWithdraw from "./pages/AllWithdraw";
+import GamesRegistration from "./pages/GamesRegistration";
+import RegistrationDetails from "./pages/RegistrationDetails";
+import AppSettings from "./pages/AppSettings";
+import Stream from "./pages/Stream";
+import Suscription from "./pages/Suscription";
+import MegaContestList from "./pages/MegaContestList";
+import MegaContestForm from "./pages/MegaContestForm";
+import MegaContest from "./pages/MegaContest";
+import ReferralSystem from "./pages/ReferralSystem";
+import Tournament from "./pages/Tournament";
+import AddTeam from "./pages/AddTeam";
+
 // ✅ ProtectedRoute component
 function ProtectedRoute({ children }) {
   const authToken = localStorage.getItem("authToken");
@@ -143,7 +155,10 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/users" element={<AllUsers />} />
             <Route path="/teams" element={<Teams />} />
+            <Route path="/add-teams" element={<AddTeam />} />
             <Route path="/games" element={<AllGames />} />
+            <Route path="/registation-details" element={<RegistrationDetails />} />
+            <Route path="/games-registation" element={<GamesRegistration />} />
             <Route path="/games/create" element={<CreateGame />} />
             <Route path="/games/edit/:id" element={<CreateGame />} />
             <Route path="/matches" element={<AllMatches />} />
@@ -159,13 +174,16 @@ function App() {
             <Route path="/user-settings" element={<UserSettings />} />
             <Route path="/user-kyc" element={<UserKYC />} />
             <Route path="/user-teams" element={<UserTeams />} />
+            <Route path="/all-withdraw" element={<AllWithdraw />} />
             <Route path="/support" element={<Support />} />
             <Route path="/admin/problemcenter" element={<ProblemCenter />} />
             <Route path="/admin/notificationcenter" element={<NotificationCenter />} />
             <Route path="/admin/reports" element={<Report />} />
             <Route path="/admin/bets" element={<DailyBets />} />
             <Route path="/admin/matches" element={<Match />} />
+            <Route path="/app-settings" element={<AppSettings />} />
             <Route path="/settings" element={<Setting />} />
+            <Route path="/suscription" element={<Suscription />} />
             <Route path="/bonus" element={<Bonus />} />
             <Route path="/reportss" element={<Reportss />} />
             <Route path="/admin/duels/createduel" element={<CreateDuel />} />
@@ -185,7 +203,15 @@ function App() {
             <Route path="/squad/create" element={<SquadContestForm />} />
             <Route path="/squad/:id" element={<SquadContest />} />
             <Route path="/squad/:id/declare-result" element={<SquadContestDeclareResult />} />
-            <Route path="/subscription-create" element={<Subscriptioncreate />} />
+            <Route path="/stream" element={<Stream />} />
+            <Route path="/mega" element={<MegaContestList />} />
+            <Route path="/mega/create" element={<MegaContestForm />} />
+            <Route path="/mega/:id" element={<MegaContest />} />
+            <Route path="/referral-system" element={<ReferralSystem />} />
+            <Route path="/tournaments" element={<Tournament />} />
+
+
+
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>

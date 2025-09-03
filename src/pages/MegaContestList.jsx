@@ -10,9 +10,7 @@ import {
 import { Link } from "react-router-dom";
 import axiosInstance from "../utils/axios";
 
-
-
-function SquadContestsList() {
+function MegaContestList() {
   const [filter, setFilter] = useState("All");
   const [contests, setContests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,8 +27,8 @@ function SquadContestsList() {
           return;
         }
         setLoading(true);
-        const res = await axiosInstance.get("/squid-contests");
-        setContests(res.data || []); // Adjust based on API response format
+        const res = await axiosInstance.get("/mega-contests");
+        setContests(res.data?.data?.items || []); // Adjust based on API response format
       } catch (err) {
         console.error(err);
         setError("Failed to load contests");
@@ -61,14 +59,14 @@ function SquadContestsList() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Squad Contests
+              Mega Contests
             </h1>
             <p className="text-gray-600">
-              Join competitive Squad tournaments and win prizes
+              Join competitive Mega tournaments and win prizes
             </p>
           </div>
           <Link
-            to="/squad/create"
+            to="/mega/create"
             className="flex items-center px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
           >
             <Plus className="w-5 h-5 mr-2" />
@@ -133,7 +131,7 @@ function SquadContestsList() {
   .map((contest) => (
                 <Link
                   key={contest.contest_id}
-                  to={`/squad/${contest.contest_id}`}
+                  to={`/mega/${contest.contest_id}`}
                   state={{ contest }}
                   className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 block"
                 >
@@ -182,7 +180,7 @@ function SquadContestsList() {
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
                         <Trophy className="w-4 h-4 mr-2 text-zinc-500" />
-                        {contest.prize_description}
+                        {contest.prize_pool}
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
@@ -208,4 +206,4 @@ function SquadContestsList() {
   );
 }
 
-export default SquadContestsList;
+export default MegaContestList;

@@ -639,21 +639,21 @@ export default function UserReportsCenter() {
       >
         <Container maxWidth="xl">
           {/* Header */}
-          <Box sx={{ mb: 4 }}>
+          <Box sx={{ mb: { xs: 2, sm: 4 } }}>
             <Box
               sx={{
                 display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-center",
-                gap: 3,
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "center", sm: "flex-start" },
+                gap: { xs: 2, sm: 3 },
                 mb: 3,
                 flexWrap: "wrap",
               }}
             >
-              {/* Icon Box */}
+              {/* Icon Box - Mobile Responsive */}
               <Box
                 sx={{
-                  p: 2,
+                  p: { xs: 1.5, sm: 2 },
                   bgcolor: "primary.main",
                   borderRadius: 2,
                   color: "white",
@@ -661,35 +661,56 @@ export default function UserReportsCenter() {
                   alignItems: "center",
                   justifyContent: "center",
                   flexShrink: 0,
-                  mx: 16,
+                  mx: { xs: 0, sm: "auto", md: 0 },
+                  width: { xs: 56, sm: 64 },
+                  height: { xs: 56, sm: 64 },
                 }}
               >
-                <ReportProblem sx={{ fontSize: 32 }} />
+                <ReportProblem sx={{ fontSize: { xs: 24, sm: 32 } }} />
               </Box>
 
-              {/* Content */}
-              <Box sx={{ flex: 1, minWidth: "250px" }}>
+              {/* Content - Mobile Optimized */}
+              <Box
+                sx={{
+                  flex: 1,
+                  minWidth: "250px",
+                  textAlign: { xs: "center", sm: "left" },
+                  width: { xs: "100%", sm: "auto" },
+                }}
+              >
                 <Typography
                   variant="h4"
                   component="h1"
                   fontWeight={600}
                   color="text.primary"
-                  sx={{ mb: 1 }}
+                  sx={{
+                    mb: 1,
+                    fontSize: { xs: "1.5rem", sm: "2rem", md: "2.125rem" },
+                    lineHeight: { xs: 1.2, sm: 1.167 },
+                  }}
                 >
                   User Reports Center
                 </Typography>
 
-                <Typography variant="body1" color="text.secondary">
+                <Typography
+                  variant="body1"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: { xs: "0.9rem", sm: "1rem" },
+                    mb: { xs: 2, sm: 0 },
+                  }}
+                >
                   Manage and review user reports efficiently
                 </Typography>
 
-                {/* Actions */}
+                {/* Actions - Mobile Stack Layout */}
                 <Box
                   sx={{
                     display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    mt: 1,
+                    alignItems: { xs: "stretch", sm: "center" },
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: { xs: 1, sm: 2 },
+                    mt: { xs: 2, sm: 1 },
                     flexWrap: "wrap",
                   }}
                 >
@@ -697,87 +718,192 @@ export default function UserReportsCenter() {
                     variant="outlined"
                     size="small"
                     startIcon={
-                      loading ? <CircularProgress size={16} /> : <Refresh />
+                      loading ? (
+                        <CircularProgress size={16} />
+                      ) : (
+                        <Refresh sx={{ fontSize: { xs: 16, sm: 18 } }} />
+                      )
                     }
                     onClick={handleRefreshReports}
                     disabled={loading}
+                    sx={{
+                      fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                      px: { xs: 2, sm: 2 },
+                      py: { xs: 1, sm: 0.5 },
+                      alignSelf: { xs: "center", sm: "flex-start" },
+                      minWidth: { xs: 120, sm: "auto" },
+                    }}
                   >
                     Refresh
                   </Button>
 
                   {apiError && (
-                    <Alert severity="error" sx={{ py: 0, flex: 1 }}>
+                    <Alert
+                      severity="error"
+                      sx={{
+                        py: 0,
+                        flex: 1,
+                        fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                        "& .MuiAlert-message": {
+                          fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                        },
+                      }}
+                    >
                       API Error: {apiError}
                     </Alert>
                   )}
                 </Box>
 
-                {/* Stats */}
-                <Grid container spacing={2} sx={{ mt: 2 }}>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card sx={{ p: 2, textAlign: "center" }}>
+                {/* Stats - Mobile Responsive Grid */}
+                <Grid
+                  container
+                  spacing={{ xs: 1, sm: 2 }}
+                  sx={{ mt: { xs: 2, sm: 2 } }}
+                >
+                  <Grid item xs={6} sm={6} md={3}>
+                    <Card
+                      sx={{
+                        p: { xs: 1.5, sm: 2 },
+                        textAlign: "center",
+                        height: { xs: 80, sm: "auto" },
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                      }}
+                    >
                       <Typography
                         variant="h5"
                         color="primary.main"
                         fontWeight={600}
+                        sx={{
+                          fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                          lineHeight: 1.2,
+                        }}
                       >
                         {categoryCounts?.all || 0}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          mt: { xs: 0.25, sm: 0.5 },
+                        }}
+                      >
                         Total Reports
                       </Typography>
                     </Card>
                   </Grid>
 
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card sx={{ p: 2, textAlign: "center" }}>
+                  <Grid item xs={6} sm={6} md={3}>
+                    <Card
+                      sx={{
+                        p: { xs: 1.5, sm: 2 },
+                        textAlign: "center",
+                        height: { xs: 80, sm: "auto" },
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                      }}
+                    >
                       <Typography
                         variant="h5"
                         color="warning.main"
                         fontWeight={600}
+                        sx={{
+                          fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                          lineHeight: 1.2,
+                        }}
                       >
                         {
                           userReports.filter((r) => r.status === "pending")
                             .length
                         }
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          mt: { xs: 0.25, sm: 0.5 },
+                        }}
+                      >
                         Pending
                       </Typography>
                     </Card>
                   </Grid>
 
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card sx={{ p: 2, textAlign: "center" }}>
+                  <Grid item xs={6} sm={6} md={3}>
+                    <Card
+                      sx={{
+                        p: { xs: 1.5, sm: 2 },
+                        textAlign: "center",
+                        height: { xs: 80, sm: "auto" },
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                      }}
+                    >
                       <Typography
                         variant="h5"
                         color="success.main"
                         fontWeight={600}
+                        sx={{
+                          fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                          lineHeight: 1.2,
+                        }}
                       >
                         {
                           fetchedAdminUsers.filter((a) => a.status === "online")
                             .length
                         }
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          mt: { xs: 0.25, sm: 0.5 },
+                        }}
+                      >
                         Admins Online
                       </Typography>
                     </Card>
                   </Grid>
 
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Card sx={{ p: 2, textAlign: "center" }}>
+                  <Grid item xs={6} sm={6} md={3}>
+                    <Card
+                      sx={{
+                        p: { xs: 1.5, sm: 2 },
+                        textAlign: "center",
+                        height: { xs: 80, sm: "auto" },
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "center",
+                      }}
+                    >
                       <Typography
                         variant="h5"
                         color="info.main"
                         fontWeight={600}
+                        sx={{
+                          fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                          lineHeight: 1.2,
+                        }}
                       >
                         {
                           userReports.filter((r) => r.status === "assigned")
                             .length
                         }
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          mt: { xs: 0.25, sm: 0.5 },
+                        }}
+                      >
                         Assigned
                       </Typography>
                     </Card>
@@ -786,10 +912,10 @@ export default function UserReportsCenter() {
               </Box>
             </Box>
           </Box>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-            {/* Filters */}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {/*  Filters */}
             <Card sx={{ boxShadow: 1 }}>
-              <CardContent>
+              <CardContent sx={{ pb: { xs: 1, sm: 2 } }}>
                 <Box
                   sx={{
                     display: "flex",
@@ -797,31 +923,68 @@ export default function UserReportsCenter() {
                     justifyContent: "space-between",
                     cursor: "pointer",
                     mb: filtersExpanded ? 2 : 0,
+                    flexDirection: { xs: "column", sm: "row" },
+                    gap: { xs: 1, sm: 0 },
                   }}
                   onClick={() => setFiltersExpanded(!filtersExpanded)}
                 >
                   <Typography
                     variant="h6"
-                    sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1,
+                      fontSize: { xs: "1.1rem", sm: "1.25rem" },
+                    }}
                   >
-                    <FilterList color="primary" />
+                    <FilterList
+                      color="primary"
+                      sx={{ fontSize: { xs: 20, sm: 24 } }}
+                    />
                     Filters & Search
-                    {loading && <CircularProgress size={20} sx={{ ml: 1 }} />}
+                    {loading && (
+                      <CircularProgress
+                        size={{ xs: 16, sm: 20 }}
+                        sx={{ ml: 1 }}
+                      />
+                    )}
                   </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: { xs: 1, sm: 2 },
+                    }}
+                  >
                     <Chip
                       label={`${filteredReports.length} results`}
                       color="primary"
                       size="small"
+                      sx={{
+                        fontSize: { xs: "0.7rem", sm: "0.75rem" },
+                        height: { xs: 20, sm: 24 },
+                      }}
                     />
-                    <IconButton size="small">
-                      {filtersExpanded ? <ExpandLess /> : <ExpandMore />}
+                    <IconButton
+                      size="small"
+                      sx={{
+                        width: { xs: 32, sm: 40 },
+                        height: { xs: 32, sm: 40 },
+                      }}
+                    >
+                      {filtersExpanded ? (
+                        <ExpandLess sx={{ fontSize: { xs: 18, sm: 24 } }} />
+                      ) : (
+                        <ExpandMore sx={{ fontSize: { xs: 18, sm: 24 } }} />
+                      )}
                     </IconButton>
                   </Box>
                 </Box>
+
                 {filtersExpanded && (
                   <Box>
-                    <Grid container spacing={2}>
+                    <Grid container spacing={{ xs: 1, sm: 2 }}>
+                      {/* Search Field - Full width on mobile */}
                       <Grid item xs={12} md={4}>
                         <TextField
                           fullWidth
@@ -832,22 +995,41 @@ export default function UserReportsCenter() {
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                <Search color="primary" />
+                                <Search
+                                  color="primary"
+                                  sx={{ fontSize: { xs: 16, sm: 20 } }}
+                                />
                               </InputAdornment>
                             ),
                           }}
                           size="small"
+                          sx={{
+                            "& .MuiInputBase-input": {
+                              fontSize: { xs: "0.875rem", sm: "1rem" },
+                            },
+                          }}
                         />
                       </Grid>
-                      <Grid item xs={12} md={2}>
+
+                      {/* Filter Dropdowns - Stack on mobile */}
+                      <Grid item xs={6} sm={4} md={2}>
                         <FormControl fullWidth size="small">
-                          <InputLabel>Category</InputLabel>
+                          <InputLabel
+                            sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                          >
+                            Category
+                          </InputLabel>
                           <Select
                             value={selectedCategory}
                             label="Category"
                             onChange={(e) =>
                               setSelectedCategory(e.target.value)
                             }
+                            sx={{
+                              "& .MuiSelect-select": {
+                                fontSize: { xs: "0.875rem", sm: "1rem" },
+                              },
+                            }}
                           >
                             {updatedCategories.map((category) => (
                               <MenuItem
@@ -862,45 +1044,85 @@ export default function UserReportsCenter() {
                                   }}
                                 >
                                   {category.icon && (
-                                    <category.icon sx={{ fontSize: 16 }} />
+                                    <category.icon
+                                      sx={{ fontSize: { xs: 14, sm: 16 } }}
+                                    />
                                   )}
-                                  {category.label} ({category.count})
+                                  <Typography
+                                    sx={{
+                                      fontSize: {
+                                        xs: "0.8rem",
+                                        sm: "0.875rem",
+                                      },
+                                    }}
+                                  >
+                                    {category.label} ({category.count})
+                                  </Typography>
                                 </Box>
                               </MenuItem>
                             ))}
                           </Select>
                         </FormControl>
                       </Grid>
-                      <Grid item xs={12} md={2}>
+
+                      <Grid item xs={6} sm={4} md={2}>
                         <FormControl fullWidth size="small">
-                          <InputLabel>Status</InputLabel>
+                          <InputLabel
+                            sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                          >
+                            Status
+                          </InputLabel>
                           <Select
                             value={selectedStatus}
                             label="Status"
                             onChange={(e) => setSelectedStatus(e.target.value)}
+                            sx={{
+                              "& .MuiSelect-select": {
+                                fontSize: { xs: "0.875rem", sm: "1rem" },
+                              },
+                            }}
                           >
                             {reportStatuses.map((status) => (
-                              <MenuItem key={status.value} value={status.value}>
+                              <MenuItem
+                                key={status.value}
+                                value={status.value}
+                                sx={{
+                                  fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                                }}
+                              >
                                 {status.label}
                               </MenuItem>
                             ))}
                           </Select>
                         </FormControl>
                       </Grid>
-                      <Grid item xs={12} md={2}>
+
+                      <Grid item xs={6} sm={4} md={2}>
                         <FormControl fullWidth size="small">
-                          <InputLabel>Priority</InputLabel>
+                          <InputLabel
+                            sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                          >
+                            Priority
+                          </InputLabel>
                           <Select
                             value={selectedPriority}
                             label="Priority"
                             onChange={(e) =>
                               setSelectedPriority(e.target.value)
                             }
+                            sx={{
+                              "& .MuiSelect-select": {
+                                fontSize: { xs: "0.875rem", sm: "1rem" },
+                              },
+                            }}
                           >
                             {priorities.map((priority) => (
                               <MenuItem
                                 key={priority.value}
                                 value={priority.value}
+                                sx={{
+                                  fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                                }}
                               >
                                 {priority.label}
                               </MenuItem>
@@ -908,7 +1130,8 @@ export default function UserReportsCenter() {
                           </Select>
                         </FormControl>
                       </Grid>
-                      <Grid item xs={12} md={2}>
+
+                      <Grid item xs={6} sm={4} md={2}>
                         <Button
                           fullWidth
                           variant="outlined"
@@ -916,51 +1139,121 @@ export default function UserReportsCenter() {
                             loading ? (
                               <CircularProgress size={16} />
                             ) : (
-                              <Refresh />
+                              <Refresh sx={{ fontSize: { xs: 16, sm: 18 } }} />
                             )
                           }
                           onClick={handleResetFilters}
                           disabled={loading}
-                          sx={{ height: "40px" }}
+                          sx={{
+                            height: "40px",
+                            fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                            "& .MuiButton-startIcon": {
+                              marginRight: { xs: 0.5, sm: 1 },
+                            },
+                          }}
                         >
-                          Reset
+                          <Box
+                            component="span"
+                            sx={{ display: { xs: "none", sm: "inline" } }}
+                          >
+                            Reset
+                          </Box>
                         </Button>
                       </Grid>
                     </Grid>
+
+                    {/* Bottom Controls - Mobile Responsive */}
                     <Box
                       sx={{
                         display: "flex",
                         justifyContent: "space-between",
-                        alignItems: "center",
+                        alignItems: { xs: "flex-start", sm: "center" },
                         mt: 2,
+                        flexDirection: { xs: "column", sm: "row" },
+                        gap: { xs: 1, sm: 0 },
                       }}
                     >
-                      <Box sx={{ display: "flex", gap: 2 }}>
-                        <FormControl size="small" sx={{ minWidth: 120 }}>
-                          <InputLabel>Sort By</InputLabel>
+                      <Box sx={{ display: "flex", gap: { xs: 1, sm: 2 } }}>
+                        <FormControl
+                          size="small"
+                          sx={{ minWidth: { xs: 100, sm: 120 } }}
+                        >
+                          <InputLabel
+                            sx={{ fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                          >
+                            Sort By
+                          </InputLabel>
                           <Select
                             value={sortBy}
                             label="Sort By"
                             onChange={(e) => setSortBy(e.target.value)}
+                            sx={{
+                              "& .MuiSelect-select": {
+                                fontSize: { xs: "0.875rem", sm: "1rem" },
+                              },
+                            }}
                           >
-                            <MenuItem value="newest">Newest First</MenuItem>
-                            <MenuItem value="oldest">Oldest First</MenuItem>
-                            <MenuItem value="priority">High Priority</MenuItem>
-                            <MenuItem value="upvotes">Most Upvoted</MenuItem>
+                            <MenuItem
+                              value="newest"
+                              sx={{
+                                fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                              }}
+                            >
+                              Newest First
+                            </MenuItem>
+                            <MenuItem
+                              value="oldest"
+                              sx={{
+                                fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                              }}
+                            >
+                              Oldest First
+                            </MenuItem>
+                            <MenuItem
+                              value="priority"
+                              sx={{
+                                fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                              }}
+                            >
+                              High Priority
+                            </MenuItem>
+                            <MenuItem
+                              value="upvotes"
+                              sx={{
+                                fontSize: { xs: "0.8rem", sm: "0.875rem" },
+                              }}
+                            >
+                              Most Upvoted
+                            </MenuItem>
                           </Select>
                         </FormControl>
                       </Box>
+
                       {selectedReports.size > 0 && (
                         <Box
-                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: { xs: 1, sm: 2 },
+                            alignSelf: { xs: "stretch", sm: "auto" },
+                          }}
                         >
-                          <Typography variant="body2" color="primary.main">
+                          <Typography
+                            variant="body2"
+                            color="primary.main"
+                            sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+                          >
                             {selectedReports.size} selected
                           </Typography>
                           <Button
                             variant="contained"
                             size="small"
                             onClick={handleBulkActionClick}
+                            sx={{
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
+                              flex: { xs: 1, sm: "none" },
+                            }}
                           >
                             Bulk Actions
                           </Button>
@@ -971,16 +1264,17 @@ export default function UserReportsCenter() {
                 )}
               </CardContent>
             </Card>
-            {/* Categories Overview */}
-            <Grid container spacing={2}>
+
+            {/* Mobile Responsive Categories Overview */}
+            <Grid container spacing={{ xs: 1, sm: 2 }}>
               {updatedCategories.map((category) => {
                 const IconComponent = category.icon || ReportProblem;
                 const isSelected = selectedCategory === category.value;
                 return (
                   <Grid
                     item
-                    xs={12}
-                    sm={6}
+                    xs={6}
+                    sm={4}
                     md={3}
                     lg={12 / 7}
                     key={category.value}
@@ -995,24 +1289,36 @@ export default function UserReportsCenter() {
                         borderColor: isSelected ? "primary.main" : "divider",
                         transition: "all 0.2s ease-in-out",
                         "&:hover": {
-                          transform: "translateY(-2px)",
-                          boxShadow: 2,
+                          transform: { xs: "none", sm: "translateY(-2px)" },
+                          boxShadow: { xs: 1, sm: 2 },
+                        },
+                        "&:active": {
+                          transform: {
+                            xs: "scale(0.95)",
+                            sm: "translateY(-2px)",
+                          },
                         },
                       }}
                       onClick={() => setSelectedCategory(category.value)}
                     >
-                      <CardContent sx={{ textAlign: "center", py: 2 }}>
+                      <CardContent
+                        sx={{
+                          textAlign: "center",
+                          py: { xs: 1, sm: 2 },
+                          px: { xs: 1, sm: 2 },
+                        }}
+                      >
                         <Box
                           sx={{
                             display: "flex",
                             flexDirection: "column",
                             alignItems: "center",
-                            gap: 1,
+                            gap: { xs: 0.5, sm: 1 },
                           }}
                         >
                           <Box
                             sx={{
-                              p: 1.5,
+                              p: { xs: 1, sm: 1.5 },
                               borderRadius: "50%",
                               bgcolor: isSelected
                                 ? "rgba(255, 255, 255, 0.2)"
@@ -1020,21 +1326,35 @@ export default function UserReportsCenter() {
                               display: "flex",
                               alignItems: "center",
                               justifyContent: "center",
+                              width: { xs: 36, sm: 48 },
+                              height: { xs: 36, sm: 48 },
                             }}
                           >
                             <IconComponent
                               sx={{
-                                fontSize: 24,
+                                fontSize: { xs: 18, sm: 24 },
                                 color: isSelected ? "white" : "primary.main",
                               }}
                             />
                           </Box>
-                          <Typography variant="h5" fontWeight="600">
+                          <Typography
+                            variant="h5"
+                            fontWeight="600"
+                            sx={{
+                              fontSize: { xs: "1.2rem", sm: "1.5rem" },
+                              lineHeight: 1.2,
+                            }}
+                          >
                             {category.count}
                           </Typography>
                           <Typography
                             variant="body2"
-                            sx={{ opacity: isSelected ? 0.9 : 0.7 }}
+                            sx={{
+                              opacity: isSelected ? 0.9 : 0.7,
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              lineHeight: 1.2,
+                              textAlign: "center",
+                            }}
                           >
                             {category.label}
                           </Typography>
@@ -1222,43 +1542,81 @@ export default function UserReportsCenter() {
                                     sx={{ fontSize: 18, color: "white" }}
                                   />
                                 </Box>
-                                {/* Report Content */}
+                                {/* Mobile Responsive Report Content */}
                                 <Box sx={{ flex: 1, minWidth: 0 }}>
                                   <Box
                                     sx={{
                                       display: "flex",
-                                      alignItems: "center",
+                                      alignItems: {
+                                        xs: "flex-start",
+                                        sm: "center",
+                                      },
+                                      flexDirection: {
+                                        xs: "column",
+                                        sm: "row",
+                                      },
                                       gap: 1,
                                       mb: 1,
                                     }}
                                   >
                                     <Typography
                                       variant="h6"
-                                      sx={{ fontWeight: 600, flexGrow: 1 }}
+                                      sx={{
+                                        fontWeight: 600,
+                                        flexGrow: 1,
+                                        fontSize: { xs: "1rem", sm: "1.25rem" },
+                                        lineHeight: 1.2,
+                                      }}
                                     >
                                       {report.title}
+                                    </Typography>
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1,
+                                        alignSelf: {
+                                          xs: "flex-start",
+                                          sm: "auto",
+                                        },
+                                      }}
+                                    >
                                       {report.urgency === "critical" && (
                                         <Chip
                                           label="CRITICAL"
                                           size="small"
                                           color="error"
-                                          sx={{ ml: 1 }}
+                                          sx={{
+                                            fontSize: {
+                                              xs: "0.65rem",
+                                              sm: "0.75rem",
+                                            },
+                                            height: { xs: 20, sm: 24 },
+                                          }}
                                         />
                                       )}
-                                    </Typography>
-                                    <Chip
-                                      label={report.id}
-                                      size="small"
-                                      variant="outlined"
-                                      color="primary"
-                                    />
+                                      <Chip
+                                        label={report.id}
+                                        size="small"
+                                        variant="outlined"
+                                        color="primary"
+                                        sx={{
+                                          fontSize: {
+                                            xs: "0.65rem",
+                                            sm: "0.75rem",
+                                          },
+                                          height: { xs: 20, sm: 24 },
+                                        }}
+                                      />
+                                    </Box>
                                   </Box>
-                                  {/* Status Chips */}
+
+                                  {/* Status Chips - Mobile Optimized */}
                                   <Box
                                     sx={{
                                       display: "flex",
                                       flexWrap: "wrap",
-                                      gap: 1,
+                                      gap: { xs: 0.5, sm: 1 },
                                       mb: 1,
                                     }}
                                   >
@@ -1266,82 +1624,126 @@ export default function UserReportsCenter() {
                                       label={
                                         report.status === "assigned" &&
                                         report.assignedTo
-                                          ? `Assigned to ${report.assignedTo}`
+                                          ? {
+                                              xs: report.assignedTo,
+                                              sm: `Assigned to ${report.assignedTo}`,
+                                            }[{ xs: true, sm: false }] ||
+                                            `Assigned to ${report.assignedTo}`
                                           : report.status.replace("-", " ")
                                       }
                                       size="small"
                                       color={getStatusColor(report.status)}
                                       icon={
                                         report.status === "assigned" ? (
-                                          <PlayArrow />
+                                          <PlayArrow
+                                            sx={{
+                                              fontSize: { xs: 12, sm: 16 },
+                                            }}
+                                          />
                                         ) : report.status === "resolved" ? (
-                                          <CheckCircle />
+                                          <CheckCircle
+                                            sx={{
+                                              fontSize: { xs: 12, sm: 16 },
+                                            }}
+                                          />
                                         ) : report.status === "pending" ? (
-                                          <Schedule />
+                                          <Schedule
+                                            sx={{
+                                              fontSize: { xs: 12, sm: 16 },
+                                            }}
+                                          />
                                         ) : (
-                                          <Pause />
+                                          <Pause
+                                            sx={{
+                                              fontSize: { xs: 12, sm: 16 },
+                                            }}
+                                          />
                                         )
                                       }
+                                      sx={{
+                                        fontSize: {
+                                          xs: "0.65rem",
+                                          sm: "0.75rem",
+                                        },
+                                        height: { xs: 20, sm: 24 },
+                                        "& .MuiChip-label": {
+                                          px: { xs: 0.5, sm: 1 },
+                                        },
+                                      }}
                                     />
                                     <Chip
                                       label={`${report.priority} priority`}
                                       size="small"
                                       color={getPriorityColor(report.priority)}
                                       variant="outlined"
+                                      sx={{
+                                        fontSize: {
+                                          xs: "0.65rem",
+                                          sm: "0.75rem",
+                                        },
+                                        height: { xs: 20, sm: 24 },
+                                        "& .MuiChip-label": {
+                                          px: { xs: 0.5, sm: 1 },
+                                        },
+                                      }}
                                     />
                                     <Chip
                                       label={report.category}
                                       size="small"
                                       color="secondary"
+                                      sx={{
+                                        fontSize: {
+                                          xs: "0.65rem",
+                                          sm: "0.75rem",
+                                        },
+                                        height: { xs: 20, sm: 24 },
+                                        "& .MuiChip-label": {
+                                          px: { xs: 0.5, sm: 1 },
+                                        },
+                                      }}
                                     />
                                     {report.location && (
                                       <Chip
                                         label={report.location}
                                         size="small"
                                         variant="outlined"
+                                        sx={{
+                                          fontSize: {
+                                            xs: "0.65rem",
+                                            sm: "0.75rem",
+                                          },
+                                          height: { xs: 20, sm: 24 },
+                                          "& .MuiChip-label": {
+                                            px: { xs: 0.5, sm: 1 },
+                                          },
+                                        }}
                                       />
                                     )}
                                   </Box>
+
                                   <Typography
                                     variant="body2"
                                     color="text.secondary"
                                     sx={{
                                       mb: 2,
                                       display: "-webkit-box",
-                                      WebkitLineClamp: 2,
+                                      WebkitLineClamp: { xs: 3, sm: 2 },
                                       WebkitBoxOrient: "vertical",
                                       overflow: "hidden",
+                                      fontSize: {
+                                        xs: "0.8rem",
+                                        sm: "0.875rem",
+                                      },
+                                      lineHeight: { xs: 1.3, sm: 1.43 },
                                     }}
                                   >
                                     {report.description}
                                   </Typography>
-                                  {/* User Information */}
-                                  <Grid container spacing={2} sx={{ mb: 1 }}>
-                                    <Grid item xs={12} sm={6}>
-                                      <Box
-                                        sx={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: 1,
-                                        }}
-                                      >
-                                        <Avatar
-                                          src={report.reportedBy.avatar}
-                                          sx={{ width: 20, height: 20 }}
-                                        >
-                                          {report.reportedBy.username.slice(
-                                            0,
-                                            2
-                                          )}
-                                        </Avatar>
-                                        <Typography variant="caption">
-                                          <strong>
-                                            {report.reportedBy.username}
-                                          </strong>
-                                        </Typography>
-                                      </Box>
-                                    </Grid>
-                                    {report.reportedUser && (
+
+                                  {/* User Information - Mobile Stack Layout */}
+                                  <Box sx={{ mb: 1 }}>
+                                    <Grid container spacing={{ xs: 1, sm: 2 }}>
+                                      {/* Reporter */}
                                       <Grid item xs={12} sm={6}>
                                         <Box
                                           sx={{
@@ -1351,45 +1753,82 @@ export default function UserReportsCenter() {
                                           }}
                                         >
                                           <Avatar
-                                            src={report.reportedUser.avatar}
-                                            sx={{ width: 20, height: 20 }}
+                                            src={report.reportedBy.avatar}
+                                            sx={{
+                                              width: { xs: 16, sm: 20 },
+                                              height: { xs: 16, sm: 20 },
+                                              fontSize: {
+                                                xs: "0.6rem",
+                                                sm: "0.75rem",
+                                              },
+                                            }}
                                           >
-                                            {report.reportedUser.username.slice(
+                                            {report.reportedBy.username.slice(
                                               0,
                                               2
                                             )}
                                           </Avatar>
                                           <Typography
                                             variant="caption"
-                                            color="error.main"
+                                            sx={{
+                                              fontSize: {
+                                                xs: "0.7rem",
+                                                sm: "0.75rem",
+                                              },
+                                            }}
                                           >
                                             <strong>
-                                              {report.reportedUser.username}
+                                              {report.reportedBy.username}
                                             </strong>
                                           </Typography>
                                         </Box>
                                       </Grid>
-                                    )}
-                                    <Grid item xs={12} sm={6}>
-                                      <Box
-                                        sx={{
-                                          display: "flex",
-                                          alignItems: "center",
-                                          gap: 1,
-                                        }}
-                                      >
-                                        <AccessTime
-                                          sx={{
-                                            fontSize: 14,
-                                            color: "text.secondary",
-                                          }}
-                                        />
-                                        <Typography variant="caption">
-                                          {report.createdAt}
-                                        </Typography>
-                                      </Box>
-                                    </Grid>
-                                    {report.assignedTo && (
+
+                                      {/* Reported User */}
+                                      {report.reportedUser && (
+                                        <Grid item xs={12} sm={6}>
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: 1,
+                                            }}
+                                          >
+                                            <Avatar
+                                              src={report.reportedUser.avatar}
+                                              sx={{
+                                                width: { xs: 16, sm: 20 },
+                                                height: { xs: 16, sm: 20 },
+                                                fontSize: {
+                                                  xs: "0.6rem",
+                                                  sm: "0.75rem",
+                                                },
+                                              }}
+                                            >
+                                              {report.reportedUser.username.slice(
+                                                0,
+                                                2
+                                              )}
+                                            </Avatar>
+                                            <Typography
+                                              variant="caption"
+                                              color="error.main"
+                                              sx={{
+                                                fontSize: {
+                                                  xs: "0.7rem",
+                                                  sm: "0.75rem",
+                                                },
+                                              }}
+                                            >
+                                              <strong>
+                                                {report.reportedUser.username}
+                                              </strong>
+                                            </Typography>
+                                          </Box>
+                                        </Grid>
+                                      )}
+
+                                      {/* Created At */}
                                       <Grid item xs={12} sm={6}>
                                         <Box
                                           sx={{
@@ -1398,35 +1837,105 @@ export default function UserReportsCenter() {
                                             gap: 1,
                                           }}
                                         >
-                                          <People
+                                          <AccessTime
                                             sx={{
-                                              fontSize: 14,
+                                              fontSize: { xs: 12, sm: 14 },
                                               color: "text.secondary",
                                             }}
                                           />
-                                          <Typography variant="caption">
-                                            <strong>
-                                              Assigned to: {report.assignedTo}
-                                            </strong>
-                                            {report.assignedBy && (
-                                              <Typography
-                                                variant="caption"
-                                                color="text.secondary"
-                                                sx={{
-                                                  display: "block",
-                                                  fontSize: "0.7rem",
-                                                }}
-                                              >
-                                                by {report.assignedBy}{" "}
-                                                {report.assignedAt &&
-                                                  `• ${report.assignedAt}`}
-                                              </Typography>
-                                            )}
+                                          <Typography
+                                            variant="caption"
+                                            sx={{
+                                              fontSize: {
+                                                xs: "0.7rem",
+                                                sm: "0.75rem",
+                                              },
+                                            }}
+                                          >
+                                            {report.createdAt}
                                           </Typography>
                                         </Box>
                                       </Grid>
-                                    )}
-                                  </Grid>
+
+                                      {/* Assignment Info */}
+                                      {report.assignedTo && (
+                                        <Grid item xs={12} sm={6}>
+                                          <Box
+                                            sx={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: 1,
+                                            }}
+                                          >
+                                            <People
+                                              sx={{
+                                                fontSize: { xs: 12, sm: 14 },
+                                                color: "text.secondary",
+                                              }}
+                                            />
+                                            <Box sx={{ minWidth: 0 }}>
+                                              <Typography
+                                                variant="caption"
+                                                sx={{
+                                                  fontSize: {
+                                                    xs: "0.7rem",
+                                                    sm: "0.75rem",
+                                                  },
+                                                  display: "block",
+                                                }}
+                                              >
+                                                <strong>
+                                                  {/* Show shorter text on mobile */}
+                                                  <Box
+                                                    component="span"
+                                                    sx={{
+                                                      display: {
+                                                        xs: "inline",
+                                                        sm: "none",
+                                                      },
+                                                    }}
+                                                  >
+                                                    {report.assignedTo}
+                                                  </Box>
+                                                  <Box
+                                                    component="span"
+                                                    sx={{
+                                                      display: {
+                                                        xs: "none",
+                                                        sm: "inline",
+                                                      },
+                                                    }}
+                                                  >
+                                                    Assigned to:{" "}
+                                                    {report.assignedTo}
+                                                  </Box>
+                                                </strong>
+                                              </Typography>
+                                              {report.assignedBy && (
+                                                <Typography
+                                                  variant="caption"
+                                                  color="text.secondary"
+                                                  sx={{
+                                                    display: "block",
+                                                    fontSize: {
+                                                      xs: "0.6rem",
+                                                      sm: "0.7rem",
+                                                    },
+                                                    lineHeight: 1.2,
+                                                  }}
+                                                >
+                                                  by {report.assignedBy}
+                                                  {report.assignedAt &&
+                                                    ` • ${report.assignedAt}`}
+                                                </Typography>
+                                              )}
+                                            </Box>
+                                          </Box>
+                                        </Grid>
+                                      )}
+                                    </Grid>
+                                  </Box>
+
                                   {/* Evidence Files Count */}
                                   {report.evidence &&
                                     report.evidence.length > 0 && (
@@ -1440,13 +1949,19 @@ export default function UserReportsCenter() {
                                       >
                                         <AttachFile
                                           sx={{
-                                            fontSize: 14,
+                                            fontSize: { xs: 12, sm: 14 },
                                             color: "text.secondary",
                                           }}
                                         />
                                         <Typography
                                           variant="caption"
                                           color="text.secondary"
+                                          sx={{
+                                            fontSize: {
+                                              xs: "0.7rem",
+                                              sm: "0.75rem",
+                                            },
+                                          }}
                                         >
                                           {report.evidence.length} evidence
                                           files
@@ -1454,23 +1969,48 @@ export default function UserReportsCenter() {
                                       </Box>
                                     )}
                                 </Box>
-                                {/* Action Buttons */}
+
+                                {/* Action Buttons - Mobile Optimized */}
                                 <Box
                                   sx={{
                                     display: "flex",
-                                    flexDirection: "column",
-                                    gap: 1,
+                                    flexDirection: { xs: "row", sm: "column" },
+                                    gap: { xs: 0.5, sm: 1 },
                                     flexShrink: 0,
+                                    alignItems: { xs: "center", sm: "stretch" },
                                   }}
                                 >
                                   <Button
                                     size="small"
                                     variant="outlined"
-                                    startIcon={<Visibility />}
+                                    startIcon={
+                                      <Visibility
+                                        sx={{ fontSize: { xs: 14, sm: 18 } }}
+                                      />
+                                    }
                                     onClick={() => handleViewReport(report)}
+                                    sx={{
+                                      fontSize: {
+                                        xs: "0.7rem",
+                                        sm: "0.875rem",
+                                      },
+                                      minWidth: { xs: 60, sm: "auto" },
+                                      px: { xs: 1, sm: 2 },
+                                      "& .MuiButton-startIcon": {
+                                        marginRight: { xs: 0.5, sm: 1 },
+                                      },
+                                    }}
                                   >
-                                    View
+                                    <Box
+                                      component="span"
+                                      sx={{
+                                        display: { xs: "none", sm: "inline" },
+                                      }}
+                                    >
+                                      View
+                                    </Box>
                                   </Button>
+
                                   <IconButton
                                     size="small"
                                     onClick={() => handleBookmark(report.id)}
@@ -1480,14 +2020,21 @@ export default function UserReportsCenter() {
                                       color: isBookmarked
                                         ? "warning.main"
                                         : "text.secondary",
+                                      width: { xs: 32, sm: 40 },
+                                      height: { xs: 32, sm: 40 },
                                     }}
                                   >
                                     {isBookmarked ? (
-                                      <Bookmark />
+                                      <Bookmark
+                                        sx={{ fontSize: { xs: 14, sm: 18 } }}
+                                      />
                                     ) : (
-                                      <BookmarkBorder />
+                                      <BookmarkBorder
+                                        sx={{ fontSize: { xs: 14, sm: 18 } }}
+                                      />
                                     )}
                                   </IconButton>
+
                                   <IconButton
                                     size="small"
                                     onClick={(e) =>
@@ -1496,9 +2043,13 @@ export default function UserReportsCenter() {
                                     sx={{
                                       border: "1px solid",
                                       borderColor: "divider",
+                                      width: { xs: 32, sm: 40 },
+                                      height: { xs: 32, sm: 40 },
                                     }}
                                   >
-                                    <MoreHoriz />
+                                    <MoreHoriz
+                                      sx={{ fontSize: { xs: 14, sm: 18 } }}
+                                    />
                                   </IconButton>
                                 </Box>
                               </Box>
