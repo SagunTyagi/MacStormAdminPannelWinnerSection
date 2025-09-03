@@ -1,38 +1,890 @@
-import React, { useState, useEffect } from "react";
-import { Plus, Download, Search, Edit, Trash2, X } from "lucide-react";
+// import React, { useState, useEffect } from "react";
+// import { Plus, Download, Search, Edit, Trash2, X, Gift, BookOpen, ChevronDown, ChevronUp, Save, Users } from "lucide-react";
 
-// You can change this to your actual API base URL
+// const API_BASE_URL = "https://macstormbattle-backend-2.onrender.com/api";
+
+// // Confirmation Modal Component
+// const ConfirmationModal = ({ message, onConfirm, onCancel }) => {
+//   return (
+//     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50 p-4">
+//       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+//         <div className="flex justify-between items-center border-b pb-3 mb-4">
+//           <h3 className="text-xl font-semibold text-gray-900">Confirm Action</h3>
+//           <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
+//             <X size={24} />
+//           </button>
+//         </div>
+//         <p className="text-gray-700 mb-4">{message}</p>
+//         <div className="flex justify-end space-x-2">
+//           <button
+//             onClick={onCancel}
+//             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+//           >
+//             Cancel
+//           </button>
+//           <button
+//             onClick={onConfirm}
+//             className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+//           >
+//             Confirm
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// // Team Card Component
+// const TeamCard = ({ team, onEdit, onDelete, onViewDetails }) => {
+//   const [isExpanded, setIsExpanded] = useState(false);
+
+//   return (
+//     <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-lg">
+//       <div className="p-5">
+//         <div className="flex items-start justify-between">
+//           <div className="flex items-center">
+//             <img
+//               src={team.imageUrl || `https://placehold.co/60x60/4F46E5/FFFFFF?text=${team.name.charAt(0).toUpperCase()}`}
+//               alt="Team avatar"
+//               className="w-12 h-12 rounded-full object-cover border-2 border-indigo-100"
+//               onError={(e) => {
+//                 e.target.onerror = null;
+//                 e.target.src = `https://placehold.co/60x60/4F46E5/FFFFFF?text=${team.name.charAt(0).toUpperCase()}`;
+//               }}
+//             />
+//             <div className="ml-4">
+//               <h3 className="text-lg font-semibold text-gray-900">{team.name}</h3>
+//               <p className="text-sm text-gray-500">ID: {team.id}</p>
+//             </div>
+//           </div>
+//           <div className="flex space-x-2">
+//             <button
+//               onClick={() => onEdit(team)}
+//               className="p-2 text-gray-500 hover:text-blue-600 transition-colors duration-200"
+//               title="Edit team"
+//             >
+//               <Edit size={18} />
+//             </button>
+//             <button
+//               onClick={() => onDelete(team.id)}
+//               className="p-2 text-gray-500 hover:text-red-600 transition-colors duration-200"
+//               title="Delete team"
+//             >
+//               <Trash2 size={18} />
+//             </button>
+//           </div>
+//         </div>
+
+//         <div className="mt-4 grid grid-cols-2 gap-4">
+//           <div>
+//             <p className="text-sm text-gray-500">Registration Amount</p>
+//             <p className="font-medium text-gray-900">${team.registrationAmount || "0"}</p>
+//           </div>
+//           <div>
+//             <p className="text-sm text-gray-500">Registration Date</p>
+//             <p className="font-medium text-gray-900">
+//               {team.lastRegistrationDate ? new Date(team.lastRegistrationDate).toLocaleDateString() : "N/A"}
+//             </p>
+//           </div>
+//         </div>
+
+//         <div className="mt-4">
+//           <button
+//             onClick={() => setIsExpanded(!isExpanded)}
+//             className="flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200"
+//           >
+//             {isExpanded ? (
+//               <>
+//                 <ChevronUp size={16} className="mr-1" /> Hide Details
+//               </>
+//             ) : (
+//               <>
+//                 <ChevronDown size={16} className="mr-1" /> Show Details
+//               </>
+//             )}
+//           </button>
+//         </div>
+
+//         {isExpanded && (
+//           <div className="mt-4 pt-4 border-t border-gray-200">
+//             <div className="mb-4">
+//               <div className="flex items-center mb-2">
+//                 <Gift size={16} className="text-purple-600 mr-2" />
+//                 <h4 className="font-medium text-gray-900">Benefits</h4>
+//               </div>
+//               {team.benefits && team.benefits.length > 0 ? (
+//                 <ul className="list-disc list-inside text-sm text-gray-700 pl-2">
+//                   {team.benefits.slice(0, 3).map((benefit, index) => (
+//                     <li key={index}>{benefit}</li>
+//                   ))}
+//                   {team.benefits.length > 3 && (
+//                     <li className="text-blue-600">+{team.benefits.length - 3} more</li>
+//                   )}
+//                 </ul>
+//               ) : (
+//                 <p className="text-sm text-gray-500">No benefits added</p>
+//               )}
+//             </div>
+
+//             <div className="mb-4">
+//               <div className="flex items-center mb-2">
+//                 <BookOpen size={16} className="text-green-600 mr-2" />
+//                 <h4 className="font-medium text-gray-900">How to Play</h4>
+//               </div>
+//               {team.howToPlay && team.howToPlay.length > 0 ? (
+//                 <ol className="list-decimal list-inside text-sm text-gray-700 pl-2">
+//                   {team.howToPlay.slice(0, 3).map((step, index) => (
+//                     <li key={index}>{step}</li>
+//                   ))}
+//                   {team.howToPlay.length > 3 && (
+//                     <li className="text-blue-600">+{team.howToPlay.length - 3} more</li>
+//                   )}
+//                 </ol>
+//               ) : (
+//                 <p className="text-sm text-gray-500">No instructions added</p>
+//               )}
+//             </div>
+
+//             <button
+//               onClick={() => onViewDetails(team)}
+//               className="w-full mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm flex items-center justify-center"
+//             >
+//               <Edit size={16} className="mr-2" />
+//               Manage Benefits & How to Play
+//             </button>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// // Team Details Modal Component
+// const TeamDetailsModal = ({ team, onClose, onSave }) => {
+//   const [benefits, setBenefits] = useState(team.benefits || []);
+//   const [howToPlay, setHowToPlay] = useState(team.howToPlay || []);
+//   const [newBenefit, setNewBenefit] = useState("");
+//   const [newHowToPlay, setNewHowToPlay] = useState("");
+//   const [isSaving, setIsSaving] = useState(false);
+//   const [error, setError] = useState(null);
+//   const [success, setSuccess] = useState(null);
+
+//   useEffect(() => {
+//     // Fetch benefits and how-to-play when modal opens
+//     const fetchTeamDetails = async () => {
+//       try {
+//         // Fetch benefits
+//         const benefitsResponse = await fetch(`${API_BASE_URL}/admin/teams/${team.id}/benefits`);
+//         if (benefitsResponse.ok) {
+//           const benefitsData = await benefitsResponse.json();
+//           setBenefits(benefitsData.benefits || []);
+//         }
+
+//         // Fetch how to play
+//         const howToPlayResponse = await fetch(`${API_BASE_URL}/admin/teams/${team.id}/how-to-play`);
+//         if (howToPlayResponse.ok) {
+//           const howToPlayData = await howToPlayResponse.json();
+//           setHowToPlay(howToPlayData.howToPlay || []);
+//         }
+//       } catch (error) {
+//         console.error("Failed to fetch team details:", error);
+//         setError("Failed to load team details. Please try again.");
+//       }
+//     };
+
+//     fetchTeamDetails();
+//   }, [team.id]);
+
+//   const addBenefit = () => {
+//     if (newBenefit.trim()) {
+//       setBenefits([...benefits, newBenefit.trim()]);
+//       setNewBenefit("");
+//     }
+//   };
+
+//   const removeBenefit = (index) => {
+//     setBenefits(benefits.filter((_, i) => i !== index));
+//   };
+
+//   const addHowToPlay = () => {
+//     if (newHowToPlay.trim()) {
+//       setHowToPlay([...howToPlay, newHowToPlay.trim()]);
+//       setNewHowToPlay("");
+//     }
+//   };
+
+//   const removeHowToPlay = (index) => {
+//     setHowToPlay(howToPlay.filter((_, i) => i !== index));
+//   };
+
+//   const handleSave = async () => {
+//     setIsSaving(true);
+//     setError(null);
+//     setSuccess(null);
+    
+//     try {
+//       // Update benefits
+//       const benefitsResponse = await fetch(`${API_BASE_URL}/admin/teams/${team.id}/benefits`, {
+//         method: "PUT",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ benefits }),
+//       });
+
+//       if (!benefitsResponse.ok) {
+//         throw new Error("Failed to update benefits");
+//       }
+
+//       // Update how to play
+//       const howToPlayResponse = await fetch(`${API_BASE_URL}/admin/teams/${team.id}/how-to-play`, {
+//         method: "PUT",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({ howToPlay }),
+//       });
+
+//       if (!howToPlayResponse.ok) {
+//         throw new Error("Failed to update how to play");
+//       }
+
+//       setSuccess("Team details updated successfully!");
+//       setTimeout(() => {
+//         onSave({ ...team, benefits, howToPlay });
+//       }, 1000);
+//     } catch (error) {
+//       console.error("Failed to save:", error);
+//       setError("Failed to save changes. Please try again.");
+//     } finally {
+//       setIsSaving(false);
+//     }
+//   };
+
+//   return (
+//     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50 p-4">
+//       <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl">
+//         <div className="flex justify-between items-center border-b pb-4 mb-4">
+//           <div className="flex items-center">
+//             <img
+//               src={team.imageUrl || `https://placehold.co/50x50/4F46E5/FFFFFF?text=${team.name.charAt(0).toUpperCase()}`}
+//               alt="Team avatar"
+//               className="w-10 h-10 rounded-full object-cover mr-3 border-2 border-indigo-100"
+//             />
+//             <div>
+//               <h3 className="text-xl font-semibold text-gray-900">Manage Team: {team.name}</h3>
+//               <p className="text-sm text-gray-500">ID: {team.id}</p>
+//             </div>
+//           </div>
+//           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+//             <X size={24} />
+//           </button>
+//         </div>
+
+//         {error && (
+//           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">
+//             {error}
+//           </div>
+//         )}
+
+//         {success && (
+//           <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md text-sm">
+//             {success}
+//           </div>
+//         )}
+
+//         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+//           {/* Benefits Section */}
+//           <div className="border rounded-lg p-4 bg-gray-50">
+//             <div className="flex items-center mb-4">
+//               <Gift size={20} className="text-purple-600 mr-2" />
+//               <h4 className="text-lg font-medium text-gray-900">Benefits</h4>
+//             </div>
+            
+//             <div className="flex mb-4">
+//               <input
+//                 type="text"
+//                 value={newBenefit}
+//                 onChange={(e) => setNewBenefit(e.target.value)}
+//                 placeholder="Add a new benefit..."
+//                 className="flex-1 rounded-l-md border border-gray-300 p-2 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50"
+//                 onKeyPress={(e) => e.key === "Enter" && addBenefit()}
+//               />
+//               <button
+//                 onClick={addBenefit}
+//                 className="px-4 py-2 bg-purple-600 text-white rounded-r-md hover:bg-purple-700 transition-colors duration-200"
+//               >
+//                 Add
+//               </button>
+//             </div>
+            
+//             <div className="max-h-60 overflow-y-auto">
+//               {benefits.length > 0 ? (
+//                 <ul className="space-y-2">
+//                   {benefits.map((benefit, index) => (
+//                     <li key={index} className="flex justify-between items-center bg-white p-3 rounded-md border border-gray-200">
+//                       <span className="text-sm flex-grow">{benefit}</span>
+//                       <button
+//                         onClick={() => removeBenefit(index)}
+//                         className="text-red-500 hover:text-red-700 ml-2"
+//                         title="Remove benefit"
+//                       >
+//                         <X size={16} />
+//                       </button>
+//                     </li>
+//                   ))}
+//                 </ul>
+//               ) : (
+//                 <p className="text-gray-500 text-sm text-center py-4">No benefits added yet</p>
+//               )}
+//             </div>
+//           </div>
+
+//           {/* How to Play Section */}
+//           <div className="border rounded-lg p-4 bg-gray-50">
+//             <div className="flex items-center mb-4">
+//               <BookOpen size={20} className="text-green-600 mr-2" />
+//               <h4 className="text-lg font-medium text-gray-900">How to Play</h4>
+//             </div>
+            
+//             <div className="flex mb-4">
+//               <input
+//                 type="text"
+//                 value={newHowToPlay}
+//                 onChange={(e) => setNewHowToPlay(e.target.value)}
+//                 placeholder="Add a new step..."
+//                 className="flex-1 rounded-l-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+//                 onKeyPress={(e) => e.key === "Enter" && addHowToPlay()}
+//               />
+//               <button
+//                 onClick={addHowToPlay}
+//                 className="px-4 py-2 bg-green-600 text-white rounded-r-md hover:bg-green-700 transition-colors duration-200"
+//               >
+//                 Add
+//               </button>
+//             </div>
+            
+//             <div className="max-h-60 overflow-y-auto">
+//               {howToPlay.length > 0 ? (
+//                 <ol className="space-y-2">
+//                   {howToPlay.map((step, index) => (
+//                     <li key={index} className="flex justify-between items-center bg-white p-3 rounded-md border border-gray-200">
+//                       <span className="text-sm flex-grow">{step}</span>
+//                       <button
+//                         onClick={() => removeHowToPlay(index)}
+//                         className="text-red-500 hover:text-red-700 ml-2"
+//                         title="Remove step"
+//                       >
+//                         <X size={16} />
+//                       </button>
+//                     </li>
+//                   ))}
+//                 </ol>
+//               ) : (
+//                 <p className="text-gray-500 text-sm text-center py-4">No instructions added yet</p>
+//               )}
+//             </div>
+//           </div>
+//         </div>
+
+//         <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+//           <button
+//             onClick={onClose}
+//             className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors duration-200"
+//           >
+//             Cancel
+//           </button>
+//           <button
+//             onClick={handleSave}
+//             disabled={isSaving}
+//             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400 transition-colors duration-200 flex items-center"
+//           >
+//             <Save size={16} className="mr-1" />
+//             {isSaving ? "Saving..." : "Save Changes"}
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// // Main Teams Component
+// const Teams = () => {
+//   const [teams, setTeams] = useState([]);
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [isLoading, setIsLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const [selectedTeam, setSelectedTeam] = useState(null);
+//   const [showDetailsModal, setShowDetailsModal] = useState(false);
+//   const [showConfirmModal, setShowConfirmModal] = useState(false);
+//   const [confirmAction, setConfirmAction] = useState(null);
+
+//   const fetchTeams = async () => {
+//     setIsLoading(true);
+//     setError(null);
+//     try {
+//       const response = await fetch(`${API_BASE_URL}/admin/teams`);
+//       if (!response.ok) {
+//         throw new Error(`HTTP error! status: ${response.status}`);
+//       }
+//       const data = await response.json();
+//       const teamsData = Array.isArray(data) ? data : [data];
+
+//       // Fetch benefits and how-to-play for each team
+//       const teamsWithDetails = await Promise.all(
+//         teamsData.map(async (team) => {
+//           try {
+//             // Fetch benefits
+//             const benefitsResponse = await fetch(`${API_BASE_URL}/admin/teams/${team.id}/benefits`);
+//             const benefitsData = benefitsResponse.ok ? await benefitsResponse.json() : { benefits: [] };
+            
+//             // Fetch how to play
+//             const howToPlayResponse = await fetch(`${API_BASE_URL}/admin/teams/${team.id}/how-to-play`);
+//             const howToPlayData = howToPlayResponse.ok ? await howToPlayResponse.json() : { howToPlay: [] };
+            
+//             return {
+//               ...team,
+//               benefits: benefitsData.benefits || [],
+//               howToPlay: howToPlayData.howToPlay || []
+//             };
+//           } catch (e) {
+//             console.error(`Failed to fetch details for team ${team.id}:`, e);
+//             return { ...team, benefits: [], howToPlay: [] };
+//           }
+//         })
+//       );
+
+//       setTeams(teamsWithDetails);
+//     } catch (e) {
+//       console.error("Failed to fetch teams:", e);
+//       setError("Failed to load teams. Please ensure the API is running and the URL is correct.");
+//     } finally {
+//       setIsLoading(false);
+//     }
+//   };
+
+//   useEffect(() => {
+//     fetchTeams();
+//   }, []);
+
+//   const handleDeleteTeam = (id) => {
+//     setConfirmAction(() => async () => {
+//       try {
+//         const response = await fetch(`${API_BASE_URL}/admin/teams/${id}`, {
+//           method: "DELETE",
+//         });
+//         if (!response.ok) {
+//           throw new Error(`HTTP error! status: ${response.status}`);
+//         }
+//         setTeams(teams.filter((team) => team.id !== id));
+//       } catch (e) {
+//         console.error("Failed to delete team:", e);
+//         setError("Failed to delete the team. Please try again.");
+//       } finally {
+//         setShowConfirmModal(false);
+//       }
+//     });
+//     setShowConfirmModal(true);
+//   };
+
+//   const handleViewDetails = (team) => {
+//     setSelectedTeam(team);
+//     setShowDetailsModal(true);
+//   };
+
+//   const handleSaveDetails = (updatedTeam) => {
+//     setTeams(teams.map((team) => (team.id === updatedTeam.id ? updatedTeam : team)));
+//     setShowDetailsModal(false);
+//   };
+
+//   const filteredTeams = teams.filter((team) =>
+//     team.name.toLowerCase().includes(searchTerm.toLowerCase())
+//   );
+
+//   return (
+//     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-8 font-sans antialiased text-gray-800">
+//       {showDetailsModal && selectedTeam && (
+//         <TeamDetailsModal
+//           team={selectedTeam}
+//           onClose={() => setShowDetailsModal(false)}
+//           onSave={handleSaveDetails}
+//         />
+//       )}
+
+//       {showConfirmModal && (
+//         <ConfirmationModal
+//           message="Are you sure you want to delete this team?"
+//           onConfirm={confirmAction}
+//           onCancel={() => setShowConfirmModal(false)}
+//         />
+//       )}
+
+//       <div className="max-w-7xl mx-auto">
+//         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
+//           <div>
+//             <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+//               <Users className="mr-3 text-indigo-600" /> Team Management
+//             </h1>
+//             <p className="text-sm text-gray-500 mt-1">
+//               Manage team details, registration, benefits and rules
+//             </p>
+//           </div>
+//           <div className="mt-4 md:mt-0 flex flex-wrap gap-3">
+//             <button className="flex items-center px-4 py-2 border border-gray-300 text-sm rounded-md shadow-sm bg-white hover:bg-gray-100 text-gray-800 transition-colors duration-200">
+//               <Download className="w-4 h-4 mr-2" />
+//               Export Teams
+//             </button>
+//             <button className="flex items-center px-4 py-2 bg-indigo-600 text-white text-sm rounded-md shadow-sm hover:bg-indigo-700 transition-colors duration-200">
+//               <Plus className="w-4 h-4 mr-2" />
+//               Create Team
+//             </button>
+//           </div>
+//         </div>
+
+//         <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden p-6">
+//           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+//             <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Team Directory</h2>
+//             <div className="relative w-full md:w-64">
+//               <Search
+//                 className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"
+//                 size={16}
+//               />
+//               <input
+//                 type="text"
+//                 value={searchTerm}
+//                 onChange={(e) => setSearchTerm(e.target.value)}
+//                 placeholder="Search teams..."
+//                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+//               />
+//             </div>
+//           </div>
+
+//           {isLoading ? (
+//             <div className="p-6 text-center text-gray-500">
+//               <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500 mb-2"></div>
+//               <p>Loading teams...</p>
+//             </div>
+//           ) : error ? (
+//             <div className="p-6 text-center text-red-500">{error}</div>
+//           ) : filteredTeams.length === 0 ? (
+//             <div className="p-6 text-center text-gray-500">
+//               {searchTerm ? "No teams found matching your search." : "No teams available."}
+//             </div>
+//           ) : (
+//             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+//               {filteredTeams.map((team) => (
+//                 <TeamCard
+//                   key={team.id}
+//                   team={team}
+//                   onEdit={() => {
+//                     // Placeholder for edit functionality
+//                     alert("Edit functionality would be implemented here");
+//                   }}
+//                   onDelete={handleDeleteTeam}
+//                   onViewDetails={handleViewDetails}
+//                 />
+//               ))}
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Teams;
+import React, { useState, useEffect } from "react";
+import {
+  Plus,
+  Download,
+  Search,
+  Edit,
+  Trash2,
+  X,
+  Gift,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  Save,
+  Users,
+} from "lucide-react";
+
 const API_BASE_URL = "https://macstormbattle-backend-2.onrender.com/api";
 
-// Custom Confirmation Modal component to replace window.confirm
-const ConfirmationModal = ({ message, onConfirm, onCancel }) => {
+// Confirmation Modal Component
+const ConfirmationModal = ({ message, onConfirm, onCancel }) => (
+  <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50 p-4">
+    <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+      <div className="flex justify-between items-center border-b pb-3 mb-4">
+        <h3 className="text-xl font-semibold text-gray-900">Confirm Action</h3>
+        <button onClick={onCancel} className="text-gray-400 hover:text-gray-600">
+          <X size={24} />
+        </button>
+      </div>
+      <p className="text-gray-700 mb-4">{message}</p>
+      <div className="flex justify-end space-x-2">
+        <button
+          onClick={onCancel}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+        >
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+// Team Card Component
+const TeamCard = ({ team, onEdit, onDelete, onViewDetails }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  // Extract text fields from benefits and howToPlay arrays
+  const benefitTexts = Array.isArray(team.benefits)
+    ? team.benefits.map((b) => b.text)
+    : [];
+  const howToPlayTexts = Array.isArray(team.howToPlay)
+    ? team.howToPlay.map((h) => h.text)
+    : [];
+
+  return (
+    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 transition-all duration-300 hover:shadow-lg">
+      <div className="p-5">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center">
+            <img
+              src={
+                team.imageUrl ||
+                `https://placehold.co/60x60/4F46E5/FFFFFF?text=${team.name.charAt(0).toUpperCase()}`
+              }
+              alt="Team avatar"
+              className="w-12 h-12 rounded-full object-cover border-2 border-indigo-100"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = `https://placehold.co/60x60/4F46E5/FFFFFF?text=${team.name
+                  .charAt(0)
+                  .toUpperCase()}`;
+              }}
+            />
+            <div className="ml-4">
+              <h3 className="text-lg font-semibold text-gray-900">{team.name}</h3>
+              <p className="text-sm text-gray-500">ID: {team.id}</p>
+            </div>
+          </div>
+          <div className="flex space-x-2">
+            <button
+              onClick={() => onEdit(team)}
+              className="p-2 text-gray-500 hover:text-blue-600 transition-colors duration-200"
+              title="Edit team"
+            >
+              <Edit size={18} />
+            </button>
+            <button
+              onClick={() => onDelete(team.id)}
+              className="p-2 text-gray-500 hover:text-red-600 transition-colors duration-200"
+              title="Delete team"
+            >
+              <Trash2 size={18} />
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-sm text-gray-500">Registration Amount</p>
+            <p className="font-medium text-gray-900">${team.registrationAmount || "0"}</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-500">Registration Date</p>
+            <p className="font-medium text-gray-900">
+              {team.lastRegistrationDate
+                ? new Date(team.lastRegistrationDate).toLocaleDateString()
+                : "N/A"}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-4">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp size={16} className="mr-1" /> Hide Details
+              </>
+            ) : (
+              <>
+                <ChevronDown size={16} className="mr-1" /> Show Details
+              </>
+            )}
+          </button>
+        </div>
+
+        {isExpanded && (
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <div className="mb-4">
+              <div className="flex items-center mb-2">
+                <Gift size={16} className="text-purple-600 mr-2" />
+                <h4 className="font-medium text-gray-900">Benefits</h4>
+              </div>
+              {benefitTexts.length > 0 ? (
+                <ul className="list-disc list-inside text-sm text-gray-700 pl-2">
+                  {benefitTexts.slice(0, 3).map((text, index) => (
+                    <li key={index}>{text}</li>
+                  ))}
+                  {benefitTexts.length > 3 && (
+                    <li className="text-blue-600">+{benefitTexts.length - 3} more</li>
+                  )}
+                </ul>
+              ) : (
+                <p className="text-sm text-gray-500">No benefits added</p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <div className="flex items-center mb-2">
+                <BookOpen size={16} className="text-green-600 mr-2" />
+                <h4 className="font-medium text-gray-900">How to Play</h4>
+              </div>
+              {howToPlayTexts.length > 0 ? (
+                <ol className="list-decimal list-inside text-sm text-gray-700 pl-2">
+                  {howToPlayTexts.slice(0, 3).map((text, index) => (
+                    <li key={index}>{text}</li>
+                  ))}
+                  {howToPlayTexts.length > 3 && (
+                    <li className="text-blue-600">+{howToPlayTexts.length - 3} more</li>
+                  )}
+                </ol>
+              ) : (
+                <p className="text-sm text-gray-500">No instructions added</p>
+              )}
+            </div>
+
+            <button
+              onClick={() => onViewDetails(team)}
+              className="w-full mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200 text-sm flex items-center justify-center"
+            >
+              <Edit size={16} className="mr-2" />
+              Manage Benefits & How to Play
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Team Edit Modal Component (Edit basic team info only)
+const TeamEditModal = ({ team, onClose, onSave }) => {
+  const [name, setName] = useState(team.name || "");
+  const [registrationAmount, setRegistrationAmount] = useState(team.registrationAmount || "");
+  const [lastRegistrationDate, setLastRegistrationDate] = useState(
+    team.lastRegistrationDate ? new Date(team.lastRegistrationDate).toISOString().substr(0, 10) : ""
+  );
+  const [error, setError] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setError(null);
+    try {
+      const updatedTeam = {
+        ...team,
+        name,
+        registrationAmount: Number(registrationAmount),
+        lastRegistrationDate: lastRegistrationDate ? new Date(lastRegistrationDate).toISOString() : null,
+      };
+      const response = await fetch(`${API_BASE_URL}/admin/teams/${team.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedTeam),
+      });
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const savedTeam = await response.json();
+      onSave(savedTeam);
+    } catch (e) {
+      console.error("Failed to save team info:", e);
+      setError("Failed to save team information. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
-        <div className="flex justify-between items-center border-b pb-3 mb-4">
-          <h3 className="text-xl font-semibold text-gray-900">
-            Confirm Action
-          </h3>
-          <button
-            onClick={onCancel}
-            className="text-gray-400 hover:text-gray-600"
-          >
+      <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+        <div className="flex justify-between items-center border-b pb-4 mb-4">
+          <h3 className="text-xl font-semibold text-gray-900">Edit Team Info</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X size={24} />
           </button>
         </div>
-        <p className="text-gray-700 mb-4">{message}</p>
-        <div className="flex justify-end space-x-2">
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>
+        )}
+
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="teamName" className="block text-gray-700 mb-1 font-medium">
+              Team Name
+            </label>
+            <input
+              id="teamName"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="registrationAmount" className="block text-gray-700 mb-1 font-medium">
+              Registration Amount
+            </label>
+            <input
+              id="registrationAmount"
+              type="number"
+              min="0"
+              value={registrationAmount}
+              onChange={(e) => setRegistrationAmount(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="lastRegistrationDate" className="block text-gray-700 mb-1 font-medium">
+              Registration Date
+            </label>
+            <input
+              id="lastRegistrationDate"
+              type="date"
+              value={lastRegistrationDate}
+              onChange={(e) => setLastRegistrationDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+        </div>
+
+        <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
           <button
-            onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors duration-200"
           >
             Cancel
           </button>
           <button
-            onClick={onConfirm}
-            className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 disabled:bg-indigo-400 transition-colors duration-200"
           >
-            Confirm
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>
@@ -40,119 +892,242 @@ const ConfirmationModal = ({ message, onConfirm, onCancel }) => {
   );
 };
 
-// Edit Team Modal
-const EditTeamModal = ({ team, onClose, onSave }) => {
-  const [name, setName] = useState(team.name);
-  const [registrationAmount, setRegistrationAmount] = useState(
-    team.registrationAmount
+// Benefits and How to Play Modal Component
+const BenefitsHowToPlayModal = ({ team, onClose, onSave }) => {
+  // Parse initial text arrays from objects on open
+  const [benefits, setBenefits] = useState(
+    Array.isArray(team.benefits) ? team.benefits.map((item) => item.text) : []
   );
-  // Join the rules array into a single string for the textarea
-  const [rules, setRules] = useState(
-    (team.rules || [])
-      .sort((a, b) => a.order - b.order)
-      .map((r) => r.text)
-      .join("\n")
+  const [howToPlay, setHowToPlay] = useState(
+    Array.isArray(team.howToPlay) ? team.howToPlay.map((item) => item.text) : []
   );
+  const [newBenefit, setNewBenefit] = useState("");
+  const [newHowToPlay, setNewHowToPlay] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
 
+  useEffect(() => {
+    // Refetch full objects on modal open to get latest data
+    const fetchTeamDetails = async () => {
+      try {
+        const benefitsResponse = await fetch(`${API_BASE_URL}/admin/teams/${team.id}/benefits`);
+        if (benefitsResponse.ok) {
+          const benefitsData = await benefitsResponse.json();
+          setBenefits(benefitsData.map((item) => item.text));
+        }
+
+        const howToPlayResponse = await fetch(`${API_BASE_URL}/admin/teams/${team.id}/how-to-play`);
+        if (howToPlayResponse.ok) {
+          const howToPlayData = await howToPlayResponse.json();
+          setHowToPlay(howToPlayData.map((item) => item.text));
+        }
+      } catch (error) {
+        console.error("Failed to fetch team details:", error);
+        setError("Failed to load team details. Please try again.");
+      }
+    };
+    fetchTeamDetails();
+  }, [team.id]);
+
+  const addBenefit = () => {
+    if (newBenefit.trim()) {
+      setBenefits([...benefits, newBenefit.trim()]);
+      setNewBenefit("");
+    }
+  };
+  const removeBenefit = (index) => {
+    setBenefits(benefits.filter((_, i) => i !== index));
+  };
+  const addHowToPlay = () => {
+    if (newHowToPlay.trim()) {
+      setHowToPlay([...howToPlay, newHowToPlay.trim()]);
+      setNewHowToPlay("");
+    }
+  };
+  const removeHowToPlay = (index) => {
+    setHowToPlay(howToPlay.filter((_, i) => i !== index));
+  };
+
+  // Save sends only strings as per backend API expectation
   const handleSave = async () => {
     setIsSaving(true);
-    // Split rules into array and filter out empty lines
-    const updatedRules = rules
-      .split("\n")
-      .map(text => text.trim())
-      .filter(text => text.length > 0);
+    setError(null);
+    setSuccess(null);
 
-    // Call the onSave prop with the correctly formatted data
-    await onSave({
-      ...team,
-      name,
-      registrationAmount,
-      rules: updatedRules,
-    });
-    setIsSaving(false);
+    try {
+      const benefitsResponse = await fetch(`${API_BASE_URL}/admin/teams/${team.id}/benefits`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ benefits }),
+      });
+      if (!benefitsResponse.ok) throw new Error("Failed to update benefits");
+
+      const howToPlayResponse = await fetch(`${API_BASE_URL}/admin/teams/${team.id}/how-to-play`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ howToPlay }),
+      });
+      if (!howToPlayResponse.ok) throw new Error("Failed to update how to play");
+
+      setSuccess("Team details updated successfully!");
+      setTimeout(() => {
+        onSave({ ...team, benefits: benefits.map((text) => ({ text })), howToPlay: howToPlay.map((text) => ({ text })) });
+      }, 1000);
+    } catch (error) {
+      console.error("Failed to save:", error);
+      setError("Failed to save changes. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50 p-4">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full md:w-1/2 lg:w-1/3">
-        <div className="flex justify-between items-center border-b pb-3 mb-4">
-          <h3 className="text-xl font-semibold text-gray-900">Edit Team</h3>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
+      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl">
+        <div className="flex justify-between items-center border-b pb-4 mb-4">
+          <div className="flex items-center">
+            <img
+              src={
+                team.imageUrl ||
+                `https://placehold.co/50x50/4F46E5/FFFFFF?text=${team.name.charAt(0).toUpperCase()}`
+              }
+              alt="Team avatar"
+              className="w-10 h-10 rounded-full object-cover mr-3 border-2 border-indigo-100"
+            />
+            <div>
+              <h3 className="text-xl font-semibold text-gray-900">Manage Team: {team.name}</h3>
+              <p className="text-sm text-gray-500">ID: {team.id}</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X size={24} />
           </button>
         </div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSave();
-          }}
-        >
-          <div className="mb-4">
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Team Name
-            </label>
-            <input
-              type="text"
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            />
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>
+        )}
+        {success && (
+          <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-md text-sm">{success}</div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Benefits Section */}
+          <div className="border rounded-lg p-4 bg-gray-50">
+            <div className="flex items-center mb-4">
+              <Gift size={20} className="text-purple-600 mr-2" />
+              <h4 className="text-lg font-medium text-gray-900">Benefits</h4>
+            </div>
+
+            <div className="flex mb-4">
+              <input
+                type="text"
+                value={newBenefit}
+                onChange={(e) => setNewBenefit(e.target.value)}
+                placeholder="Add a new benefit..."
+                className="flex-1 rounded-l-md border border-gray-300 p-2 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50"
+                onKeyPress={(e) => e.key === "Enter" && addBenefit()}
+              />
+              <button
+                onClick={addBenefit}
+                className="px-4 py-2 bg-purple-600 text-white rounded-r-md hover:bg-purple-700 transition-colors duration-200"
+              >
+                Add
+              </button>
+            </div>
+
+            <div className="max-h-60 overflow-y-auto">
+              {benefits.length > 0 ? (
+                <ul className="space-y-2">
+                  {benefits.map((benefit, index) => (
+                    <li
+                      key={index}
+                      className="flex justify-between items-center bg-white p-3 rounded-md border border-gray-200"
+                    >
+                      <span className="text-sm flex-grow">{benefit}</span>
+                      <button
+                        onClick={() => removeBenefit(index)}
+                        className="text-red-500 hover:text-red-700 ml-2"
+                        title="Remove benefit"
+                      >
+                        <X size={16} />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500 text-sm text-center py-4">No benefits added yet</p>
+              )}
+            </div>
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="registrationAmount"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Registration Amount
-            </label>
-            <input
-              type="text"
-              id="registrationAmount"
-              value={registrationAmount}
-              onChange={(e) => setRegistrationAmount(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            />
+
+          {/* How to Play Section */}
+          <div className="border rounded-lg p-4 bg-gray-50">
+            <div className="flex items-center mb-4">
+              <BookOpen size={20} className="text-green-600 mr-2" />
+              <h4 className="text-lg font-medium text-gray-900">How to Play</h4>
+            </div>
+
+            <div className="flex mb-4">
+              <input
+                type="text"
+                value={newHowToPlay}
+                onChange={(e) => setNewHowToPlay(e.target.value)}
+                placeholder="Add a new step..."
+                className="flex-1 rounded-l-md border border-gray-300 p-2 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200 focus:ring-opacity-50"
+                onKeyPress={(e) => e.key === "Enter" && addHowToPlay()}
+              />
+              <button
+                onClick={addHowToPlay}
+                className="px-4 py-2 bg-green-600 text-white rounded-r-md hover:bg-green-700 transition-colors duration-200"
+              >
+                Add
+              </button>
+            </div>
+
+            <div className="max-h-60 overflow-y-auto">
+              {howToPlay.length > 0 ? (
+                <ol className="space-y-2">
+                  {howToPlay.map((step, index) => (
+                    <li
+                      key={index}
+                      className="flex justify-between items-center bg-white p-3 rounded-md border border-gray-200"
+                    >
+                      <span className="text-sm flex-grow">{step}</span>
+                      <button
+                        onClick={() => removeHowToPlay(index)}
+                        className="text-red-500 hover:text-red-700 ml-2"
+                        title="Remove step"
+                      >
+                        <X size={16} />
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-gray-500 text-sm text-center py-4">No instructions added yet</p>
+              )}
+            </div>
           </div>
-          <div className="mb-4">
-            <label
-              htmlFor="rules"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Rules (one per line)
-            </label>
-            <textarea
-              id="rules"
-              rows="4"
-              value={rules}
-              onChange={(e) => setRules(e.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-            ></textarea>
-          </div>
-          <div className="flex justify-end space-x-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400"
-            >
-              {isSaving ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
-        </form>
+        </div>
+
+        <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors duration-200"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-blue-400 transition-colors duration-200 flex items-center"
+          >
+            <Save size={16} className="mr-1" />
+            {isSaving ? "Saving..." : "Save Changes"}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -164,48 +1139,55 @@ const Teams = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
+  const [showBenefitsModal, setShowBenefitsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
-
-  // Utility function to normalize incoming rules data
-  const normalizeRules = (rules) => {
-    if (!Array.isArray(rules)) return [];
-    return rules.map((r, i) => {
-      // Handle cases where the data might be corrupted
-      if (typeof r === "string") {
-        return { text: r, order: i };
-      }
-      return {
-        text: typeof r.text === "string" ? r.text : "",
-        order: r.order ?? i,
-      };
-    });
-  };
 
   const fetchTeams = async () => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/admin/teams`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       const teamsData = Array.isArray(data) ? data : [data];
 
-      setTeams(
-        teamsData.map((team) => ({
-          ...team,
-          rules: normalizeRules(team.rules),
-        }))
+      // Fetch benefits and how-to-play for each team
+      const teamsWithDetails = await Promise.all(
+        teamsData.map(async (team) => {
+          try {
+            const benefitsResponse = await fetch(
+              `${API_BASE_URL}/admin/teams/${team.id}/benefits`
+            );
+            const benefitsData = benefitsResponse.ok
+              ? await benefitsResponse.json()
+              : [];
+
+            const howToPlayResponse = await fetch(
+              `${API_BASE_URL}/admin/teams/${team.id}/how-to-play`
+            );
+            const howToPlayData = howToPlayResponse.ok
+              ? await howToPlayResponse.json()
+              : [];
+
+            return {
+              ...team,
+              benefits: benefitsData,
+              howToPlay: howToPlayData,
+            };
+          } catch (e) {
+            console.error(`Failed to fetch details for team ${team.id}:`, e);
+            return { ...team, benefits: [], howToPlay: [] };
+          }
+        })
       );
+
+      setTeams(teamsWithDetails);
     } catch (e) {
       console.error("Failed to fetch teams:", e);
-      setError(
-        "Failed to load teams. Please ensure the API is running and the URL is correct."
-      );
+      setError("Failed to load teams. Please ensure the API is running and the URL is correct.");
     } finally {
       setIsLoading(false);
     }
@@ -218,13 +1200,9 @@ const Teams = () => {
   const handleDeleteTeam = (id) => {
     setConfirmAction(() => async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/admin/teams/${id}`, {
-          method: "DELETE",
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        setTeams(teams.filter((team) => team.id !== id));
+        const response = await fetch(`${API_BASE_URL}/admin/teams/${id}`, { method: "DELETE" });
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        setTeams((prev) => prev.filter((team) => team.id !== id));
       } catch (e) {
         console.error("Failed to delete team:", e);
         setError("Failed to delete the team. Please try again.");
@@ -235,68 +1213,58 @@ const Teams = () => {
     setShowConfirmModal(true);
   };
 
+  const handleViewBenefits = (team) => {
+    setSelectedTeam(team);
+    setShowBenefitsModal(true);
+  };
+
   const handleEditTeam = (team) => {
     setSelectedTeam(team);
     setShowEditModal(true);
   };
 
-const handleSaveTeam = async (updatedTeam) => {
-  try {
-    // Only send necessary fields to the API
-    const payload = {
-      id: updatedTeam.id,
-      name: updatedTeam.name,
-      registrationAmount: updatedTeam.registrationAmount,
-      rules: updatedTeam.rules // Rules are already simple strings from EditTeamModal
-    };
+  const handleSaveBenefits = (updatedTeam) => {
+    setTeams((prev) => prev.map((team) => (team.id === updatedTeam.id ? updatedTeam : team)));
+    setShowBenefitsModal(false);
+  };
 
-    const response = await fetch(`${API_BASE_URL}/admin/teams/${updatedTeam.id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const savedTeam = await response.json();
-    // Normalize the rules from the response for frontend display
-    const normalizedTeam = {
-      ...savedTeam,
-      rules: savedTeam.rules.map(rule => {
-        // If the rule is already an object with text property, use it as is
-        if (typeof rule === 'object' && rule.text) {
-          return rule;
-        }
-        // If it's a string, convert it to our expected format
-        return {
-          text: String(rule),
-          order: savedTeam.rules.indexOf(rule)
-        };
-      })
-    };
-    
-    setTeams(teams.map((t) => t.id === updatedTeam.id ? normalizedTeam : t));
+  const handleSaveEdit = (updatedTeam) => {
+    setTeams((prev) =>
+      prev.map((team) =>
+        team.id === updatedTeam.id
+          ? {
+              ...team,
+              name: updatedTeam.name,
+              registrationAmount: updatedTeam.registrationAmount,
+              lastRegistrationDate: updatedTeam.lastRegistrationDate,
+              benefits: team.benefits,
+              howToPlay: team.howToPlay,
+            }
+          : team
+      )
+    );
     setShowEditModal(false);
-  } catch (e) {
-    console.error("Failed to save changes:", e);
-    setError("Failed to save changes. Please check the API and try again.");
-  }
-};
+  };
+
   const filteredTeams = teams.filter((team) =>
     team.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4 sm:p-8 font-sans antialiased text-gray-800">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 sm:p-8 font-sans antialiased text-gray-800">
       {showEditModal && selectedTeam && (
-        <EditTeamModal
+        <TeamEditModal
           team={selectedTeam}
           onClose={() => setShowEditModal(false)}
-          onSave={handleSaveTeam}
+          onSave={handleSaveEdit}
+        />
+      )}
+
+      {showBenefitsModal && selectedTeam && (
+        <BenefitsHowToPlayModal
+          team={selectedTeam}
+          onClose={() => setShowBenefitsModal(false)}
+          onSave={handleSaveBenefits}
         />
       )}
 
@@ -309,206 +1277,66 @@ const handleSaveTeam = async (updatedTeam) => {
       )}
 
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Team Management
+            <h1 className="text-3xl font-bold text-gray-900 flex items-center">
+              <Users className="mr-3 text-indigo-600" /> Team Management
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
-              Manage team details, registration, and rules
-            </p>
+            <p className="text-sm text-gray-500 mt-1">Manage team details, registration, benefits and rules</p>
           </div>
           <div className="mt-4 md:mt-0 flex flex-wrap gap-3">
             <button className="flex items-center px-4 py-2 border border-gray-300 text-sm rounded-md shadow-sm bg-white hover:bg-gray-100 text-gray-800 transition-colors duration-200">
               <Download className="w-4 h-4 mr-2" />
               Export Teams
             </button>
-            <button className="flex items-center px-4 py-2 bg-black text-white text-sm rounded-md shadow-sm hover:bg-gray-800 transition-colors duration-200">
+            <button
+              className="flex items-center px-4 py-2 bg-indigo-600 text-white text-sm rounded-md shadow-sm hover:bg-indigo-700 transition-colors duration-200"
+              onClick={() => alert("Create Team functionality to be implemented")}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Create Team
             </button>
           </div>
         </div>
 
-        <div className="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden">
-          <div className="flex flex-col md:flex-row justify-between items-center p-6 border-b border-gray-200 gap-4">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">
-              Team Directory
-            </h2>
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden p-6">
+          <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900">Team Directory</h2>
             <div className="relative w-full md:w-64">
-              <Search
-                className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400"
-                size={16}
-              />
+              <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400" size={16} />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search teams..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md shadow-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
           </div>
 
           {isLoading ? (
             <div className="p-6 text-center text-gray-500">
-              Loading teams...
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-indigo-500 mb-2"></div>
+              <p>Loading teams...</p>
             </div>
           ) : error ? (
             <div className="p-6 text-center text-red-500">{error}</div>
           ) : filteredTeams.length === 0 ? (
             <div className="p-6 text-center text-gray-500">
-              No teams found matching your search.
+              {searchTerm ? "No teams found matching your search." : "No teams available."}
             </div>
           ) : (
-            <>
-              <div className="hidden sm:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 text-sm">
-                  <thead className="bg-gray-50 text-gray-700 uppercase tracking-wider font-medium">
-                    <tr>
-                      <th className="px-6 py-3 text-left">Team ID</th>
-                      <th className="px-6 py-3 text-left">Name</th>
-                      <th className="px-6 py-3 text-left">
-                        Registration Amount
-                      </th>
-                      <th className="px-6 py-3 text-left">Registration Date</th>
-                      <th className="px-6 py-3 text-left">Rules</th>
-                      <th className="px-6 py-3 text-left">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {filteredTeams.map((team) => (
-                      <tr
-                        key={team.id}
-                        className="hover:bg-gray-50 transition-colors duration-200"
-                      >
-                        <td className="px-6 py-4 font-medium text-gray-900 truncate max-w-[150px]">
-                          {team.id}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center">
-                            <img
-                              src={
-                                team.imageUrl ||
-                                `https://placehold.co/40x40/f0f0f0/888888?text=${team.name
-                                  .charAt(0)
-                                  .toUpperCase()}`
-                              }
-                              alt="Team avatar"
-                              className="w-10 h-10 rounded-full object-cover"
-                              onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = `https://placehold.co/40x40/f0f0f0/888888?text=${team.name
-                                  .charAt(0)
-                                  .toUpperCase()}`;
-                              }}
-                            />
-                            <span className="ml-3 font-medium text-gray-900">
-                              {team.name}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-gray-700">
-                          {team.registrationAmount}
-                        </td>
-                        <td className="px-6 py-4 text-gray-700">
-                          {new Date(
-                            team.lastRegistrationDate
-                          ).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 text-gray-700">
-                          {team.rules.length > 0
-                            ? `${team.rules[0]?.text || ""}...`
-                            : "No rules"}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <button
-                              className="text-gray-500 hover:text-green-600 transition-colors duration-200"
-                              onClick={() => handleEditTeam(team)}
-                            >
-                              <Edit size={18} />
-                            </button>
-                            <button
-                              className="text-gray-500 hover:text-red-600 transition-colors duration-200"
-                              onClick={() => handleDeleteTeam(team.id)}
-                            >
-                              <Trash2 size={18} />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="block sm:hidden p-4 space-y-4">
-                {filteredTeams.map((team) => (
-                  <div
-                    key={team.id}
-                    className="border border-gray-200 rounded-lg shadow-sm p-4 bg-white"
-                  >
-                    <div className="flex items-center">
-                      <img
-                        src={
-                          team.imageUrl ||
-                          `https://placehold.co/40x40/f0f0f0/888888?text=${team.name
-                            .charAt(0)
-                            .toUpperCase()}`
-                        }
-                        alt="Team avatar"
-                        className="w-10 h-10 rounded-full object-cover"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = `https://placehold.co/40x40/f0f0f0/888888?text=${team.name
-                            .charAt(0)
-                            .toUpperCase()}`;
-                        }}
-                      />
-                      <div className="ml-3">
-                        <p className="font-semibold text-gray-900">
-                          {team.name}
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {team.registrationAmount
-                            ? `$${team.registrationAmount}`
-                            : "N/A"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="mt-3 space-y-1 text-sm text-gray-700">
-                      <p>
-                        <strong>Team ID:</strong>{" "}
-                        <span className="truncate max-w-[150px] inline-block">
-                          {team.id}
-                        </span>
-                      </p>
-                      <p>
-                        <strong>Reg. Date:</strong>{" "}
-                        {new Date(
-                          team.lastRegistrationDate
-                        ).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-3">
-                      <button
-                        onClick={() => handleEditTeam(team)}
-                        className="flex-1 text-center px-2 py-1 bg-green-500 text-white rounded text-xs transition-colors duration-200 hover:bg-green-600"
-                      >
-                        <Edit size={14} className="inline mr-1" /> Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeleteTeam(team.id)}
-                        className="flex-1 text-center px-2 py-1 bg-red-500 text-white rounded text-xs transition-colors duration-200 hover:bg-red-600"
-                      >
-                        <Trash2 size={14} className="inline mr-1" /> Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTeams.map((team) => (
+                <TeamCard
+                  key={team.id}
+                  team={team}
+                  onEdit={handleEditTeam}
+                  onDelete={handleDeleteTeam}
+                  onViewDetails={handleViewBenefits}
+                />
+              ))}
+            </div>
           )}
         </div>
       </div>
