@@ -150,6 +150,11 @@ const menuItems = [
     icon: Gift,
     path: "/bonus",
   },
+  {
+    label:"Subscription",
+    icon: DollarSign,
+    path :"/subscription-create"
+  }
 ];
 
 const Sidebar = () => {

@@ -57,7 +57,7 @@ import SquadContestsList from "./pages/SquadContestList";
 import SquadContest from "./pages/SquadContest";
 import SquadContestDeclareResult from "./pages/SquadContestDeclareResult";
 import ContestResultDeclaration from "./pages/content-Result";
-
+import Subscriptioncreate from "./pages/Subscriptioncreate"
 // ✅ ProtectedRoute component
 function ProtectedRoute({ children }) {
   const authToken = localStorage.getItem("authToken");
@@ -185,6 +185,7 @@ function App() {
             <Route path="/squad/create" element={<SquadContestForm />} />
             <Route path="/squad/:id" element={<SquadContest />} />
             <Route path="/squad/:id/declare-result" element={<SquadContestDeclareResult />} />
+            <Route path="/subscription-create" element={<Subscriptioncreate />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </div>
