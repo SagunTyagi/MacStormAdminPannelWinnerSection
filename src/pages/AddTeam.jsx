@@ -241,24 +241,22 @@ const handleSubmit = async (e) => {
               
             </div>
               {/* Registration Amount */}
-            <div className="relative">
-               
-              <label htmlFor="registrationAmount" className={labelClasses}>
-                Registration Amount
-              </label>
-                <DollarSign size={20} className={iconClasses} />
-               
-              <input
-                type="number"
-                id="registrationAmount"
-                name="registrationAmount"
-                value={formData.registrationAmount}
-                onChange={handleChange}
-                required
-                className={`${inputClasses} pl-10`}
-              />
-              
-            </div>
+           <div className="relative">
+  <label htmlFor="registrationAmount" className={labelClasses}>
+    Registration Amount (₹)
+  </label>
+
+  <input
+    type="number"
+    id="registrationAmount"
+    name="registrationAmount"
+    value={formData.registrationAmount}
+    onChange={handleChange}
+    required
+    className={inputClasses}
+  />
+</div>
+
              {/* Rules and Regulations - Add/Delete functionality */}
             
             <div className="md:col-span-2">

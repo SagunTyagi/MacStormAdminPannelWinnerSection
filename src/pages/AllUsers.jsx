@@ -13,30 +13,38 @@ function UsersPage() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [newName, setNewName] = useState("");
 
-  const columns = [
-    { key: "member_id", label: "Sr No." },
-    { key: "first_name", label: "Name" },
-    { key: "user_name", label: "User Name" },
-    { key: "email_id", label: "Email" },
-    { key: "mobile_no", label: "Mobile No" },
-    { key: "refer_code", label: "Referral No" },
-    { key: "actions", label: "Actions" },
-  ];
+ const columns = [
+  { key: "member_id", label: "Sr No." },
+  { key: "first_name", label: "Name" },
+  { key: "user_name", label: "User Name" },
+  { key: "email_id", label: "Email" },
+  { key: "mobile_no", label: "Mobile No" },
+  { key: "refer_code", label: "Referral No" },
+  { key: "subscription_type", label: "Subscription Type" },   
+  { key: "subscription_date", label: "Subscription Date" }, 
+  { key: "actions", label: "Actions" },
+];
 
-  const fetchUsers = async () => {
-    try {
-      const res = await axiosInstance.get("auth/user");
-      const data = Array.isArray(res.data.users) ? res.data.users : [];
-      const formattedUsers = data.map((user, index) => ({
-        ...user,
-        member_id: index + 1,
-      }));
-      setUsers(formattedUsers);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-      toast.error("Failed to fetch users");
-    }
-  };
+
+const fetchUsers = async () => {
+  try {
+    const res = await axiosInstance.get("auth/user");
+    const data = Array.isArray(res.data.users) ? res.data.users : [];
+
+    const formattedUsers = data.map((user, index) => ({
+      ...user,
+      member_id: index + 1,
+      subscription_type: user.subscription_type ? user.subscription_type : "Free", // null -> Free
+      subscription_date: user.subscription_date ? user.subscription_date : "N/A", 
+      refer_code: user.refer_code ? user.refer_code : "N/A" // null -> N/A
+    }));
+
+    setUsers(formattedUsers);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+    toast.error("Failed to fetch users");
+  }
+};
 
   useEffect(() => {
     fetchUsers();
