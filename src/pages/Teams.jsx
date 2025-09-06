@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Download, Search, Edit, Trash2, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // You can change this to your actual API base URL
 const API_BASE_URL = "https://macstormbattle-backend-2.onrender.com/api";
@@ -323,10 +324,10 @@ const handleSaveTeam = async (updatedTeam) => {
               <Download className="w-4 h-4 mr-2" />
               Export Teams
             </button>
-            <button className="flex items-center px-4 py-2 bg-black text-white text-sm rounded-md shadow-sm hover:bg-gray-800 transition-colors duration-200">
+            <Link to="/add-teams" className="flex items-center px-4 py-2 bg-black text-white text-sm rounded-md shadow-sm hover:bg-gray-800 transition-colors duration-200">
               <Plus className="w-4 h-4 mr-2" />
               Create Team
-            </button>
+            </Link>
           </div>
         </div>
 
