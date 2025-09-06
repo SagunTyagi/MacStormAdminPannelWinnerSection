@@ -21,6 +21,7 @@ import {
   Users as UsersIcon,
   Users,
   Trophy,
+  Globe,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -118,6 +119,12 @@ const menuItems = [
     icon: DollarSign,
     submenuKey: "dailyBets",
     subItems: [{ label: "Overview", path: "/admin/bets" }],
+  },
+  {
+    label: "Website",
+    icon: Globe,
+    submenuKey: "website",
+    subItems: [{ label: "Stats", path: "/website-stats" }],
   },
   {
     label: "Sponsor Ads",
