@@ -294,7 +294,7 @@ const LegalDocuments = () => {
       <Box>
         <Card elevation={2} >
           <CardContent >
-            <Stack direction="column" alignItems="center" justifyContent="space-between" sx={{ mb: 4 }}>
+            {/* <Stack direction="column" alignItems="center" justifyContent="space-between" sx={{ mb: 4 }}>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Box sx={{ p: 1.5, borderRadius: 2, backgroundColor: "#e3f2fd" }}>
                   <FileText size={isMobile ? 20 : 24} color="#1976d2" />
@@ -321,7 +321,45 @@ const LegalDocuments = () => {
               >
                 Add Document
               </Button>
+            </Stack> */}
+
+              <Stack 
+              direction={{ xs: "column", sm: "row" }} 
+              alignItems={{ xs: "flex-start", sm: "center" }}
+              justifyContent="space-between"
+              sx={{ mb: 4 }}
+            >
+              {/* Left Side: Heading + Subtitle */}
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box sx={{ p: 1.5, borderRadius: 2, backgroundColor: "#e3f2fd" }}>
+                  <FileText size={isMobile ? 20 : 24} color="#1976d2" />
+                </Box>
+                <Box>
+                  <Typography variant={isMobile ? "h5" : "h4"} fontWeight={700}>
+                    Legal Documents
+                  </Typography>
+                  <Typography mb={2} variant="body2" color="text.secondary">
+                    Manage legal documents with version control and markdown editing
+                  </Typography>
+                </Box>
+              </Stack>
+
+              {/* Right Side: Add Button */}
+              <Button
+                variant="contained"
+                startIcon={<Plus size={18} />}
+                onClick={handleOpenAddModal}
+                sx={{
+                  backgroundColor: "#1a1a1a",
+                  "&:hover": { backgroundColor: "#333" },
+                  mt: { xs: 2, sm: 0 } // spacing for mobile
+                }}
+              >
+                Add Document
+              </Button>
             </Stack>
+
+
 
             {loading ? (
               <Stack alignItems="center" py={6}>

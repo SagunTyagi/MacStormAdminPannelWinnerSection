@@ -19,6 +19,7 @@ import {
   Gift,
   Sword,
   Users as UsersIcon,
+   Radio,  
   Users,
   Trophy,
   Globe,
@@ -58,6 +59,7 @@ const menuItems = [
         subItems: [{ label: "KYC", path: "/kyc" }],
       },
       { label: "User Teams", path: "/user-teams" },
+      { label: "All Withdraw", path: "/all-withdraw" },
     ],
   },
   {
@@ -101,6 +103,8 @@ const menuItems = [
     icon: Gamepad2,
     submenuKey: "games",
     subItems: [
+      { label: "Games Registration", path: "/games-registation" },
+      { label: "Registration Details", path: "/registation-details" },
       { label: "All Games", path: "/games" },
       { label: "Matches", path: "/matches" },
       {
@@ -159,10 +163,25 @@ const menuItems = [
     icon: Headphones,
     path: "/support",
   },
+    {
+    label: "Stream",
+    icon: Radio,
+    path: "/stream",
+  },
+  {
+    label: "App Settings",
+    icon: Settings,
+    path: "/app-settings",
+  },
   {
     label: "Setting",
     icon: Settings,
     path: "/settings",
+  },
+      {
+    label: "Suscription",
+    icon: Radio,
+    path: "/suscription",
   },
   {
     label: "Bonus",

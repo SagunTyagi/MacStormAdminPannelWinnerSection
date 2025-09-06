@@ -6,6 +6,7 @@ import {
   Settings, Share, Palette, Policy, SportsEsports,
   Security, Group, IntegrationInstructions, Backup
 } from '@mui/icons-material';
+import {Gift } from 'lucide-react';
 
 import General from './settings/General';
 import SocialMedia from './settings/SocialMedia';
@@ -17,6 +18,7 @@ import AdminRoles from './settings/admin-roles';
 import BackupRecovery from './settings/backup-recovery';
 import FAQComponent from './settings/faq-component';
 import Integration from './settings/Integration';
+import Bonus from './settings/Bonus';
 
 const TabPanel = ({ children, value, index }) => {
   return (
@@ -40,6 +42,7 @@ const Setting = () => {
     { label: 'Security', icon: <Security />, component: <SecuritySettings /> },
     { label: 'Roles', icon: <Group />, component: <AdminRoles /> },
     { label: 'Integration', icon: <IntegrationInstructions />, component: <Integration /> },
+    { label: 'Bonus', icon: <Gift />, component: <Bonus /> },
     { label: 'Backup', icon: <Backup />, component: <BackupRecovery /> },
   ];
 

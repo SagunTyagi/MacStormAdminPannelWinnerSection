@@ -25,7 +25,8 @@ import {
   Divider,
   CircularProgress,
   Alert,
-  TablePagination
+  TablePagination,
+  Autocomplete
 } from '@mui/material'
 import {
   Add as AddIcon,
@@ -83,6 +84,21 @@ export default function AdminBonusPanel() {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
+  }
+
+  // Handle autocomplete change for user ID
+  const handleUserIdChange = (event, value) => {
+    if (value) {
+      // If it's an object from dropdown selection
+      if (typeof value === 'object' && value.member_id) {
+        setFormData(prev => ({ ...prev, userId: value.member_id.toString() }))
+      } else {
+        // If it's a string (typed value)
+        setFormData(prev => ({ ...prev, userId: value }))
+      }
+    } else {
+      setFormData(prev => ({ ...prev, userId: '' }))
+    }
   }
 
   const handleAddBonus = async () => {
@@ -232,6 +248,16 @@ export default function AdminBonusPanel() {
   // Get paginated data
   const paginatedBonuses = bonuses.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
 
+  // Prepare options for autocomplete (sorted by member_id for better UX)
+  const userOptions = bonuses
+    .sort((a, b) => a.member_id - b.member_id)
+    .map(bonus => ({
+      member_id: bonus.member_id,
+      user_name: bonus.user_name,
+      label: `${bonus.member_id} - ${bonus.user_name || 'No username'}`,
+      displayText: `ID: ${bonus.member_id} | ${bonus.user_name || 'No username'}`
+    }))
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px' }}>
@@ -307,16 +333,40 @@ export default function AdminBonusPanel() {
           <Divider sx={{ mb: 3 }} />
           <Grid container spacing={2}>
             <Grid item xs={12} md={5}>
-              <TextField
-                fullWidth
-                label="User ID (Member ID)"
-                name="userId"
-                type="number"
+              <Autocomplete
+                freeSolo
+                options={userOptions}
+                getOptionLabel={(option) => {
+                  if (typeof option === 'string') return option
+                  return option.displayText || option.label || ''
+                }}
                 value={formData.userId}
-                onChange={handleInputChange}
-                placeholder="Enter member ID"
-                variant="outlined"
+                onInputChange={(event, newValue) => {
+                  setFormData(prev => ({ ...prev, userId: newValue || '' }))
+                }}
+                onChange={handleUserIdChange}
                 disabled={actionLoading}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="User ID (Member ID)"
+                    placeholder="Type or select member ID"
+                    variant="outlined"
+                    helperText=" custom ID or select from existing users"
+                  />
+                )}
+                renderOption={(props, option) => (
+                  <Box component="li" {...props}>
+                    <Box>
+                      <Typography variant="body1" sx={{ fontWeight: 'bold' }}>
+                        ID: {option.member_id}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {option.user_name || 'No username'}
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
               />
             </Grid>
             <Grid item xs={12} md={5}>
@@ -463,23 +513,17 @@ export default function AdminBonusPanel() {
             </Table>
           </TableContainer>
           
-          {/* Pagination Component */}
+          {/* Pagination Component - Only page navigation, no rows per page selector */}
           <TablePagination
-            // rowsPerPageOptions={[5, 10, 25, 50, 100]}
+            rowsPerPageOptions={[]} // Empty array removes the rows per page dropdown
             component="div"
             count={bonuses.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            // labelRowsPerPage="Rows per page:"
             labelDisplayedRows={({ from, to, count }) => 
               `${from}–${to} of ${count !== -1 ? count : `more than ${to}`}`
             }
-            SelectProps={{
-              native: true,
-              'aria-label': 'rows per page',
-            }}
             sx={{ 
               mt: 2,
               '& .MuiTablePagination-toolbar': {
@@ -487,12 +531,9 @@ export default function AdminBonusPanel() {
                 paddingRight: { xs: 1, sm: 2 },
                 minHeight: { xs: 52, sm: 64 },
               },
-              '& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows': {
+              '& .MuiTablePagination-displayedRows': {
                 fontSize: { xs: '0.75rem', sm: '0.875rem' },
                 margin: 0,
-              },
-              '& .MuiTablePagination-select': {
-                fontSize: { xs: '0.75rem', sm: '0.875rem' },
               },
               '& .MuiTablePagination-actions': {
                 marginLeft: { xs: 1, sm: 2 },
