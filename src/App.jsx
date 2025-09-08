@@ -71,6 +71,7 @@ import Tournament from "./pages/Tournament";
 import AddTeam from "./pages/AddTeam";
 import AllTeams from "./pages/AllTeams";
 import PrizeDistribution from "./pages/PrizeDistribution";
+import WebsiteStats from "./pages/WebsiteStats";
 
 // ✅ ProtectedRoute component
 function ProtectedRoute({ children }) {
@@ -213,6 +214,7 @@ function App() {
             <Route path="/referral-system" element={<ReferralSystem />} />
             <Route path="/tournaments" element={<Tournament />} />
             <Route path="/all-teams" element={<AllTeams />} />
+            <Route path="/website-stats" element={<WebsiteStats />} />
 
 
 

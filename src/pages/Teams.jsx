@@ -1,3 +1,6 @@
+import React, { useState, useEffect } from "react";
+import { Plus, Download, Search, Edit, Trash2, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import React, { useState, useEffect } from "react";
 import {
@@ -695,14 +698,10 @@ const navigate = useNavigate();
               <Download className="w-4 h-4 mr-2" />
               Export Teams
             </button>
-            <button
-              className="flex items-center px-4 py-2 bg-indigo-600 text-white text-sm rounded-md shadow-sm hover:bg-indigo-700 transition-colors duration-200"
-              onClick={() => navigate("/add-teams")} 
-
-            >
+            <Link to="/add-teams" className="flex items-center px-4 py-2 bg-indigo-600 text-white text-sm rounded-md shadow-sm hover:bg-indigo-700 transition-colors duration-200">
               <Plus className="w-4 h-4 mr-2" />
               Create Team
-            </button>
+            </Link>
           </div>
         </div>
 

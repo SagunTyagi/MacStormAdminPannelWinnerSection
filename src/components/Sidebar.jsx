@@ -22,6 +22,7 @@ import {
    Radio,  
   Users,
   Trophy,
+  Globe,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -108,6 +109,29 @@ const menuItems = [
     ],
   },
 
+  {
+    label: "Daily Bets",
+    icon: DollarSign,
+    submenuKey: "dailyBets",
+    subItems: [{ label: "Overview", path: "/admin/bets" }],
+  },
+  {
+    label: "Website",
+    icon: Globe,
+    submenuKey: "website",
+    subItems: [{ label: "Stats", path: "/website-stats" }],
+  },
+  {
+    label: "Sponsor Ads",
+    icon: Monitor,
+    path: "/admin/ads",
+  },
+  {
+    label: "Problem Center",
+    icon: AlertTriangle,
+    submenuKey: "problemCenter",
+    subItems: [{ label: "Problems", path: "/admin/problemcenter" }],
+  },
   {
     label: "Notification Center",
     icon: Bell,
