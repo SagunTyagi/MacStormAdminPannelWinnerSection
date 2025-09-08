@@ -3,7 +3,7 @@ import { ArrowLeft, Trash2, Plus, ChevronDown, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
-const DEFAULT_WINNERS = [100];
+const DEFAULT_WINNERS = [""];
 
 export default function DuoContestForm() {
   const [eventName, setEventName] = useState("");
@@ -19,7 +19,7 @@ export default function DuoContestForm() {
   const [prizeDesc, setPrizeDesc] = useState("");
   const [matchPrivateDesc, setMatchPrivateDesc] = useState("");
   const [winners, setWinners] = useState(
-    DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, percent: p }))
+    DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, prize: p }))
   );
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,8 +36,6 @@ export default function DuoContestForm() {
   const [showImagePreview, setShowImagePreview] = useState(false);
   
   const navigate = useNavigate();
-
-  const totalPercent = winners.reduce((s, w) => s + Number(w.percent || 0), 0);
 
   // Fetch banner images from API
   useEffect(() => {
@@ -146,7 +144,7 @@ export default function DuoContestForm() {
     if (numCount > winners.length) {
       const newWinners = [...winners];
       for (let i = winners.length; i < numCount; i++) {
-        newWinners.push({ id: Date.now() + i, percent: "" });
+        newWinners.push({ id: Date.now() + i, prize: "" });
       }
       setWinners(newWinners);
     } else if (numCount < winners.length && numCount > 0) {
@@ -156,18 +154,17 @@ export default function DuoContestForm() {
     }
   };
 
-  // helper to update a winner's percent
+  // Helper to update a winner's prize text
   const updateWinner = (index, value) => {
-    const v = value === "" ? "" : Math.max(0, Math.min(100, Number(value)));
     setWinners((prev) => {
       const copy = [...prev];
-      copy[index] = { ...copy[index], percent: v };
+      copy[index] = { ...copy[index], prize: value };
       return copy;
     });
   };
 
   const addWinner = () => {
-    setWinners((prev) => [...prev, { id: Date.now(), percent: "" }]);
+    setWinners((prev) => [...prev, { id: Date.now(), prize: "" }]);
     setTotalWinners(String(winners.length + 1));
   };
 
@@ -190,22 +187,23 @@ export default function DuoContestForm() {
     if (!fee || Number(fee) <= 0) e.fee = "Joining fee must be > 0";
     if (!schedule) e.schedule = "Match schedule required";
     if (winners.length === 0) e.winners = "At least one winner required";
-    if (totalPercent !== 100) e.total = "Prize distribution total must be 100%";
     
+    // Updated validation for text-based prizes
     winners.forEach((w, i) => {
-      if (w.percent === "" || isNaN(w.percent)) e[`w_${i}`] = "Enter a number";
-      else if (w.percent < 0 || w.percent > 100)
-        e[`w_${i}`] = "Value must be between 0 and 100";
+      if (!w.prize || w.prize.trim() === "") {
+        e[`w_${i}`] = "Prize description required";
+      }
     });
     
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
+  // Updated function to create distribution object with text values
   const createDistributionObject = () => {
     const distribution = {};
     winners.forEach((winner, index) => {
-      distribution[String(index + 1)] = Number(winner.percent);
+      distribution[String(index + 1)] = winner.prize || "";
     });
     return distribution;
   };
@@ -227,12 +225,12 @@ export default function DuoContestForm() {
         room_size: Number(roomSize),
         joining_fee: Number(fee),
         total_winners: Number(totalWinners),
-        distribution: createDistributionObject(),
+        distribution: createDistributionObject(), // Now sends text values
         match_schedule: formatScheduleForAPI(schedule),
         game: game,
         team: "DUO",
         map: map.toUpperCase(),
-        banner_image_url: bannerUrl || null, // Send the actual URL to backend
+        banner_image_url: bannerUrl || null,
         prize_description: prizeDesc || null,
         match_sponsor: sponsor || null,
         match_description: description || null,
@@ -276,7 +274,7 @@ export default function DuoContestForm() {
       setSelectedImageTitle("");
       setSelectedImageUrl("");
       setShowImagePreview(false);
-      setWinners(DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, percent: p })));
+      setWinners(DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, prize: p })));
       setErrors({});
 
       navigate("/duoContests");
@@ -419,13 +417,13 @@ export default function DuoContestForm() {
               {errors.schedule && <p className="text-xs text-red-600 mt-1">{errors.schedule}</p>}
             </div>
 
-            {/* Prize Distribution */}
+            {/* Updated Prize Distribution Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
                 <label className="block text-sm font-medium text-gray-700">Prize Distribution</label>
                 <div className="flex items-center space-x-2">
                   <span className="text-sm text-gray-600">
-                    {winners.length} winner{winners.length !== 1 ? 's' : ''}
+                    {winners.length} winner{winners.length !== 1 ? "s" : ""}
                   </span>
                 </div>
               </div>
@@ -439,21 +437,17 @@ export default function DuoContestForm() {
                       </div>
                       <div className="flex-1">
                         <input
-                          value={w.percent}
+                          value={w.prize}
                           onChange={(e) => updateWinner(i, e.target.value)}
-                          type="number"
-                          min={0}
-                          max={100}
-                          step={0.1}
+                          type="text"
                           className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
                             errors[`w_${i}`] ? "border-red-400" : "border-gray-300"
                           }`}
-                          placeholder={`Percentage for rank ${i + 1}`}
+                          placeholder={`Prize for rank ${i + 1} (e.g., "₹500", "Trophy + ₹1000", "Gift Card")`}
                           disabled={isSubmitting}
                         />
                         {errors[`w_${i}`] && <p className="text-xs text-red-600 mt-1">{errors[`w_${i}`]}</p>}
                       </div>
-                      <span className="text-sm text-gray-500 w-8">%</span>
                     </div>
                   ))}
                 </div>
@@ -462,13 +456,6 @@ export default function DuoContestForm() {
                   <p>Enter total winners above to configure prize distribution</p>
                 </div>
               )}
-
-              <div className="flex items-center justify-between mt-2">
-                <div className={`text-sm font-medium ${totalPercent === 100 ? "text-green-600" : "text-red-600"}`}>
-                  Total: {totalPercent}% {totalPercent !== 100 && "(must be 100%)"}
-                </div>
-                {errors.total && <div className="text-xs text-red-600">{errors.total}</div>}
-              </div>
             </div>
 
             {/* Additional Info */}
@@ -540,7 +527,6 @@ export default function DuoContestForm() {
                               />
                               <div className="flex-1">
                                 <div className="font-medium text-gray-900">{image.title}</div>
-                                {/* <div className="text-sm text-gray-500 truncate">{image.imageUrl}</div> */}
                               </div>
                             </button>
                           ))
@@ -646,7 +632,7 @@ export default function DuoContestForm() {
               <button
                 type="submit"
                 className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                disabled={totalPercent !== 100 || isSubmitting}
+                disabled={isSubmitting}
               >
                 {isSubmitting ? "Creating Contest..." : "Create Contest"}
               </button>

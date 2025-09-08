@@ -68,13 +68,19 @@ const menuItems = [
     subItems: [
       { label: "All Teams", path: "/teams" },
       { label: "Add Teams", path: "/add-teams" },
+      { label: "Games Registration", path: "/games-registation" },
+      { label: "Registration Form Controls", path: "/registation-details" },
+      { label: "Prize Distribution", path: "/prize-distribution" },
     ],
   },
   {
     label: "Tournaments",
     icon: Trophy,
     submenuKey: "tournaments",
-    subItems: [{ label: "Add Tournaments", path: "/tournaments" }],
+    subItems: [
+      { label: "Add Tournaments", path: "/tournaments" },
+      { label: "All ", path: "/all-teams" },
+  ],
   },
 
   {
@@ -88,17 +94,15 @@ const menuItems = [
     icon: Gamepad2,
     submenuKey: "games",
     subItems: [
-      { label: "Games Registration", path: "/games-registation" },
-      { label: "Registration Details", path: "/registation-details" },
       { label: "All Games", path: "/games" },
-      { label: "Matches", path: "/matches" },
+      // { label: "Matches", path: "/matches" },
       {
         label: "Contest",
         subItems: [
           { label: "Solo Contests", path: "/solo" },
           { label: "Duo Contests", path: "/duoContests" },
           { label: "Squad Contests", path: "/squad" },
-          { label: "Mega Contest", path: "/mega" },
+          // { label: "Mega Contest", path: "/mega" },
         ],
       },
     ],

@@ -43,6 +43,11 @@ const updateRoom = (contestId, roomData) =>
     body: JSON.stringify(roomData)
   })
 
+  const deleteContest = (contestId) => 
+  apiRequest(`${API_BASE_URL}/duo-contests/delete/${contestId}`, {
+    method: 'DELETE',
+  })
+
 // Utility functions
 const formatDate = (dateString) => {
   const date = new Date(dateString)
@@ -469,7 +474,18 @@ export default function DuoContestsList() {
   const handleBackClick = () => {
     setSelectedContest(null)
   }
+  const handleDeleteContest = async (contestId) => {
+  if (!window.confirm("Are you sure you want to delete this contest?")) return;
 
+  try {
+    await deleteContest(contestId);
+    setContests(prev => prev.filter(c => c.id !== contestId));
+    alert("Contest deleted successfully!");
+  } catch (err) {
+    console.error("Failed to delete contest:", err);
+    alert("Failed to delete contest. Please try again.");
+  }
+};
   // const handleCreateContest = () => {
   //   alert('Navigate to create contest page')
   //   // In your actual app, use: navigate("/duo/create")
@@ -568,7 +584,20 @@ export default function DuoContestsList() {
                   </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="text-xl font-bold text-gray-900 mb-2">{contest.title}</h3>
+                  {/* <h3 className="text-xl font-bold text-gray-900 mb-2">{contest.title}</h3> */}
+                   <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xl font-bold text-gray-900">{contest.title}</h3>
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+            handleDeleteContest(contest.id)
+          }}
+          className="px-3 py-1 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+        >
+          Delete
+        </button>
+      </div>
+
                   <p className="text-gray-600 text-sm mb-4 line-clamp-2">{contest.description}</p>
                   <div className="grid grid-cols-2 gap-4 mb-4">
                     <div className="flex items-center text-sm text-gray-600">
@@ -592,6 +621,7 @@ export default function DuoContestsList() {
                     <div className="text-sm text-gray-500">
                       {contest.game} • {contest.map}
                     </div>
+
                     <div className="text-sm font-medium text-blue-600">{contest.winCriteria}
 
                     </div>

@@ -69,6 +69,8 @@ import MegaContest from "./pages/MegaContest";
 import ReferralSystem from "./pages/ReferralSystem";
 import Tournament from "./pages/Tournament";
 import AddTeam from "./pages/AddTeam";
+import AllTeams from "./pages/AllTeams";
+import PrizeDistribution from "./pages/PrizeDistribution";
 
 // ✅ ProtectedRoute component
 function ProtectedRoute({ children }) {
@@ -157,6 +159,7 @@ function App() {
             <Route path="/teams" element={<Teams />} />
             <Route path="/add-teams" element={<AddTeam />} />
             <Route path="/games" element={<AllGames />} />
+            <Route path="/prize-distribution" element={<PrizeDistribution />} />
             <Route path="/registation-details" element={<RegistrationDetails />} />
             <Route path="/games-registation" element={<GamesRegistration />} />
             <Route path="/games/create" element={<CreateGame />} />
@@ -209,6 +212,7 @@ function App() {
             <Route path="/mega/:id" element={<MegaContest />} />
             <Route path="/referral-system" element={<ReferralSystem />} />
             <Route path="/tournaments" element={<Tournament />} />
+            <Route path="/all-teams" element={<AllTeams />} />
 
 
 

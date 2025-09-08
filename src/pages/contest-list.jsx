@@ -1,4 +1,4 @@
-import { Calendar } from "lucide-react";
+import { Calendar, Trash2 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { formatDisplayDate } from "../utils/dateUtils";
@@ -8,6 +8,7 @@ function ContestList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState("All");
+  const [deletingContestId, setDeletingContestId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,6 +34,42 @@ function ContestList() {
     fetchContests();
   }, []);
 
+  const handleDeleteContest = async (contestId, e) => {
+    e.preventDefault(); // Prevent navigation to contest details
+    e.stopPropagation(); // Stop event bubbling
+    
+    if (!window.confirm("Are you sure you want to delete this contest? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      setDeletingContestId(contestId);
+      const token = localStorage.getItem("authToken");
+      const res = await fetch(`https://macstormbattle-backend.onrender.com/api/contest/${contestId}/delete`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.message || "Failed to delete contest");
+      }
+
+      // Remove the deleted contest from the state
+      setContests(prevContests => prevContests.filter(contest => contest.id !== contestId));
+      
+      // Show success message (optional)
+      alert("Contest deleted successfully!");
+      
+    } catch (err) {
+      alert(`Failed to delete contest: ${err.message}`);
+    } finally {
+      setDeletingContestId(null);
+    }
+  };
+
   const filteredContests = contests
     .filter(contest => {
       const status = contest.match_status?.toLowerCase();
@@ -40,8 +77,8 @@ function ContestList() {
       if (filter !== "All") {
         return status === filter.toLowerCase();
       }
-      // For "All" filter, hide cancelled contests
-      return status !== 'cancelled';
+      // For "All" filter, show all contests including cancelled ones
+      return true;
     });
 
   return (
@@ -128,58 +165,85 @@ function ContestList() {
                 return dateB - dateA;
               })
               .map((contest) => (
-                <Link
+                <div
                   key={contest.id}
-                  to={`/solo/${contest.id}`}
-                  state={{ contest }}
-                  className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 block"
+                  className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative group"
                 >
-                  <div className="relative">
-                    <img
-                      src={
-                        contest.banner_image_url ||
-                        "https://via.placeholder.com/400x200"
-                      }
-                      alt={contest.event_name}
-                      className="w-full h-48 object-cover rounded-t-xl"
-                    />
-                    <div className="absolute top-4 right-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          contest.match_status === "live"
-                            ? "bg-green-100 text-green-800"
-                            : contest.match_status === "completed"
-                            ? "bg-gray-100 text-gray-800"
-                            : contest.match_status === "cancelled"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
+                  <Link
+                    to={`/solo/${contest.id}`}
+                    state={{ contest }}
+                    className="block"
+                  >
+                    <div className="relative">
+                      <img
+                        src={
+                          contest.banner_image_url ||
+                          "https://via.placeholder.com/400x200"
+                        }
+                        alt={contest.event_name}
+                        className="w-full h-48 object-cover rounded-t-xl"
+                      />
+                      <div className="absolute top-4 left-4">
+                        <span
+                          className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            contest.match_status === "live"
+                              ? "bg-green-100 text-green-800"
+                              : contest.match_status === "completed"
+                              ? "bg-gray-100 text-gray-800"
+                              : contest.match_status === "cancelled"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-blue-100 text-blue-800"
+                          }`}
+                        >
+                          {contest.match_status ? contest.match_status.charAt(0).toUpperCase() + contest.match_status.slice(1) : "Upcoming"}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xl font-bold text-gray-900">
+                        {contest.event_name}
+                      </h3>
+                      <button
+                        onClick={(e) => handleDeleteContest(contest.id, e)}
+                        disabled={deletingContestId === contest.id}
+                        className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        {contest.match_status ? contest.match_status.charAt(0).toUpperCase() + contest.match_status.slice(1) : "Upcoming"}
-                      </span>
+                        {deletingContestId === contest.id ? "Deleting..." : "Delete"}
+                      </button>
                     </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {contest.event_name}
-                    </h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {contest.match_description}
-                    </p>
-                     <div className="flex items-center text-sm text-gray-600">
-                        <Calendar className="w-4 h-4 mr-2 text-blue-500" />
-                        {formatDisplayDate(contest.match_schedule)}
-                      </div>
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-500">
-                        {contest.game} {contest.map ? `• ${contest.map}` : ""}
-                      </div>
-                      <div className="text-sm font-medium text-blue-600">
-                        {contest.match_sponsor}
+                      <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                        {contest.match_description}
+                      </p>
+                       <div className="flex items-center text-sm text-gray-600 mb-4">
+                          <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+                          {formatDisplayDate(contest.match_schedule)}
+                        </div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm text-gray-500">
+                          {contest.game} {contest.map ? `• ${contest.map}` : ""}
+                        </div>
+                        <div className="text-sm font-medium text-blue-600">
+                          {contest.match_sponsor}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+                  
+                  {/* Delete Button
+                  <button
+                    onClick={(e) => handleDeleteContest(contest.id, e)}
+                    disabled={deletingContestId === contest.id}
+                    className="absolute top-4 right-4 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100 disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                    title="Delete Contest"
+                  >
+                    {deletingContestId === contest.id ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </button> */}
+                </div>
               ))}
             {filteredContests.length === 0 && (
               <div className="col-span-full text-center text-gray-500">

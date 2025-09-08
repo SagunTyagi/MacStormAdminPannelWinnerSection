@@ -257,9 +257,9 @@ const ReferralSystem = () => {
         <div className="space-y-4">
           <div>
             <div className="flex items-center text-sm text-gray-500 mb-1">
-              Diamonds
+              Amount
             </div>
-            <div className="text-xl font-bold">💎{referral.amount}</div>
+            <div className="text-xl font-bold">₹{referral.amount}</div>
           </div>
 
           <div>
@@ -322,9 +322,9 @@ const ReferralSystem = () => {
 
               <form onSubmit={handleCreateReferral} className="space-y-4">
                 <div>
-                  <label htmlFor="amount" className="block text-sm text-gray-500 mb-1">Diamonds</label>
+                  <label htmlFor="amount" className="block text-sm text-gray-500 mb-1">Amount</label>
                   <div className="relative">
-                    <div className="absolute left-3 top-1/3 transform -translate-y-1/2 w-4 h-4 text-gray-400">💎</div>
+                    <div className="absolute left-3 top-1/3 transform -translate-y-1/2 w-4 h-4 text-gray-400">₹</div>
                     <input
                       id="amount"
                       type="number"

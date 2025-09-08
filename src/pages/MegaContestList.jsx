@@ -40,17 +40,33 @@ function MegaContestList() {
     fetchContests();
   }, []);
 
-  const filteredContests = contests
-    .filter(contest => {
-      // If a specific filter is selected, apply it
-      if (filter !== "All") {
-        return contest.match_status && 
-               contest.match_status.toLowerCase() === filter.toLowerCase();
-      }
-      // For "All" filter, show everything except cancelled contests
-      return !contest.match_status || 
-             contest.match_status.toLowerCase() !== 'cancelled';
-    });
+  // Handle Delete
+  const handleDelete = async (contestId) => {
+    if (!window.confirm("Are you sure you want to delete this contest?")) return;
+    try {
+      await axiosInstance.delete(
+        `https://macstormbattle-backend-2.onrender.com/api/mega-contests/${contestId}/delete`
+      );
+      setContests((prev) =>
+        prev.filter((contest) => contest.contest_id !== contestId)
+      );
+    } catch (err) {
+      console.error(err);
+      alert("Failed to delete contest");
+    }
+  };
+
+  const filteredContests = contests.filter((contest) => {
+    if (filter !== "All") {
+      return (
+        contest.match_status &&
+        contest.match_status.toLowerCase() === filter.toLowerCase()
+      );
+    }
+    return (
+      !contest.match_status || contest.match_status.toLowerCase() !== "cancelled"
+    );
+  });
 
   return (
     <div className="min-h-screen">
@@ -110,29 +126,25 @@ function MegaContestList() {
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredContests
-  .slice()
-  .sort((a, b) => {
-    // Define status priority (live first, then upcoming, then others)
-    const getPriority = (status) => {
-      status = (status || '').toLowerCase();
-      if (status === 'live') return 0;
-      if (status === 'upcoming') return 1;
-      if (status === 'completed') return 2;
-      return 3; // for any other status
-    };
-
-    // First sort by status priority
-    const statusDiff = getPriority(a.match_status) - getPriority(b.match_status);
-    if (statusDiff !== 0) return statusDiff;
-
-    // If status is the same, sort by match schedule (nearest first)
-    return new Date(a.match_schedule) - new Date(b.match_schedule);
-  })
-  .map((contest) => (
-                <Link
+              .slice()
+              .sort((a, b) => {
+                const getPriority = (status) => {
+                  status = (status || "").toLowerCase();
+                  if (status === "live") return 0;
+                  if (status === "upcoming") return 1;
+                  if (status === "completed") return 2;
+                  return 3;
+                };
+                const statusDiff =
+                  getPriority(a.match_status) - getPriority(b.match_status);
+                if (statusDiff !== 0) return statusDiff;
+                return (
+                  new Date(a.match_schedule) - new Date(b.match_schedule)
+                );
+              })
+              .map((contest) => (
+                <div
                   key={contest.contest_id}
-                  to={`/mega/${contest.contest_id}`}
-                  state={{ contest }}
                   className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1 block"
                 >
                   <div className="relative">
@@ -159,9 +171,19 @@ function MegaContestList() {
                     </div>
                   </div>
                   <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {contest.event_name}
-                    </h3>
+                    {/* Title row with Delete button */}
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xl font-bold text-gray-900">
+                        {contest.event_name}
+                      </h3>
+                      <button
+                        onClick={() => handleDelete(contest.contest_id)}
+                        className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+                      >
+                        Delete
+                      </button>
+                    </div>
+
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                       {contest.match_description}
                     </p>
@@ -175,8 +197,8 @@ function MegaContestList() {
                         {contest.room_size || 0} Players
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
-                        <DollarSign className="w-4 h-4 mr-2 text-yellow-500" />₹
-                        {contest.joining_fee} Entry
+                        <DollarSign className="w-4 h-4 mr-2 text-yellow-500" />
+                        ₹{contest.joining_fee} Entry
                       </div>
                       <div className="flex items-center text-sm text-gray-600">
                         <Trophy className="w-4 h-4 mr-2 text-zinc-500" />
@@ -192,7 +214,7 @@ function MegaContestList() {
                       </div>
                     </div>
                   </div>
-                </Link>
+                </div>
               ))}
             {filteredContests.length === 0 && (
               <div className="col-span-full text-center text-gray-500">

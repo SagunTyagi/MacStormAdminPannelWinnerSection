@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Settings, Save, Eye, X, RefreshCw } from 'lucide-react';
+import axiosInstance from '../utils/axios';
 
 export default function FormFieldSettings() {
   const [fields, setFields] = useState([]);
@@ -35,33 +36,29 @@ export default function FormFieldSettings() {
   }, []);
 
   const fetchFields = async () => {
-    setIsFetching(true);
-    try {
-      const response = await fetch('https://macstormbattle-backend-2.onrender.com/api/formfields');
-      if (response.ok) {
-        const data = await response.json();
-        // Remove duplicates by field_name, keeping the latest one
-        const uniqueFields = data.reduce((acc, field) => {
-          const existingIndex = acc.findIndex(f => f.field_name === field.field_name);
-          if (existingIndex === -1) {
-            acc.push(field);
-          } else if (new Date(field.createdAt) > new Date(acc[existingIndex].createdAt)) {
-            acc[existingIndex] = field;
-          }
-          return acc;
-        }, []);
-        setFields(uniqueFields);
-      } else {
-        console.error('Failed to fetch fields');
-        alert('Failed to load existing fields');
+  setIsFetching(true);
+  try {
+    const { data } = await axiosInstance.get("/formfields");
+
+    // Remove duplicates by field_name, keeping the latest one
+    const uniqueFields = data.reduce((acc, field) => {
+      const existingIndex = acc.findIndex(f => f.field_name === field.field_name);
+      if (existingIndex === -1) {
+        acc.push(field);
+      } else if (new Date(field.createdAt) > new Date(acc[existingIndex].createdAt)) {
+        acc[existingIndex] = field;
       }
-    } catch (error) {
-      console.error('Error fetching fields:', error);
-      alert('Error loading fields');
-    } finally {
-      setIsFetching(false);
-    }
-  };
+      return acc;
+    }, []);
+
+    setFields(uniqueFields);
+  } catch (error) {
+    console.error("Error fetching fields:", error);
+    alert("Error loading fields");
+  } finally {
+    setIsFetching(false);
+  }
+};
 
   const handleFieldChange = (fieldId, property, value) => {
     setFields(prev =>

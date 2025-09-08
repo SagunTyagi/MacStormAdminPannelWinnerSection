@@ -14,7 +14,8 @@ function UsersPage() {
   const [newName, setNewName] = useState("");
 
   const columns = [
-    { key: "member_id", label: "Sr No." },
+    { key: "sr_no", label: "Sr No." },
+    { key: "member_id", label: "Member ID" }, // New column for actual member_id
     { key: "first_name", label: "Name" },
     { key: "user_name", label: "User Name" },
     { key: "email_id", label: "Email" },
@@ -29,7 +30,8 @@ function UsersPage() {
       const data = Array.isArray(res.data.users) ? res.data.users : [];
       const formattedUsers = data.map((user, index) => ({
         ...user,
-        member_id: index + 1,
+        sr_no: index + 1, // Sequential number for display
+        // member_id remains the actual ID from the API
       }));
       setUsers(formattedUsers);
     } catch (err) {
@@ -55,8 +57,9 @@ function UsersPage() {
       return;
     }
     try {
-      await axiosInstance.put(`auth/user/${selectedUser.id}`, { name: newName });
-      toast.success("User updated");
+      // Use actual member_id from the user object
+      await axiosInstance.put(`auth/user/${selectedUser.member_id}`, { first_name: newName });
+      toast.success("User updated successfully");
       setIsEditModalOpen(false);
       fetchUsers();
     } catch (err) {
@@ -72,9 +75,11 @@ function UsersPage() {
   };
 
   const confirmDelete = async () => {
+    console.log("Deleting user with member_id:", selectedUser.member_id);
     try {
-      await axiosInstance.delete(`auth/admin/user/${selectedUser.id}`);
-      toast.success("User deleted");
+      // Use actual member_id from the user object
+      await axiosInstance.delete(`auth/user/${selectedUser.member_id}`);
+      toast.success("User deleted successfully");
       setIsDeleteModalOpen(false);
       fetchUsers();
     } catch (err) {
@@ -102,6 +107,11 @@ function UsersPage() {
             <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
               Edit User Name
             </h2>
+            <div className="mb-3">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Member ID: {selectedUser?.member_id}
+              </label>
+            </div>
             <input
               type="text"
               value={newName}
@@ -134,9 +144,12 @@ function UsersPage() {
             <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
               Confirm Delete
             </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
+            <p className="text-gray-600 dark:text-gray-300 mb-2">
               Are you sure you want to delete{" "}
               <span className="font-bold">{selectedUser?.first_name}</span>?
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              Member ID: {selectedUser?.member_id}
             </p>
             <div className="flex justify-end space-x-2">
               <button
