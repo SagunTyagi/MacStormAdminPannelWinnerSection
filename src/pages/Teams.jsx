@@ -1,5 +1,3 @@
-import React, { useState, useEffect } from "react";
-import { Plus, Download, Search, Edit, Trash2, X } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import React, { useState, useEffect } from "react";
