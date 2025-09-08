@@ -11,6 +11,8 @@ import {
 import { Link } from "react-router-dom";
 import axiosInstance from "../utils/axios";
 
+
+
 function SquadContestsList() {
   const [filter, setFilter] = useState("All");
   const [contests, setContests] = useState([]);

@@ -221,6 +221,31 @@ banner_image_url:"",
       setIsSubmitting(false);
     }
   };
+const [games, setGames] = useState([]);
+const [isLoadingGames, setIsLoadingGames] = useState(false);
+useEffect(() => {
+  const fetchGames = async () => {
+    setIsLoadingGames(true);
+    try {
+      const res = await axiosInstance.get("auth/admin/games");
+      if (res.data.status === "success") {
+        setGames(res.data.data);
+        if (res.data.data.length > 0) {
+          setFormData((prev) => ({
+            ...prev,
+            game: res.data.data[0].game_name, // default select first
+          }));
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch games:", err);
+      toast.error("Failed to fetch games");
+    } finally {
+      setIsLoadingGames(false);
+    }
+  };
+  fetchGames();
+}, []);
 
   return (
     <>
@@ -266,23 +291,34 @@ banner_image_url:"",
                   />
                 </div>
                 <div>
-                  <label
-                    htmlFor="game"
-                    className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Game
-                  </label>
-                  <select
-                    id="game"
-                    name="game"
-                    value={formData.game}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="BGMI">BGMI</option>
-                    <option value="Free Fire">Free Fire</option>
-                  </select>
-                </div>
+  <label
+    htmlFor="game"
+    className="block text-sm font-medium text-gray-700 mb-2"
+  >
+    Game
+  </label>
+  <select
+    id="game"
+    name="game"
+    value={formData.game}
+    onChange={handleChange}
+    disabled={isLoadingGames}
+    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+  >
+    {isLoadingGames ? (
+      <option>Loading games...</option>
+    ) : games.length > 0 ? (
+      games.map((g) => (
+        <option key={g.id} value={g.game_name}>
+          {g.game_name}
+        </option>
+      ))
+    ) : (
+      <option>No games available</option>
+    )}
+  </select>
+</div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Map *

@@ -83,7 +83,7 @@ export default function DuoContestForm() {
     if (!searchTerm.trim()) {
       setFilteredImages(bannerImages);
       return;
-    }
+    }a
 
     const filtered = bannerImages.filter(image =>
       image.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -286,6 +286,34 @@ export default function DuoContestForm() {
       setIsSubmitting(false);
     }
   };
+const [games, setGames] = useState([]);
+const [isLoadingGames, setIsLoadingGames] = useState(false);
+
+useEffect(() => {
+  const fetchGames = async () => {
+    setIsLoadingGames(true);
+    try {
+      const res = await fetch("https://macstormbattle-backend-2.onrender.com/api/auth/admin/games", {
+        headers: {
+          "Authorization": "Bearer YOUR_ADMIN_TOKEN" // replace with actual token
+        }
+      });
+      const data = await res.json();
+      if (data.status === "success") {
+        setGames(data.data);
+        if (data.data.length > 0) {
+          setGame(data.data[0].game_name); // default select first game
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch games:", err);
+    } finally {
+      setIsLoadingGames(false);
+    }
+  };
+
+  fetchGames();
+}, []);
 
   return (
     <div className="min-h-screen">
@@ -338,19 +366,28 @@ export default function DuoContestForm() {
                 {errors.fee && <p className="text-xs text-red-600 mt-1">{errors.fee}</p>}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Game *</label>
-                <select
-                  value={game}
-                  onChange={(e) => setGame(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  disabled={isSubmitting}
-                >
-                  <option>BGMI</option>
-                  <option>PUBG</option>
-                  <option>Free Fire</option>
-                </select>
-              </div>
+            <div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">Game *</label>
+  <select
+    value={game}
+    onChange={(e) => setGame(e.target.value)}
+    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+    disabled={isSubmitting || isLoadingGames}
+  >
+    {isLoadingGames ? (
+      <option>Loading games...</option>
+    ) : games.length > 0 ? (
+      games.map((g) => (
+        <option key={g.id} value={g.game_name}>
+          {g.game_name}
+        </option>
+      ))
+    ) : (
+      <option>No games available</option>
+    )}
+  </select>
+</div>
+
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Map *</label>

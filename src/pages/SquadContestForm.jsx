@@ -161,22 +161,34 @@ export default function SquadContestForm() {
     return Object.keys(e).length === 0;
   };
 
-  // ✅ Auto-generate winners array when totalWinners changes
-  useEffect(() => {
-    const count = Number(totalWinners);
-    if (!count || count <= 0) return;
+    // ✅ Auto-generate winners array when totalWinners changes
+  // useEffect(() => {
+  //   const count = Number(totalWinners);
+  //   if (!count || count <= 0) return;
 
-    setWinners((prev) => {
-      const newArr = [];
-      for (let i = 0; i < count; i++) {
-        newArr.push({
-          id: prev[i]?.id || Date.now() + i,
-          percent: prev[i]?.percent || 0,
-        });
-      }
-      return newArr;
-    });
-  }, [totalWinners]);
+  //   setWinners((prev) => {
+  //     const newArr = [];
+  //     for (let i = 0; i < count; i++) {
+  //       newArr.push({
+  //         id: prev[i]?.id || Date.now() + i,
+  //         percent: prev[i]?.percent || 0,
+  //       });
+  //     }
+  //     return newArr;
+  //   });
+  // }, [totalWinners]);
+useEffect(() => {
+  const count = Number(totalWinners);
+  if (!count || count <= 0) return;
+
+  setWinners((prev) =>
+    Array.from({ length: count }, (_, i) => ({
+      id: prev[i]?.id ?? Date.now() + i,
+      percent: prev[i]?.percent ?? 0,
+      rank: prev[i]?.rank ?? (i + 1).toString(),
+    }))
+  );
+}, [totalWinners]);
 
   const handleSubmit = async (ev) => {
     ev.preventDefault();
@@ -235,6 +247,29 @@ export default function SquadContestForm() {
       toast.error(err.response?.data?.message || "Failed to create contest");
     }
   };
+const [games, setGames] = useState([]);
+const [isLoadingGames, setIsLoadingGames] = useState(false);
+useEffect(() => {
+  const fetchGames = async () => {
+    setIsLoadingGames(true);
+    try {
+      const res = await axiosInstance.get("auth/admin/games");
+      if (res.data.status === "success") {
+        setGames(res.data.data);
+        if (res.data.data.length > 0) {
+          setGame(res.data.data[0].game_name); // default select first game
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch games:", err);
+      toast.error("Failed to fetch games");
+    } finally {
+      setIsLoadingGames(false);
+    }
+  };
+
+  fetchGames();
+}, []);
 
   return (
     <div className="min-h-screen">
@@ -302,14 +337,24 @@ export default function SquadContestForm() {
                   Game *
                 </label>
                 <select
-                  value={game}
-                  onChange={(e) => setGame(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                >
-                  <option>BGMI</option>
-                  <option>PUBG</option>
-                  <option>Free Fire</option>
-                </select>
+  value={game}
+  onChange={(e) => setGame(e.target.value)}
+  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+  disabled={isLoadingGames}
+>
+  {isLoadingGames ? (
+    <option>Loading games...</option>
+  ) : games.length > 0 ? (
+    games.map((g) => (
+      <option key={g.id} value={g.game_name}>
+        {g.game_name}
+      </option>
+    ))
+  ) : (
+    <option>No games available</option>
+  )}
+</select>
+
               </div>
 
               <div>
