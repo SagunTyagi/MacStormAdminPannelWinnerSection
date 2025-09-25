@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 
 import { getToken } from "firebase/messaging";
 import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import { messaging } from "./firebase";
 import FirebaseNotificationHandler from "./components/FirebaseNotificationHandler";
 
@@ -72,6 +74,14 @@ import AddTeam from "./pages/AddTeam";
 import AllTeams from "./pages/AllTeams";
 import PrizeDistribution from "./pages/PrizeDistribution";
 import WebsiteStats from "./pages/WebsiteStats";
+import Blog from "./pages/Blog";
+import BlogCreate from "./pages/BlogCreate";
+import ContactUs from "./pages/ContactUS";
+import RulesRegulations from "./pages/Rules&Regulations";
+import BlogDetailPage from "./pages/BlogDetailpage";
+import WatchEarn from "./pages/Watch&Earn";
+import PaymentGateway from "./pages/PaymentGateway";
+import AdsManagement from "./pages/AdsManagement";
 
 // ✅ ProtectedRoute component
 function ProtectedRoute({ children }) {
@@ -141,6 +151,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
         </Routes>
+          <ToastContainer position="top-right" autoClose={3000} theme="colored" />
       </div>
     );
   }
@@ -215,11 +226,21 @@ function App() {
             <Route path="/tournaments" element={<Tournament />} />
             <Route path="/all-teams" element={<AllTeams />} />
             <Route path="/website-stats" element={<WebsiteStats />} />
-
+            <Route path="/contactus" element={<ContactUs />} />
+            <Route path="/blogs" element={<Blog />} />
+            <Route path="/blog/:id" element={<BlogDetailPage />} />
+            <Route path="/createblog" element={<BlogCreate />} />
+            <Route path="/createblog/edit/:id" element={<BlogCreate />} />
+            <Route path="/editblog/:id" element={<BlogCreate />} />
+            <Route path ="/rules-regulations" element={<RulesRegulations />} />
+            <Route path="/watch-earn" element={<WatchEarn />} />
+            <Route path="/payment-gateway" element={<PaymentGateway />} />
+            <Route path="/ads-management" element={<AdsManagement />} />
 
 
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
+           <ToastContainer position="top-right" autoClose={3000} theme="colored" />
         </div>
       </div>
     </ProtectedRoute>

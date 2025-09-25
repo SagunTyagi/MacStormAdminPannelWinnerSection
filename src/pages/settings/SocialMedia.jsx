@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import axios from "axios"
+import axiosInstance from "../../utils/axios"
 import {
   Box,
   Card,
@@ -98,7 +98,7 @@ const SocialMedia = () => {
     const fetchSocialMediaLinks = async () => {
       try {
         setIsLoading(true)
-        const response = await axios.get("https://macstormbattle-backend.onrender.com/api/socialmedialinks")
+        const response = await axiosInstance.get("/socialmedialinks")
         
         // Transform the API response to match our formData structure
         const linksData = {}
@@ -203,7 +203,7 @@ const SocialMedia = () => {
     try {
       // Update each platform's link using PUT API
       const updatePromises = Object.entries(formData).map(([platform, url]) =>
-        axios.put(`https://macstormbattle-backend.onrender.com/api/socialmedialinks/${platform}`, {
+        axiosInstance.put(`/socialmedialinks/${platform}`, {
           url: url.trim(),
           platform: platform
         })

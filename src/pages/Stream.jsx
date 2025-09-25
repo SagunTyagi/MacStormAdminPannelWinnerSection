@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Play, Square, RefreshCw, Wifi, WifiOff, Clock, Calendar } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Play, Square, RefreshCw, Wifi, WifiOff, Clock, Calendar } from "lucide-react";
+import axiosInstance from "../utils/axios";
 
 const StreamManager = () => {
   const [streams, setStreams] = useState([]);
@@ -7,97 +8,69 @@ const StreamManager = () => {
   const [actionLoading, setActionLoading] = useState(null);
   const [error, setError] = useState(null);
 
-  const API_BASE = 'https://macstormbattle-backend-2.onrender.com/api';
-  const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU2NzEyMDYwLCJleHAiOjE3NTgwMDgwNjB9.0qoRhMSwvPSWP86N3LE6kTM5a9tBOVYG6bNeroI7Vv8';
-
+  // Fetch all streams
   const fetchStreams = async () => {
     try {
       setError(null);
-      const response = await fetch(`${API_BASE}/stream`, {
-        headers: {
-          'Authorization': `Bearer ${AUTH_TOKEN}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      setStreams(data.rows || []);
+      setLoading(true);
+
+      const response = await axiosInstance.get("/stream");
+      setStreams(response.data.rows || []);
     } catch (err) {
-      setError(`Failed to fetch streams: ${err.message}`);
+      console.error("Failed to fetch streams:", err);
+      setError(
+        err.response?.data?.message || `Failed to fetch streams: ${err.message}`
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // Start new stream
   const handleStartStream = async () => {
-    setActionLoading('start');
+    setActionLoading("start");
     try {
-      const response = await fetch(`${API_BASE}/stream/start`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${AUTH_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({})
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      await fetchStreams(); // Refresh the list
+      await axiosInstance.post("/stream/start", {});
+      await fetchStreams();
     } catch (err) {
-      setError(`Failed to start stream: ${err.message}`);
+      console.error("Failed to start stream:", err);
+      setError(
+        err.response?.data?.message || `Failed to start stream: ${err.message}`
+      );
     } finally {
       setActionLoading(null);
     }
   };
 
+  // Stop stream
   const handleStopStream = async (streamKey) => {
     setActionLoading(streamKey);
     try {
-      console.log('Attempting to stop stream with key:', streamKey);
-      
-      const response = await fetch(`${API_BASE}/stream/stop`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${AUTH_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ streamKey })
-      });
+      const response = await axiosInstance.post("/stream/stop", { streamKey });
+      console.log("Stop stream response:", response.data);
 
-      const responseData = await response.json();
-      console.log('Stop stream response:', responseData);
-
-      if (!response.ok) {
-        const errorMessage = responseData.error || `HTTP error! status: ${response.status}`;
-        throw new Error(errorMessage);
-      }
-
-      await fetchStreams(); // Refresh the list
-      setError(null); // Clear any previous errors
+      await fetchStreams();
+      setError(null);
     } catch (err) {
-      console.error('Stop stream error:', err);
-      setError(`Failed to stop stream: ${err.message}`);
+      console.error("Stop stream error:", err);
+      setError(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          `Failed to stop stream: ${err.message}`
+      );
     } finally {
       setActionLoading(null);
     }
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+  const formatDate = (dateString) =>
+    new Date(dateString).toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
-  };
 
   const calculateDuration = (startDate, endDate) => {
     const start = new Date(startDate);
@@ -105,24 +78,24 @@ const StreamManager = () => {
     const diffMs = end - start;
     const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
     const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    
-    if (diffHrs > 0) {
-      return `${diffHrs}h ${diffMins}m`;
-    }
+
+    if (diffHrs > 0) return `${diffHrs}h ${diffMins}m`;
     return `${diffMins}m`;
   };
 
-  const getStatusColor = (status) => {
-    return status === 'live' 
-      ? 'bg-green-100 text-green-800 border-green-300' 
-      : 'bg-red-200 text-red-900 border-red-300';
-  };
+  const getStatusColor = (status) =>
+    status === "live"
+      ? "bg-green-100 text-green-800 border-green-300"
+      : "bg-red-200 text-red-900 border-red-300";
 
-  const getStatusIcon = (status) => {
-    return status === 'live' ? <Wifi className="w-4 h-4" /> : <WifiOff className="w-4 h-4" />;
-  };
+  const getStatusIcon = (status) =>
+    status === "live" ? (
+      <Wifi className="w-4 h-4" />
+    ) : (
+      <WifiOff className="w-4 h-4" />
+    );
 
-  const hasLiveStream = streams.some(stream => stream.status === 'live');
+  const hasLiveStream = streams.some((stream) => stream.status === "live");
 
   useEffect(() => {
     fetchStreams();
@@ -149,7 +122,9 @@ const StreamManager = () => {
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
             Stream Management Dashboard
           </h1>
-          <p className="text-gray-600">Manage your live streams and view streaming history</p>
+          <p className="text-gray-600">
+            Manage your live streams and view streaming history
+          </p>
         </div>
 
         {/* Error Display */}
@@ -157,31 +132,32 @@ const StreamManager = () => {
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-start">
               <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                <svg
+                  className="h-5 w-5 text-red-400"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </div>
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-red-800">Error</h3>
                 <p className="mt-1 text-sm text-red-700">{error}</p>
-                {error.includes("Stream not found or not yours") && (
-                  <div className="mt-2 text-xs text-red-600">
-                    <p><strong>Possible causes:</strong></p>
-                    <ul className="list-disc list-inside mt-1 space-y-1">
-                      <li>The stream may have already ended automatically</li>
-                      <li>Authorization token may not match the stream owner</li>
-                      <li>Stream key format might be incorrect</li>
-                    </ul>
-                    <p className="mt-2"><strong>Try:</strong> Refreshing the stream list to see current status</p>
-                  </div>
-                )}
               </div>
-              <button 
+              <button
                 onClick={() => setError(null)}
                 className="ml-auto flex-shrink-0 text-red-400 hover:text-red-600"
               >
                 <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </button>
             </div>
@@ -192,19 +168,19 @@ const StreamManager = () => {
         <div className="mb-8 flex flex-col sm:flex-row gap-4">
           <button
             onClick={handleStartStream}
-            disabled={hasLiveStream || actionLoading === 'start'}
+            disabled={actionLoading === "start"}
             className={`flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-all ${
-              hasLiveStream || actionLoading === 'start'
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5'
+              hasLiveStream || actionLoading === "start"
+                ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                : "bg-green-600 hover:bg-green-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             }`}
           >
-            {actionLoading === 'start' ? (
+            {actionLoading === "start" ? (
               <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
             ) : (
               <Play className="w-5 h-5 mr-2" />
             )}
-            {actionLoading === 'start' ? 'Starting...' : 'Start New Stream'}
+            {actionLoading === "start" ? "Starting..." : "Start New Stream"}
           </button>
 
           <button
@@ -212,7 +188,7 @@ const StreamManager = () => {
             disabled={loading}
             className="flex items-center justify-center px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
           >
-            <RefreshCw className={`w-5 h-5 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-5 h-5 mr-2 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </button>
         </div>
@@ -224,11 +200,14 @@ const StreamManager = () => {
               key={stream.id}
               className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
             >
-                  
               {/* Card Header */}
               <div className="p-6 border-b border-gray-100">
                 <div className="flex items-center justify-between mb-4">
-                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(stream.status)}`}>
+                  <div
+                    className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(
+                      stream.status
+                    )}`}
+                  >
                     {getStatusIcon(stream.status)}
                     <span className="ml-1 capitalize">{stream.status}</span>
                   </div>
@@ -238,15 +217,15 @@ const StreamManager = () => {
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   Stream #{stream.id}
                 </h3>
-                
+
                 <div className="text-sm text-gray-600 break-all bg-gray-50 p-2 rounded mb-3">
                   <strong>Stream Key:</strong> {stream.streamKey}
                 </div>
-                
+
                 <div className="text-sm text-gray-600 break-all bg-gray-50 p-2 rounded mb-3">
                   <strong>RTMP URL:</strong> rtmp://localhost/live/{stream.streamKey}
                 </div>
-                
+
                 <div className="text-sm text-gray-600 break-all bg-gray-50 p-2 rounded">
                   <strong>HLS URL:</strong> http://localhost:8080/hls/{stream.streamKey}.m3u8
                 </div>
@@ -273,7 +252,7 @@ const StreamManager = () => {
                   </span>
                 </div>
 
-                {stream.status === 'live' && (
+                {stream.status === "live" && (
                   <button
                     onClick={() => handleStopStream(stream.streamKey)}
                     disabled={actionLoading === stream.streamKey}
@@ -284,7 +263,7 @@ const StreamManager = () => {
                     ) : (
                       <Square className="w-4 h-4 mr-2" />
                     )}
-                    {actionLoading === stream.streamKey ? 'Stopping...' : 'Stop Stream'}
+                    {actionLoading === stream.streamKey ? "Stopping..." : "Stop Stream"}
                   </button>
                 )}
               </div>
@@ -296,11 +275,15 @@ const StreamManager = () => {
         {streams.length === 0 && !loading && (
           <div className="text-center py-16">
             <WifiOff className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No streams found</h3>
-            <p className="text-gray-600 mb-6">Start your first stream to get started</p>
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              No streams found
+            </h3>
+            <p className="text-gray-600 mb-6">
+              Start your first stream to get started
+            </p>
             <button
               onClick={handleStartStream}
-              disabled={actionLoading === 'start'}
+              // disabled={actionLoading === "start"}
               className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-xl"
             >
               <Play className="w-5 h-5 mr-2" />
@@ -312,7 +295,9 @@ const StreamManager = () => {
         {/* Stats Footer */}
         {streams.length > 0 && (
           <div className="mt-12 bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Stream Statistics</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Stream Statistics
+            </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div className="p-4 bg-blue-50 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">{streams.length}</div>
@@ -320,13 +305,13 @@ const StreamManager = () => {
               </div>
               <div className="p-4 bg-green-50 rounded-lg">
                 <div className="text-2xl font-bold text-green-600">
-                  {streams.filter(s => s.status === 'live').length}
+                  {streams.filter((s) => s.status === "live").length}
                 </div>
                 <div className="text-sm text-green-800">Live Streams</div>
               </div>
               <div className="p-4 bg-gray-50 rounded-lg">
                 <div className="text-2xl font-bold text-gray-600">
-                  {streams.filter(s => s.status === 'ended').length}
+                  {streams.filter((s) => s.status === "ended").length}
                 </div>
                 <div className="text-sm text-gray-800">Ended Streams</div>
               </div>

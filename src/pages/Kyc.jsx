@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useContext } from "react"
 import {
   Table,
   TableBody,
@@ -19,7 +19,6 @@ import {
   MenuItem,
   Snackbar,
   Alert,
-  useTheme,
   useMediaQuery,
   Card,
   CardContent,
@@ -28,6 +27,8 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  createTheme,
+  ThemeProvider,
 } from "@mui/material"
 import MoreVertIcon from "@mui/icons-material/MoreVert"
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline"
@@ -36,6 +37,8 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore"
 import EmailIcon from "@mui/icons-material/Email"
 import PhoneIcon from "@mui/icons-material/Phone"
 import HomeIcon from "@mui/icons-material/Home"
+import axiosInstance from "../utils/axios"
+import ThemeContext from '../contexts/ThemeContext' // Import your theme context
 
 export default function KycTable() {
   const [kycData, setKycData] = useState([])
@@ -48,19 +51,46 @@ export default function KycTable() {
   const [snackbarSeverity, setSnackbarSeverity] = useState("success")
   const [updatingId, setUpdatingId] = useState(null)
 
-  const theme = useTheme()
+  // Get dark mode from your context
+  const { darkMode } = useContext(ThemeContext)
+  
+  // Create MUI theme based on your dark mode context
+  const theme = createTheme({
+    palette: {
+      mode: darkMode ? 'dark' : 'light',
+      ...(darkMode
+        ? {
+            // Dark theme colors
+            background: {
+              default: '#121212',
+              paper: '#1e1e1e',
+            },
+            text: {
+              primary: '#ffffff',
+              secondary: '#b0b0b0',
+            },
+          }
+        : {
+            // Light theme colors  
+            background: {
+              default: '#fafafa',
+              paper: '#ffffff',
+            },
+            text: {
+              primary: '#000000',
+              secondary: '#666666',
+            },
+          }),
+    },
+  })
+
   const isMobile = useMediaQuery(theme.breakpoints.down('md'))
 
   const fetchKycData = async () => {
     setLoading(true)
     try {
-      const response = await fetch("https://macstormbattle-backend.onrender.com/api/userkyc/all")
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      const result = await response.json()
-      
-      // Sort by ID in ascending order
+      const response = await axiosInstance.get("/userkyc/all")
+      const result = await response.data;
       const sortedData = result.data.sort((a, b) => a.id - b.id)
       setKycData(sortedData)
     } catch (err) {
@@ -94,19 +124,7 @@ export default function KycTable() {
     setUpdatingId(selectedKycId)
 
     try {
-      const response = await fetch(`https://macstormbattle-backend.onrender.com/api/userkyc/status/${selectedKycId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
-      }
-
+       const response = await axiosInstance.put(`/userkyc/status/${selectedKycId}`, { status });
       setSnackbarMessage(`KYC status updated to '${status}' successfully!`)
       setSnackbarSeverity("success")
       setSnackbarOpen(true)
@@ -127,7 +145,6 @@ export default function KycTable() {
     setSnackbarOpen(false)
   }
 
-  // Mobile Card Component (only used on mobile)
   const MobileKycCard = ({ kyc }) => (
     <Card sx={{ mb: 2, borderRadius: 0 }}>
       <CardContent sx={{ pb: 1 }}>
@@ -228,277 +245,196 @@ export default function KycTable() {
 
   if (loading) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "64vh",
-        }}
-      >
-        <CircularProgress color="primary" />
-        <Typography variant="h6" color="text.secondary" sx={{ mt: 2 }}>
-          Loading KYC data...
-        </Typography>
-      </Box>
+      <ThemeProvider theme={theme}>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "64vh",
+            bgcolor: theme.palette.background.default,
+          }}
+        >
+          <CircularProgress color="primary" />
+          <Typography variant="h6" color="text.secondary" sx={{ mt: 2 }}>
+            Loading KYC data...
+          </Typography>
+        </Box>
+      </ThemeProvider>
     )
   }
 
   if (error && kycData.length === 0) {
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "64vh",
-          color: "error.main",
-        }}
-      >
-        <Typography variant="h6">Error: {error}</Typography>
-      </Box>
+      <ThemeProvider theme={theme}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "64vh",
+            color: "error.main",
+            bgcolor: theme.palette.background.default,
+          }}
+        >
+          <Typography variant="h6">Error: {error}</Typography>
+        </Box>
+      </ThemeProvider>
     )
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Paper
-        elevation={6}
-        sx={{
-          borderRadius: 0,
-          overflow: "hidden",
-          p: { xs: 1, sm: 2, md: 3 },
-          bgcolor: theme.palette.background.paper,
-        }}
-      >
-        <Typography
-          variant="h4"
-          component="h2"
-          gutterBottom
-          sx={{ mb: 3, fontWeight: 600, color: theme.palette.text.primary }}
-        >
-          User KYC Applications
-        </Typography>
-
-        {/* Show Mobile Cards only on mobile */}
-        {isMobile ? (
-          <Box>
-            {kycData.map((kyc) => (
-              <MobileKycCard key={kyc.id} kyc={kyc} />
-            ))}
-          </Box>
-        ) : (
-          /* Keep original table for desktop */
-          <TableContainer
+    <ThemeProvider theme={theme}>
+      <Box sx={{ bgcolor: theme.palette.background.default, minHeight: '100vh' }}>
+        <Container maxWidth="lg" sx={{ pt: 4, pb: 4 }}>
+          <Paper
+            elevation={6}
             sx={{
-              maxHeight: "calc(100vh - 200px)",
-              overflowX: "auto",
-              border: `1px solid ${theme.palette.divider}`,
               borderRadius: 0,
+              overflow: "hidden",
+              p: { xs: 1, sm: 2, md: 3 },
+              bgcolor: theme.palette.background.paper,
             }}
           >
-            <Table stickyHeader aria-label="KYC data table">
-              <TableHead>
-                <TableRow>
-                  <TableCell
-                    sx={{
-                      minWidth: 50,
-                      fontWeight: 700,
-                      bgcolor: theme.palette.grey[100],
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    ID
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      minWidth: 120,
-                      fontWeight: 700,
-                      bgcolor: theme.palette.grey[100],
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    User Name
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      minWidth: 150,
-                      fontWeight: 700,
-                      bgcolor: theme.palette.grey[100],
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    Email
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      minWidth: 100,
-                      fontWeight: 700,
-                      bgcolor: theme.palette.grey[100],
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    Phone
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      minWidth: 200,
-                      fontWeight: 700,
-                      bgcolor: theme.palette.grey[100],
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    Address
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      minWidth: 120,
-                      fontWeight: 700,
-                      bgcolor: theme.palette.grey[100],
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    Aadhaar
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      minWidth: 100,
-                      fontWeight: 700,
-                      bgcolor: theme.palette.grey[100],
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    PAN
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      minWidth: 150,
-                      fontWeight: 700,
-                      bgcolor: theme.palette.grey[100],
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    Driving License
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      minWidth: 100,
-                      fontWeight: 700,
-                      bgcolor: theme.palette.grey[100],
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    Voter ID
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      minWidth: 100,
-                      fontWeight: 700,
-                      bgcolor: theme.palette.grey[100],
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    Status
-                  </TableCell>
-                  <TableCell
-                    align="right"
-                    sx={{
-                      minWidth: 100,
-                      fontWeight: 700,
-                      bgcolor: theme.palette.grey[100],
-                      color: theme.palette.text.secondary,
-                    }}
-                  >
-                    Actions
-                  </TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
+            <Typography
+              variant="h4"
+              component="h2"
+              gutterBottom
+              sx={{ mb: 3, fontWeight: 600, color: theme.palette.text.primary }}
+            >
+              User KYC Applications
+            </Typography>
+
+            {isMobile ? (
+              <Box>
                 {kycData.map((kyc) => (
-                  <TableRow
-                    key={kyc.id}
-                    sx={{
-                      "&:last-child td, &:last-child th": { border: 0 },
-                      "&:hover": {
-                        bgcolor: theme.palette.action.hover,
-                      },
-                    }}
-                  >
-                    <TableCell component="th" scope="row">
-                      {kyc.id}
-                    </TableCell>
-                    <TableCell>{kyc.user_name}</TableCell>
-                    <TableCell>{kyc.email}</TableCell>
-                    <TableCell>{kyc.phone}</TableCell>
-                    <TableCell>{kyc.address}</TableCell>
-                    <TableCell>{kyc.aadhaar_card_number || "N/A"}</TableCell>
-                    <TableCell>{kyc.pan_card_number || "N/A"}</TableCell>
-                    <TableCell>{kyc.driving_license_number || "N/A"}</TableCell>
-                    <TableCell>{kyc.voter_id_number || "N/A"}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={kyc.status}
-                        color={kyc.status === "approved" ? "success" : kyc.status === "rejected" ? "error" : "warning"}
-                        size="small"
-                        sx={{ borderRadius: 0 }}
-                      />
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        aria-label="more"
-                        aria-controls={`actions-menu-${kyc.id}`}
-                        aria-haspopup="true"
-                        onClick={(event) => handleMenuClick(event, kyc.id)}
-                        disabled={updatingId === kyc.id}
-                        color="primary"
-                      >
-                        {updatingId === kyc.id ? <CircularProgress size={24} /> : <MoreVertIcon />}
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
+                  <MobileKycCard key={kyc.id} kyc={kyc} />
                 ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+              </Box>
+            ) : (
+              <TableContainer
+                sx={{
+                  maxHeight: "calc(100vh - 200px)",
+                  overflowX: "auto",
+                  border: `1px solid ${theme.palette.divider}`,
+                  borderRadius: 0,
+                }}
+              >
+                <Table stickyHeader aria-label="KYC data table">
+                  <TableHead>
+                    <TableRow>
+                      {[
+                        { label: 'ID', minWidth: 50 },
+                        { label: 'User Name', minWidth: 120 },
+                        { label: 'Email', minWidth: 150 },
+                        { label: 'Phone', minWidth: 100 },
+                        { label: 'Address', minWidth: 200 },
+                        { label: 'Aadhaar', minWidth: 120 },
+                        { label: 'PAN', minWidth: 100 },
+                        { label: 'Driving License', minWidth: 150 },
+                        { label: 'Voter ID', minWidth: 100 },
+                        { label: 'Status', minWidth: 100 },
+                        { label: 'Actions', minWidth: 100, align: 'right' },
+                      ].map((column) => (
+                        <TableCell
+                          key={column.label}
+                          align={column.align || 'left'}
+                          sx={{
+                            minWidth: column.minWidth,
+                            fontWeight: 700,
+                            bgcolor: darkMode ? '#2d2d2d' : theme.palette.grey[100],
+                            color: theme.palette.text.secondary,
+                          }}
+                        >
+                          {column.label}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {kycData.map((kyc) => (
+                      <TableRow
+                        key={kyc.id}
+                        sx={{
+                          "&:last-child td, &:last-child th": { border: 0 },
+                          "&:hover": {
+                            bgcolor: darkMode ? '#2a2a2a' : theme.palette.action.hover,
+                          },
+                        }}
+                      >
+                        <TableCell component="th" scope="row">{kyc.id}</TableCell>
+                        <TableCell>{kyc.user_name}</TableCell>
+                        <TableCell>{kyc.email}</TableCell>
+                        <TableCell>{kyc.phone}</TableCell>
+                        <TableCell>{kyc.address}</TableCell>
+                        <TableCell>{kyc.aadhaar_card_number || "N/A"}</TableCell>
+                        <TableCell>{kyc.pan_card_number || "N/A"}</TableCell>
+                        <TableCell>{kyc.driving_license_number || "N/A"}</TableCell>
+                        <TableCell>{kyc.voter_id_number || "N/A"}</TableCell>
+                        <TableCell>
+                          <Chip
+                            label={kyc.status}
+                            color={kyc.status === "approved" ? "success" : kyc.status === "rejected" ? "error" : "warning"}
+                            size="small"
+                            sx={{ borderRadius: 0 }}
+                          />
+                        </TableCell>
+                        <TableCell align="right">
+                          <IconButton
+                            aria-label="more"
+                            onClick={(event) => handleMenuClick(event, kyc.id)}
+                            disabled={updatingId === kyc.id}
+                            color="primary"
+                          >
+                            {updatingId === kyc.id ? <CircularProgress size={24} /> : <MoreVertIcon />}
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
 
-        {/* Action Menu */}
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-          MenuListProps={{
-            "aria-labelledby": "basic-button",
-          }}
-          PaperProps={{
-            sx: {
-              borderRadius: 0,
-              boxShadow: theme.shadows[3],
-            },
-          }}
-        >
-          <MenuItem onClick={() => handleStatusUpdate("approved")}>
-            <CheckCircleOutlineIcon fontSize="small" sx={{ mr: 1, color: theme.palette.success.main }} />
-            Approve
-          </MenuItem>
-          <MenuItem onClick={() => handleStatusUpdate("rejected")}>
-            <CancelOutlinedIcon fontSize="small" sx={{ mr: 1, color: theme.palette.error.main }} />
-            Reject
-          </MenuItem>
-        </Menu>
-      </Paper>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              MenuListProps={{
+                "aria-labelledby": "basic-button",
+              }}
+              PaperProps={{
+                sx: {
+                  borderRadius: 0,
+                  boxShadow: theme.shadows[3],
+                  bgcolor: theme.palette.background.paper,
+                },
+              }}
+            >
+              <MenuItem onClick={() => handleStatusUpdate("approved")}>
+                <CheckCircleOutlineIcon fontSize="small" sx={{ mr: 1, color: theme.palette.success.main }} />
+                Approve
+              </MenuItem>
+              <MenuItem onClick={() => handleStatusUpdate("rejected")}>
+                <CancelOutlinedIcon fontSize="small" sx={{ mr: 1, color: theme.palette.error.main }} />
+                Reject
+              </MenuItem>
+            </Menu>
+          </Paper>
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: "100%" }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Container>
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          >
+            <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: "100%" }}>
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
+        </Container>
+      </Box>
+    </ThemeProvider>
   )
 }

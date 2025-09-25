@@ -66,7 +66,9 @@ export default function AdminBonusPanel() {
       }
       
       const data = await response.json()
-      setBonuses(data)
+      // Sort by member_id to maintain consistent order
+      const sortedData = data.sort((a, b) => a.member_id - b.member_id)
+      setBonuses(sortedData)
     } catch (err) {
       setError('Failed to fetch bonuses: ' + err.message)
       toast.error('Failed to load bonuses!')
@@ -125,11 +127,29 @@ export default function AdminBonusPanel() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
+      const responseData = await response.json()
+      
+      // Find if user already exists in the list
+      const existingUserIndex = bonuses.findIndex(bonus => bonus.member_id === parseInt(formData.userId))
+      
+      if (existingUserIndex !== -1) {
+        // Update existing user in place
+        setBonuses(prevBonuses => {
+          const updatedBonuses = [...prevBonuses]
+          updatedBonuses[existingUserIndex] = {
+            ...updatedBonuses[existingUserIndex],
+            bonus_balance: parseFloat(formData.amount).toString()
+          }
+          return updatedBonuses
+        })
+      } else {
+        // Add new user - fetch fresh data to get the complete user info
+        await fetchBonuses()
+      }
+
       setFormData({ userId: '', amount: '' })
       toast.success('Bonus added successfully! 🎉')
       
-      // Refresh the bonuses list
-      await fetchBonuses()
     } catch (err) {
       toast.error('Failed to add bonus: ' + err.message)
       console.error('Add bonus error:', err)
@@ -168,16 +188,19 @@ export default function AdminBonusPanel() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
+      // Update the specific user in place without changing order
+      setBonuses(prevBonuses => 
+        prevBonuses.map(bonus => 
+          bonus.member_id === editingBonus.userId 
+            ? { ...bonus, bonus_balance: editingBonus.amount.toString() }
+            : bonus
+        )
+      )
+
       setOpenEditDialog(false)
       setEditingBonus(null)
       toast.success('Bonus updated successfully! ✅')
       
-      // Refresh the bonuses list without resetting pagination
-      const response2 = await fetch(`${API_BASE_URL}/all`)
-      if (response2.ok) {
-        const data = await response2.json()
-        setBonuses(data)
-      }
     } catch (err) {
       toast.error('Failed to update bonus: ' + err.message)
       console.error('Update bonus error:', err)
@@ -202,20 +225,21 @@ export default function AdminBonusPanel() {
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
       }
 
-      toast.success('Bonus deleted successfully! 🗑')
-      
-      // Refresh the bonuses list without resetting pagination
-      const response2 = await fetch(`${API_BASE_URL}/all`)
-      if (response2.ok) {
-        const data = await response2.json()
-        setBonuses(data)
+      // Remove the specific user from the current list without changing order of others
+      setBonuses(prevBonuses => {
+        const filteredBonuses = prevBonuses.filter(bonus => bonus.member_id !== memberId)
         
         // Adjust page if current page is now empty
-        const newTotalPages = Math.ceil(data.length / rowsPerPage)
+        const newTotalPages = Math.ceil(filteredBonuses.length / rowsPerPage)
         if (page >= newTotalPages && newTotalPages > 0) {
           setPage(newTotalPages - 1)
         }
-      }
+        
+        return filteredBonuses
+      })
+
+      toast.success('Bonus deleted successfully! 🗑')
+      
     } catch (err) {
       toast.error('Failed to delete bonus: ' + err.message)
       console.error('Delete bonus error:', err)
@@ -352,7 +376,7 @@ export default function AdminBonusPanel() {
                     label="User ID (Member ID)"
                     placeholder="Type or select member ID"
                     variant="outlined"
-                    helperText=" custom ID or select from existing users"
+                    helperText="Enter custom ID or select from existing users"
                   />
                 )}
                 renderOption={(props, option) => (

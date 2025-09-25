@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ArrowLeft, Trash2, Plus, ChevronDown, X } from "lucide-react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../utils/axios"
 
 const DEFAULT_WINNERS = [""];
 
@@ -35,28 +36,22 @@ export default function DuoContestForm() {
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
   const [showImagePreview, setShowImagePreview] = useState(false);
   
+  // Games state
+  const [games, setGames] = useState([]);
+  const [isLoadingGames, setIsLoadingGames] = useState(false);
+  
   const navigate = useNavigate();
 
-  // Fetch banner images from API
+  // Fetch banner images from API using axiosInstance
   useEffect(() => {
     const fetchBannerImages = async () => {
       setIsLoadingImages(true);
       try {
-        const response = await fetch("https://macstormbattle-backend.onrender.com/api/auth/admin/images", {
-          method: "GET",
-          headers: {
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0OTgxNDk5LCJleHAiOjE3NTYyNzc0OTl9.xPlZ7KmQNNYAux0BzumgoQ1GI3ESdvgMDXMfRx6F53Q",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch images: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (result.status === "success" && result.data) {
-          setBannerImages(result.data);
-          setFilteredImages(result.data);
+        const response = await axiosInstance.get("auth/admin/images");
+        
+        if (response.data.status === "success" && response.data.data) {
+          setBannerImages(response.data.data);
+          setFilteredImages(response.data.data);
         }
       } catch (error) {
         console.error("Error fetching banner images:", error);
@@ -67,6 +62,30 @@ export default function DuoContestForm() {
     };
 
     fetchBannerImages();
+  }, []);
+
+  // Fetch games using axiosInstance
+  useEffect(() => {
+    const fetchGames = async () => {
+      setIsLoadingGames(true);
+      try {
+        const response = await axiosInstance.get("auth/admin/games");
+        
+        if (response.data.status === "success") {
+          setGames(response.data.data);
+          if (response.data.data.length > 0) {
+            setGame(response.data.data[0].game_name); // default select first game
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch games:", error);
+        toast.error("Failed to load games");
+      } finally {
+        setIsLoadingGames(false);
+      }
+    };
+
+    fetchGames();
   }, []);
 
   // Handle image selection from dropdown
@@ -83,7 +102,7 @@ export default function DuoContestForm() {
     if (!searchTerm.trim()) {
       setFilteredImages(bannerImages);
       return;
-    }a
+    }
 
     const filtered = bannerImages.filter(image =>
       image.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -199,13 +218,16 @@ export default function DuoContestForm() {
     return Object.keys(e).length === 0;
   };
 
-  // Updated function to create distribution object with text values
-  const createDistributionObject = () => {
-    const distribution = {};
-    winners.forEach((winner, index) => {
-      distribution[String(index + 1)] = winner.prize || "";
+  // Build prize distribution in required format
+  const createDistributionArray = () => {
+    return winners.map((winner, index) => {
+      // for now assume everything is "item" type with reward text
+      return {
+        rank: index + 1,
+        prize_type: "item",      // you can later let admin choose cash/coupon/item
+        reward: winner.prize
+      };
     });
-    return distribution;
   };
 
   const formatScheduleForAPI = (scheduleString) => {
@@ -225,7 +247,8 @@ export default function DuoContestForm() {
         room_size: Number(roomSize),
         joining_fee: Number(fee),
         total_winners: Number(totalWinners),
-        distribution: createDistributionObject(), // Now sends text values
+        prize_pool: prizeDesc || "Prize pool not specified",
+        distribution: createDistributionArray(), // Now sends text values
         match_schedule: formatScheduleForAPI(schedule),
         game: game,
         team: "DUO",
@@ -239,23 +262,10 @@ export default function DuoContestForm() {
 
       console.log("Submitting payload:", payload);
 
-      const response = await fetch("https://macstormbattle-backend.onrender.com/api/duo-contests/create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjI5LCJyb2xlIjoiU3VwZXJBZG1pbiIsImlhdCI6MTc1NTgzOTc3MywiZXhwIjoxNzU3MTM1NzczfQ.l9VAdMTXZKtM-3V-ugrlb5X509eQeShddD_l-m1r3hQ",
-        },
-        body: JSON.stringify(payload),
-      });
+      // Use axiosInstance for the API call
+      const response = await axiosInstance.post("duo-contests/create", payload);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log("Contest created successfully:", result);
-
+      console.log("Contest created successfully:", response.data);
       toast.success("Contest created successfully!");
 
       // Reset form
@@ -263,7 +273,7 @@ export default function DuoContestForm() {
       setTotalWinners("");
       setRoomSize("");
       setFee("");
-      setGame("BGMI");
+      setGame(games.length > 0 ? games[0].game_name : "BGMI");
       setMap("Erangel");
       setSchedule("");
       setBannerUrl("");
@@ -281,39 +291,17 @@ export default function DuoContestForm() {
 
     } catch (error) {
       console.error("Error creating contest:", error);
-      toast.error(`Failed to create contest: ${error.message}`);
+      
+      // Handle axios error response
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "Failed to create contest";
+      
+      toast.error(`Failed to create contest: ${errorMessage}`);
     } finally {
       setIsSubmitting(false);
     }
   };
-const [games, setGames] = useState([]);
-const [isLoadingGames, setIsLoadingGames] = useState(false);
-
-useEffect(() => {
-  const fetchGames = async () => {
-    setIsLoadingGames(true);
-    try {
-      const res = await fetch("https://macstormbattle-backend-2.onrender.com/api/auth/admin/games", {
-        headers: {
-          "Authorization": "Bearer YOUR_ADMIN_TOKEN" // replace with actual token
-        }
-      });
-      const data = await res.json();
-      if (data.status === "success") {
-        setGames(data.data);
-        if (data.data.length > 0) {
-          setGame(data.data[0].game_name); // default select first game
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch games:", err);
-    } finally {
-      setIsLoadingGames(false);
-    }
-  };
-
-  fetchGames();
-}, []);
 
   return (
     <div className="min-h-screen">
@@ -366,28 +354,27 @@ useEffect(() => {
                 {errors.fee && <p className="text-xs text-red-600 mt-1">{errors.fee}</p>}
               </div>
 
-            <div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">Game *</label>
-  <select
-    value={game}
-    onChange={(e) => setGame(e.target.value)}
-    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-    disabled={isSubmitting || isLoadingGames}
-  >
-    {isLoadingGames ? (
-      <option>Loading games...</option>
-    ) : games.length > 0 ? (
-      games.map((g) => (
-        <option key={g.id} value={g.game_name}>
-          {g.game_name}
-        </option>
-      ))
-    ) : (
-      <option>No games available</option>
-    )}
-  </select>
-</div>
-
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Game *</label>
+                <select
+                  value={game}
+                  onChange={(e) => setGame(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  disabled={isSubmitting || isLoadingGames}
+                >
+                  {isLoadingGames ? (
+                    <option>Loading games...</option>
+                  ) : games.length > 0 ? (
+                    games.map((g) => (
+                      <option key={g.id} value={g.game_name}>
+                        {g.game_name}
+                      </option>
+                    ))
+                  ) : (
+                    <option>No games available</option>
+                  )}
+                </select>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Map *</label>
@@ -454,7 +441,7 @@ useEffect(() => {
               {errors.schedule && <p className="text-xs text-red-600 mt-1">{errors.schedule}</p>}
             </div>
 
-            {/* Updated Prize Distribution Section */}
+            {/* Prize Distribution Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
                 <label className="block text-sm font-medium text-gray-700">Prize Distribution</label>

@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react"
-import axios from "axios"
+import axiosInstance from "../../utils/axios"
 import {
   Box,
   Card,
@@ -54,7 +54,7 @@ const LegalDocuments = () => {
   useEffect(() => {
     const fetchDocuments = async () => {
       try {
-        const res = await axios.get("https://macstormbattle-backend.onrender.com/api/legal-docs")
+        const res = await axiosInstance.get("/legal-docs")
         const mappedDocs = res.data.map(doc => ({
           ...doc,
           lastUpdated: new Date(doc.updatedAt).toLocaleString(),
@@ -94,8 +94,8 @@ const LegalDocuments = () => {
         updatedBy: selectedDocument.updatedBy || "Admin", // You can modify this to get current user
       }
 
-      const res = await axios.put(
-        `https://macstormbattle-backend.onrender.com/api/legal-docs/${selectedDocument.id}`,
+      const res = await axiosInstance.put(
+        `/legal-docs/${selectedDocument.id}`,
         updateData
       )
 
@@ -157,7 +157,7 @@ const LegalDocuments = () => {
 
   const handleAddDocumentSubmit = async () => {
     try {
-      const res = await axios.post("https://macstormbattle-backend.onrender.com/api/legal-docs", newDocData)
+      const res = await axiosInstance.post("/legal-docs", newDocData)
       const newDoc = {
         ...res.data,
         lastUpdated: new Date().toLocaleString(),
@@ -186,7 +186,7 @@ const LegalDocuments = () => {
     setDeleteLoading(prev => ({ ...prev, [documentToDelete.id]: true }))
 
     try {
-      await axios.delete(`https://macstormbattle-backend.onrender.com/api/legal-docs/${documentToDelete.id}`)
+      await axiosInstance.delete(`/legal-docs/${documentToDelete.id}`)
       
       // Remove the document from local state
       setDocuments(prev => prev.filter(doc => doc.id !== documentToDelete.id))

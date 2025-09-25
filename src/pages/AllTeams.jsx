@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Edit, Trash2, Plus, Calendar, DollarSign, Users, CheckCircle, X, Save } from 'lucide-react';
 import axiosInstance from '../utils/axios';
+import {toast} from 'react-toastify';
 
 const TeamManagement = () => {
   const [teams, setTeams] = useState([]);
@@ -70,9 +71,10 @@ const TeamManagement = () => {
       await httpClient.delete(`${API_BASE}/${teamId}`);
       setTeams(teams.filter(team => team.id !== teamId));
       setShowDeleteModal(null);
+       toast.success('Team deleted successfully ');
       setError('');
     } catch (err) {
-      setError('Failed to delete team. Please try again.');
+       toast.error('Failed to delete team ');
       console.error('Error deleting team:', err);
     }
   };
@@ -84,9 +86,10 @@ const TeamManagement = () => {
         team.id === teamId ? { ...team, ...updatedData } : team
       ));
       setEditingTeam(null);
+      toast.success('Team updated successfully ');
       setError('');
     } catch (err) {
-      setError('Failed to update team. Please try again.');
+      toast.error('Failed to update team ');
       console.error('Error updating team:', err);
     }
   };

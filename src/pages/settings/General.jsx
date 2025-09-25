@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+
+
 import {
   Box,
   Card,
@@ -32,6 +33,7 @@ import {
   CheckCircle as CheckCircleIcon,
 } from "@mui/icons-material";
 import { useTheme, useMediaQuery } from "@mui/material";
+import axiosInstance from "../../utils/axios";
 
 export default function General() {
   const theme = useTheme();
@@ -56,9 +58,7 @@ export default function General() {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const response = await axios.get(
-          "https://macstormbattle-backend.onrender.com/api/general-settings"
-        );
+        const response = await axiosInstance.get("/general-settings");
         const data = response.data;
 
         setFormData({
@@ -105,14 +105,9 @@ export default function General() {
       };
 
       // Make POST request to save settings
-      const response = await axios.post(
-        "https://macstormbattle-backend.onrender.com/api/general-settings",
+      const response = await axiosInstance.post("/general-settings",
         postData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
+ 
       );
 
       console.log("Settings saved successfully:", response.data);

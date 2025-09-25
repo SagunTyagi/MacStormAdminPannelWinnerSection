@@ -23,6 +23,7 @@ import {
   Users,
   Trophy,
   Globe,
+  Wallet,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -72,7 +73,13 @@ const menuItems = [
       { label: "Games Registration", path: "/games-registation" },
       { label: "Registration Form Controls", path: "/registation-details" },
       { label: "Prize Distribution", path: "/prize-distribution" },
+     { label: "Rules&Regulations", path: "/rules-regulations" },
     ],
+  },
+  {
+    label: "Payment Gateway",
+    icon: Wallet,
+    path: "/payment-gateway",
   },
   {
     label: "Tournaments",
@@ -80,7 +87,7 @@ const menuItems = [
     submenuKey: "tournaments",
     subItems: [
       { label: "Add Tournaments", path: "/tournaments" },
-      { label: "All ", path: "/all-teams" },
+      // { label: "All ", path: "/all-teams" },
   ],
   },
 
@@ -97,15 +104,15 @@ const menuItems = [
     subItems: [
       { label: "All Games", path: "/games" },
       // { label: "Matches", path: "/matches" },
-      {
-        label: "Contest",
-        subItems: [
-          { label: "Solo Contests", path: "/solo" },
-          { label: "Duo Contests", path: "/duoContests" },
-          { label: "Squad Contests", path: "/squad" },
-          // { label: "Mega Contest", path: "/mega" },
-        ],
-      },
+      // {
+      //   label: "Contest",
+      //   subItems: [
+      //     { label: "Solo Contests", path: "/solo" },
+      //     { label: "Duo Contests", path: "/duoContests" },
+      //     { label: "Squad Contests", path: "/squad" },
+      //     // { label: "Mega Contest", path: "/mega" },
+      //   ],
+      // },
     ],
   },
 
@@ -119,12 +126,20 @@ const menuItems = [
     label: "Website",
     icon: Globe,
     submenuKey: "website",
-    subItems: [{ label: "Stats", path: "/website-stats" }],
+    subItems: [
+      { label: "Stats", path: "/website-stats" },
+      { label: "Conact Us", path: "/contactus" },
+    ],
   },
   {
     label: "Sponsor Ads",
     icon: Monitor,
     path: "/admin/ads",
+  },
+  {
+    label: "News & Blogs",
+    icon: ClipboardList,
+    path: "/blogs",
   },
   {
     label: "Problem Center",
@@ -158,6 +173,16 @@ const menuItems = [
     label: "Stream",
     icon: Radio,
     path: "/stream",
+  },
+  {
+    label: "Watch & Earn",
+    icon: Gift,
+    path: "/watch-earn",
+  },
+  {
+    label: "Ads Management",
+    icon: Gift,
+    path: "/ads-management",
   },
   {
     label: "App Settings",
@@ -280,7 +305,7 @@ const Sidebar = () => {
   return (
     <aside className=" overflow-y-auto w-64 bg-green-50 dark:bg-zinc-800 text-zinc-800 dark:text-white border-r dark:border-zinc-700 min-h-screen">
       <div className="p-4 text-2xl font-bold">
-        Battle <span className="text-green-600">Nation</span>{" "}
+        MacStorm <span className="text-green-600">Battle</span>{" "}
         <span className="text-green-800">Admin</span>
       </div>
       <nav className="px-4 space-y-3 my-2 text-sm">

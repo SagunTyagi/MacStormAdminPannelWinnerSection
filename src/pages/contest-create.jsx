@@ -1,30 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { ArrowLeft, Trash2, Plus, ChevronDown, X } from "lucide-react";
 import { toast } from "react-toastify";
-import { useNavigate, useParams } from "react-router-dom";
-import axiosInstance from "../utils/axios";
-import { formatAPIDate } from "../utils/dateUtils";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../utils/axios"
 
-const DEFAULT_WINNERS = [100];
+const DEFAULT_WINNERS = [""];
 
 export default function ContestCreate() {
   const [eventName, setEventName] = useState("");
+  const [totalWinners, setTotalWinners] = useState("");
+  const [roomSize, setRoomSize] = useState("");
   const [fee, setFee] = useState("");
   const [game, setGame] = useState("BGMI");
   const [map, setMap] = useState("Erangel");
   const [schedule, setSchedule] = useState("");
-  const [roomSize, setRoomSize] = useState("");
-  const [totalWinners, setTotalWinners] = useState("");
   const [bannerUrl, setBannerUrl] = useState("");
   const [description, setDescription] = useState("");
   const [sponsor, setSponsor] = useState("");
   const [prizeDesc, setPrizeDesc] = useState("");
-  const [privateDesc, setPrivateDesc] = useState("");
-  const [team, setTeam] = useState("");
-  const [errors, setErrors] = useState({});
+  const [matchPrivateDesc, setMatchPrivateDesc] = useState("");
   const [winners, setWinners] = useState(
-    DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, percent: p, rank: (i + 1).toString() }))
+    DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, prize: p }))
   );
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // New states for banner images
   const [bannerImages, setBannerImages] = useState([]);
@@ -37,32 +36,22 @@ export default function ContestCreate() {
   const [selectedImageUrl, setSelectedImageUrl] = useState("");
   const [showImagePreview, setShowImagePreview] = useState(false);
   
+  // Games state
+  const [games, setGames] = useState([]);
+  const [isLoadingGames, setIsLoadingGames] = useState(false);
+  
   const navigate = useNavigate();
-  const { id } = useParams();
-  const isEditMode = !!id;
 
-  const totalPercent = winners.reduce((s, w) => s + Number(w.percent || 0), 0);
-
-  // Fetch banner images from API
+  // Fetch banner images from API using axiosInstance
   useEffect(() => {
     const fetchBannerImages = async () => {
       setIsLoadingImages(true);
       try {
-        const response = await fetch("https://macstormbattle-backend.onrender.com/api/auth/admin/images", {
-          method: "GET",
-          headers: {
-            "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU0OTgxNDk5LCJleHAiOjE3NTYyNzc0OTl9.xPlZ7KmQNNYAux0BzumgoQ1GI3ESdvgMDXMfRx6F53Q",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to fetch images: ${response.status}`);
-        }
-
-        const result = await response.json();
-        if (result.status === "success" && result.data) {
-          setBannerImages(result.data);
-          setFilteredImages(result.data);
+        const response = await axiosInstance.get("auth/admin/images");
+        
+        if (response.data.status === "success" && response.data.data) {
+          setBannerImages(response.data.data);
+          setFilteredImages(response.data.data);
         }
       } catch (error) {
         console.error("Error fetching banner images:", error);
@@ -73,6 +62,30 @@ export default function ContestCreate() {
     };
 
     fetchBannerImages();
+  }, []);
+
+  // Fetch games using axiosInstance
+  useEffect(() => {
+    const fetchGames = async () => {
+      setIsLoadingGames(true);
+      try {
+        const response = await axiosInstance.get("auth/admin/games");
+        
+        if (response.data.status === "success") {
+          setGames(response.data.data);
+          if (response.data.data.length > 0) {
+            setGame(response.data.data[0].game_name); // default select first game
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch games:", error);
+        toast.error("Failed to load games");
+      } finally {
+        setIsLoadingGames(false);
+      }
+    };
+
+    fetchGames();
   }, []);
 
   // Handle image selection from dropdown
@@ -142,195 +155,153 @@ export default function ContestCreate() {
     };
   }, []);
 
-  // helper to update a winner's percent or rank
-  const updateWinner = (index, field, value) => {
+  // Update winners array based on total winners count
+  const updateWinnersCount = (count) => {
+    const numCount = parseInt(count) || 0;
+    if (numCount === winners.length) return;
+
+    if (numCount > winners.length) {
+      const newWinners = [...winners];
+      for (let i = winners.length; i < numCount; i++) {
+        newWinners.push({ id: Date.now() + i, prize: "" });
+      }
+      setWinners(newWinners);
+    } else if (numCount < winners.length && numCount > 0) {
+      setWinners(winners.slice(0, numCount));
+    } else if (numCount === 0) {
+      setWinners([]);
+    }
+  };
+
+  // Helper to update a winner's prize text
+  const updateWinner = (index, value) => {
     setWinners((prev) => {
       const copy = [...prev];
-      if (field === 'percent') {
-        const v = value === "" ? "" : Math.max(0, Math.min(100, Number(value)));
-        copy[index] = { ...copy[index], percent: v };
-      } else if (field === 'rank') {
-        copy[index] = { ...copy[index], rank: value };
-      }
+      copy[index] = { ...copy[index], prize: value };
       return copy;
     });
   };
 
   const addWinner = () => {
-    setWinners((prev) => [...prev, { id: Date.now(), percent: 0, rank: "" }]);
+    setWinners((prev) => [...prev, { id: Date.now(), prize: "" }]);
+    setTotalWinners(String(winners.length + 1));
   };
 
   const removeWinner = (index) => {
     setWinners((prev) => prev.filter((_, i) => i !== index));
+    setTotalWinners(String(Math.max(0, winners.length - 1)));
   };
 
   const validate = () => {
     const e = {};
     if (!eventName.trim()) e.eventName = "Event name required";
+    if (!totalWinners.trim()) e.totalWinners = "Total winners required";
+    if (isNaN(totalWinners) || Number(totalWinners) <= 0)
+      e.totalWinners = "Total winners must be a positive number";
+
+    if (!roomSize.trim()) e.roomSize = "Room size required";
+    if (isNaN(roomSize) || Number(roomSize) <= 0)
+      e.roomSize = "Room size must be a positive number";
+    
     if (!fee || Number(fee) <= 0) e.fee = "Joining fee must be > 0";
     if (!schedule) e.schedule = "Match schedule required";
-    if (!roomSize || Number(roomSize) < 8 || Number(roomSize) > 100)
-      e.roomSize = "Room size must be between 8 and 100";
     if (winners.length === 0) e.winners = "At least one winner required";
-    if (totalPercent !== 100) e.total = "Prize distribution total must be 100%";
+    
+    // Updated validation for text-based prizes
     winners.forEach((w, i) => {
-      if (w.percent === "" || isNaN(w.percent)) e[`w_${i}`] = "Enter a number";
-      else if (w.percent < 0 || w.percent > 100)
-        e[`w_${i}`] = "Value must be between 0 and 100";
+      if (!w.prize || w.prize.trim() === "") {
+        e[`w_${i}`] = "Prize description required";
+      }
     });
+    
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  // Auto-generate winners array when totalWinners changes
-  // useEffect(() => {
-  //   const count = Number(totalWinners);
-  //   if (!count || count <= 0) return;
-  //   setWinners((prev) => {
-  //     const newArr = [];
-  //     for (let i = 0; i < count; i++) {
-  //       newArr.push({
-  //         id: prev[i]?.id || Date.now() + i,
-  //         percent: prev[i]?.percent || 0,
-  //         rank: prev[i]?.rank || (i + 1).toString(),
-  //       });
-  //     }
-  //     return newArr;
-  //   });
-  // }, [totalWinners]);
-useEffect(() => {
-  const count = Number(totalWinners);
-  if (!count || count <= 0) return;
+  // Build prize distribution in required format
+  const createDistributionArray = () => {
+    return winners.map((winner, index) => {
+      // for now assume everything is "item" type with reward text
+      return {
+        rank: index + 1,
+        prize_type: "item",      // you can later let admin choose cash/coupon/item
+        reward: winner.prize
+      };
+    });
+  };
 
-  setWinners((prev) =>
-    Array.from({ length: count }, (_, i) => ({
-      id: prev[i]?.id ?? Date.now() + i,
-      percent: prev[i]?.percent ?? 0,
-      rank: prev[i]?.rank ?? (i + 1).toString(),
-    }))
-  );
-}, [totalWinners]);
-
-
-
-
-
-  // Load for edit mode
-  useEffect(() => {
-    if (!isEditMode) return;
-    const fetchData = async () => {
-      try {
-        const [contestRes, prizeRes] = await Promise.all([
-          fetch(`https://macstormbattle-backend.onrender.com/api/contest/${id}`),
-          fetch(`https://macstormbattle-backend.onrender.com/api/prize/${id}`),
-        ]);
-        if (!contestRes.ok || !prizeRes.ok) throw new Error("Failed to load contest data");
-        const contestData = await contestRes.json();
-        const prizeData = await prizeRes.json();
-        setEventName(contestData.event_name || "");
-        setFee(contestData.joining_fee || "");
-        setGame(contestData.game || "BGMI");
-        setMap(contestData.map || "Erangel");
-        setSchedule(contestData.match_schedule ? contestData.match_schedule.slice(0, 16) : "");
-        setRoomSize(contestData.room_size || "");
-        setTotalWinners(contestData.total_winners || "");
-        setBannerUrl(contestData.banner_image_url || "");
-        setDescription(contestData.match_description || "");
-        setSponsor(contestData.match_sponsor || "");
-        setPrizeDesc(contestData.prize_description || "");
-        setPrivateDesc(contestData.match_private_description || "");
-        setTeam(contestData.team || "");
-        
-        // Set banner image display if URL exists
-        if (contestData.banner_image_url) {
-          const matchingImage = bannerImages.find(img => img.imageUrl === contestData.banner_image_url);
-          if (matchingImage) {
-            setSelectedImageTitle(matchingImage.title);
-            setSelectedImageUrl(matchingImage.imageUrl);
-            setShowImagePreview(true);
-          }
-        }
-        
-        setWinners(
-          (prizeData || []).map((p, i) => ({
-            id: Date.now() + i,
-            percent: p.percentage,
-            rank: p.rank,
-          }))
-        );
-      } catch (err) {
-        toast.error(err.message || "Failed to load contest data");
-        navigate("/solo");
-      }
-    };
-    fetchData();
-    // eslint-disable-next-line
-  }, [isEditMode, id, bannerImages]);
+  const formatScheduleForAPI = (scheduleString) => {
+    const date = new Date(scheduleString);
+    return date.toISOString();
+  };
 
   const handleSubmit = async (ev) => {
     ev.preventDefault();
     if (!validate()) return;
 
-    const payload = {
-      event_name: eventName,
-      room_size: Number(roomSize),
-      joining_fee: Number(fee),
-      total_winners: winners.length,
-      distribution: winners.reduce((acc, w, idx) => {
-        acc[w.rank && w.rank.trim() ? w.rank.trim() : (idx + 1).toString()] = Number(w.percent);
-        return acc;
-      }, {}),
-      match_schedule: formatAPIDate(schedule),
-      game,
-      team: team || "SQUAD",
-      map: map.toUpperCase(),
-      banner_image_url: bannerUrl || null,
-      prize_description: prizeDesc,
-      match_sponsor: sponsor,
-      match_description: description,
-      match_private_description: privateDesc,
-    };
+    setIsSubmitting(true);
 
     try {
-      if (isEditMode) {
-        await axiosInstance.patch(`/contest/${id}/edit`, payload, {
-          headers: { "Content-Type": "application/json" },
-        });
-        toast.success("Contest updated successfully!");
-      } else {
-        await axiosInstance.post("/contest/create", payload, {
-          headers: { "Content-Type": "application/json" },
-        });
-        toast.success("Contest created successfully!");
-      }
+      const payload = {
+        event_name: eventName,
+        room_size: Number(roomSize),
+        joining_fee: Number(fee),
+        total_winners: Number(totalWinners),
+        prize_pool: prizeDesc || "Prize pool not specified",
+        distribution: createDistributionArray(), // Now sends text values
+        match_schedule: formatScheduleForAPI(schedule),
+        game: game,
+        team: "SOLO",
+        map: map.toUpperCase(),
+        banner_image_url: bannerUrl || null,
+        prize_description: prizeDesc || null,
+        match_sponsor: sponsor || null,
+        match_description: description || null,
+        match_private_description: matchPrivateDesc || null
+      };
+
+      console.log("Submitting payload:", payload);
+
+      // Use axiosInstance for the API call
+      const response = await axiosInstance.post("/contest/create", payload);
+
+      console.log("Contest created successfully:", response.data);
+      toast.success("Contest created successfully!");
+
+      // Reset form
+      setEventName("");
+      setTotalWinners("");
+      setRoomSize("");
+      setFee("");
+      setGame(games.length > 0 ? games[0].game_name : "BGMI");
+      setMap("Erangel");
+      setSchedule("");
+      setBannerUrl("");
+      setDescription("");
+      setSponsor("");
+      setPrizeDesc("");
+      setMatchPrivateDesc("");
+      setSelectedImageTitle("");
+      setSelectedImageUrl("");
+      setShowImagePreview(false);
+      setWinners(DEFAULT_WINNERS.map((p, i) => ({ id: Date.now() + i, prize: p })));
+      setErrors({});
+
       navigate("/solo");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to save contest");
-    }
-  };
-const [games, setGames] = useState([]);
-const [isLoadingGames, setIsLoadingGames] = useState(false);
-useEffect(() => {
-  const fetchGames = async () => {
-    setIsLoadingGames(true);
-    try {
-      const res = await axiosInstance.get("auth/admin/games");
-      if (res.data.status === "success") {
-        setGames(res.data.data);
-        if (res.data.data.length > 0) {
-          setGame(res.data.data[0].game_name); // default select first game
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch games:", err);
-      toast.error("Failed to fetch games");
-    } finally {
-      setIsLoadingGames(false);
-    }
-  };
 
-  fetchGames();
-}, []);
+    } catch (error) {
+      console.error("Error creating contest:", error);
+      
+      // Handle axios error response
+      const errorMessage = error.response?.data?.message || 
+                          error.message || 
+                          "Failed to create contest";
+      
+      toast.error(`Failed to create contest: ${errorMessage}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen">
@@ -348,16 +319,12 @@ useEffect(() => {
         </div>
 
         <div className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">
-            {isEditMode ? "Edit Contest" : "Create Contest"}
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-6">Create Solo Contest</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Event Name *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Event Name *</label>
                 <input
                   value={eventName}
                   onChange={(e) => setEventName(e.target.value)}
@@ -365,19 +332,14 @@ useEffect(() => {
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
                     errors.eventName ? "border-red-400" : "border-gray-300"
                   }`}
-                  placeholder="e.g., Squad Championship"
+                  placeholder="e.g., Solo Championship"
+                  disabled={isSubmitting}
                 />
-                {errors.eventName && (
-                  <p className="text-xs text-red-600 mt-1">
-                    {errors.eventName}
-                  </p>
-                )}
+                {errors.eventName && <p className="text-xs text-red-600 mt-1">{errors.eventName}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Joining Fee (₹) *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Joining Fee (₹) *</label>
                 <input
                   value={fee}
                   onChange={(e) => setFee(e.target.value)}
@@ -387,45 +349,40 @@ useEffect(() => {
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
                     errors.fee ? "border-red-400" : "border-gray-300"
                   }`}
+                  disabled={isSubmitting}
                 />
-                {errors.fee && (
-                  <p className="text-xs text-red-600 mt-1">{errors.fee}</p>
-                )}
+                {errors.fee && <p className="text-xs text-red-600 mt-1">{errors.fee}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Game *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Game *</label>
                 <select
-  value={game}
-  onChange={(e) => setGame(e.target.value)}
-  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-  disabled={isLoadingGames}
->
-  {isLoadingGames ? (
-    <option>Loading games...</option>
-  ) : games.length > 0 ? (
-    games.map((g) => (
-      <option key={g.id} value={g.game_name}>
-        {g.game_name}
-      </option>
-    ))
-  ) : (
-    <option>No games available</option>
-  )}
-</select>
-
+                  value={game}
+                  onChange={(e) => setGame(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  disabled={isSubmitting || isLoadingGames}
+                >
+                  {isLoadingGames ? (
+                    <option>Loading games...</option>
+                  ) : games.length > 0 ? (
+                    games.map((g) => (
+                      <option key={g.id} value={g.game_name}>
+                        {g.game_name}
+                      </option>
+                    ))
+                  ) : (
+                    <option>No games available</option>
+                  )}
+                </select>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Map *
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Map *</label>
                 <select
                   value={map}
                   onChange={(e) => setMap(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  disabled={isSubmitting}
                 >
                   <option>Erangel</option>
                   <option>Sanhok</option>
@@ -436,157 +393,98 @@ useEffect(() => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Room Size *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Room Size *</label>
               <input
                 value={roomSize}
                 onChange={(e) => setRoomSize(e.target.value)}
                 type="number"
+                min={1}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
-                  errors.roomSize ? "border-red-400" : "border-gray-300"}
-                `}
-                placeholder="No. of players (Max 100)"
+                  errors.roomSize ? "border-red-400" : "border-gray-300"
+                }`}
+                placeholder="e.g. 10"
+                disabled={isSubmitting}
               />
-              {errors.roomSize && (
-                <p className="text-xs text-red-600 mt-1">{errors.roomSize}</p>
-              )}
+              {errors.roomSize && <p className="text-xs text-red-600 mt-1">{errors.roomSize}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Winners *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Total Winners *</label>
               <input
                 value={totalWinners}
-                onChange={(e) => setTotalWinners(e.target.value)}
+                onChange={(e) => {
+                  setTotalWinners(e.target.value);
+                  updateWinnersCount(e.target.value);
+                }}
                 type="number"
+                min={1}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
-                  errors.totalWinners ? "border-red-400" : "border-gray-300"}
-                `}
-                placeholder="Number of winners"
+                  errors.totalWinners ? "border-red-400" : "border-gray-300"
+                }`}
+                placeholder="e.g. 2"
+                disabled={isSubmitting}
               />
-              {errors.totalWinners && (
-                <p className="text-xs text-red-600 mt-1">{errors.totalWinners}</p>
-              )}
+              {errors.totalWinners && <p className="text-xs text-red-600 mt-1">{errors.totalWinners}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Match Schedule *
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Match Schedule *</label>
               <input
                 value={schedule}
                 onChange={(e) => setSchedule(e.target.value)}
                 type="datetime-local"
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
-                  errors.schedule ? "border-red-400" : "border-gray-300"}
-                `}
+                  errors.schedule ? "border-red-400" : "border-gray-300"
+                }`}
+                disabled={isSubmitting}
               />
-              {errors.schedule && (
-                <p className="text-xs text-red-600 mt-1">{errors.schedule}</p>
-              )}
+              {errors.schedule && <p className="text-xs text-red-600 mt-1">{errors.schedule}</p>}
             </div>
 
-            {/* Prize Distribution */}
+            {/* Prize Distribution Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <label className="block text-sm font-medium text-gray-700">
-                  Prize Distribution
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Prize Distribution</label>
                 <div className="flex items-center space-x-2">
-                  <button
-                    type="button"
-                    className="p-1 text-red-600 hover:text-red-800 disabled:opacity-50 disabled:cursor-not-allowed"
-                    onClick={() => removeWinner(winners.length - 1)}
-                    disabled={winners.length <= 1}
-                    title="Remove last winner"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-
                   <span className="text-sm text-gray-600">
-                    {winners.length} winners
+                    {winners.length} winner{winners.length !== 1 ? "s" : ""}
                   </span>
-
-                  <button
-                    type="button"
-                    className="p-1 text-green-600 hover:text-green-800"
-                    onClick={addWinner}
-                    title="Add winner"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
 
-              <div className="space-y-3">
-                {winners.map((w, i) => (
-                  <div key={w.id} className="flex items-center space-x-2 md:space-x-4">
-                    <div className="w-20">
-                      <input
-                        value={w.rank}
-                        onChange={e => updateWinner(i, 'rank', e.target.value)}
-                        type="text"
-                        className="w-full px-2 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 border-gray-300 text-center"
-                        placeholder={i === 0 ? '1' : i === 1 ? '2' : i === 2 ? '3' : '4-10'}
-                      />
+              {winners.length > 0 ? (
+                <div className="space-y-3">
+                  {winners.map((w, i) => (
+                    <div key={w.id} className="flex items-center space-x-4">
+                      <div className="w-12 h-10 bg-purple-100 text-purple-800 rounded-lg flex items-center justify-center text-sm font-medium">
+                        #{i + 1}
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          value={w.prize}
+                          onChange={(e) => updateWinner(i, e.target.value)}
+                          type="text"
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
+                            errors[`w_${i}`] ? "border-red-400" : "border-gray-300"
+                          }`}
+                          placeholder={`Prize for rank ${i + 1} (e.g., "₹500", "Trophy + ₹1000", "Gift Card")`}
+                          disabled={isSubmitting}
+                        />
+                        {errors[`w_${i}`] && <p className="text-xs text-red-600 mt-1">{errors[`w_${i}`]}</p>}
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <input
-                        value={w.percent}
-                        onChange={e => updateWinner(i, 'percent', e.target.value)}
-                        type="number"
-                        min={0}
-                        max={100}
-                        step={1}
-                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 ${
-                          errors[`w_${i}`]
-                            ? "border-red-400"
-                            : "border-gray-300"
-                        }`}
-                        placeholder="Percentage"
-                      />
-                      {errors[`w_${i}`] && (
-                        <p className="text-xs text-red-600 mt-1">
-                          {errors[`w_${i}`]}
-                        </p>
-                      )}
-                    </div>
-                    <span className="text-sm text-gray-500 w-8">%</span>
-                    <button
-                      type="button"
-                      onClick={() => removeWinner(i)}
-                      disabled={winners.length <= 1}
-                      className="p-1 text-red-600 hover:text-red-800"
-                      title={`Remove winner ${i + 1}`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between mt-2">
-                <div
-                  className={`text-sm font-medium ${
-                    totalPercent === 100 ? "text-green-600" : "text-red-600"
-                  }`}
-                >
-                  Total: {totalPercent}%{" "}
-                  {totalPercent !== 100 && "(must be 100%)"}
+                  ))}
                 </div>
-                {errors.total && (
-                  <div className="text-xs text-red-600">{errors.total}</div>
-                )}
-              </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <p>Enter total winners above to configure prize distribution</p>
+                </div>
+              )}
             </div>
 
             {/* Additional Info */}
             <div className="space-y-4">
-              <h3 className="text-lg font-medium text-gray-900">
-                Additional Information (Optional)
-              </h3>
+              <h3 className="text-lg font-medium text-gray-900">Additional Information (Optional)</h3>
 
               {/* Enhanced Banner Image Selection */}
               <div>
@@ -601,6 +499,7 @@ useEffect(() => {
                       type="text"
                       className="w-full px-3 py-2 pr-20 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                       placeholder="Search and select banner image"
+                      disabled={isSubmitting}
                     />
                     <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
                       {selectedImageTitle && (
@@ -608,6 +507,7 @@ useEffect(() => {
                           type="button"
                           onClick={clearSelectedImage}
                           className="text-gray-400 hover:text-gray-600"
+                          disabled={isSubmitting}
                         >
                           <X className="w-4 h-4" />
                         </button>
@@ -621,7 +521,7 @@ useEffect(() => {
                           }
                         }}
                         className="text-gray-400 hover:text-gray-600"
-                        disabled={isLoadingImages}
+                        disabled={isSubmitting || isLoadingImages}
                       >
                         <ChevronDown className={`w-5 h-5 transition-transform ${showImageDropdown ? 'rotate-180' : ''}`} />
                       </button>
@@ -639,6 +539,7 @@ useEffect(() => {
                               type="button"
                               onClick={() => handleImageSelect(image)}
                               className="w-full px-4 py-3 text-left hover:bg-gray-50 flex items-center space-x-3 border-b border-gray-100 last:border-b-0"
+                              disabled={isSubmitting}
                             >
                               <img
                                 src={image.imageUrl}
@@ -679,6 +580,7 @@ useEffect(() => {
                           type="button"
                           onClick={clearSelectedImage}
                           className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                          disabled={isSubmitting}
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -692,65 +594,61 @@ useEffect(() => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Match Description
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Match Description</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                   rows={3}
                   placeholder="Describe your contest..."
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Match Private Description</label>
+                <textarea
+                  value={matchPrivateDesc}
+                  onChange={(e) => setMatchPrivateDesc(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  rows={2}
+                  placeholder="Private details like room codes, special instructions..."
+                  disabled={isSubmitting}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Sponsor
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Sponsor</label>
                   <input
                     value={sponsor}
                     onChange={(e) => setSponsor(e.target.value)}
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                     placeholder="Sponsor name"
+                    disabled={isSubmitting}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Prize Description
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Prize Description</label>
                   <input
                     value={prizeDesc}
                     onChange={(e) => setPrizeDesc(e.target.value)}
                     type="text"
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                     placeholder="e.g., Top 5 teams win"
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Private Description
-                </label>
-                <textarea
-                  value={privateDesc}
-                  onChange={(e) => setPrivateDesc(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                  rows={2}
-                  placeholder="Private info for admins or players"
-                />
-              </div>
-
             </div>
 
             <div className="flex space-x-3">
               <button
                 type="button"
                 onClick={() => window.history.back()}
-                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50"
+                disabled={isSubmitting}
               >
                 Cancel
               </button>
@@ -758,9 +656,9 @@ useEffect(() => {
               <button
                 type="submit"
                 className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                disabled={totalPercent !== 100}
+                disabled={isSubmitting}
               >
-                {isEditMode ? "Update Contest" : "Create Contest"}
+                {isSubmitting ? "Creating Contest..." : "Create Contest"}
               </button>
             </div>
           </form>

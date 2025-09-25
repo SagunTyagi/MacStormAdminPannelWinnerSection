@@ -18,7 +18,7 @@ import {
   TextField,
   InputLabel,
 } from "@mui/material"
-import axios from "axios"
+import axiosInstance from "../../utils/axios"
 import { Info } from "lucide-react"
 import { Edit, Delete } from "@mui/icons-material"
 import { useState, useEffect } from "react"
@@ -51,7 +51,7 @@ const HowToPlay = () => {
 
   const fetchSteps = async () => {
     try {
-      const res = await axios.get("https://macstormbattle-backend.onrender.com/api/how-to-play")
+      const res = await axiosInstance.get("/how-to-play")
       setSteps(res.data)
     } catch (err) {
       console.error("Error fetching steps:", err)
@@ -89,7 +89,7 @@ const HowToPlay = () => {
         gifUrl: addStep.gifUrl,
       }
 
-      await axios.post("https://macstormbattle-backend.onrender.com/api/how-to-play", payload)
+      await axiosInstance.post("/how-to-play", payload)
       await fetchSteps()
       handleCloseAddModal()
     } catch (error) {
@@ -129,7 +129,7 @@ const HowToPlay = () => {
         gifUrl: editStep.gifUrl,
       }
 
-      await axios.put(`https://macstormbattle-backend.onrender.com/api/how-to-play/${editStep.id}`, payload)
+      await axiosInstance.put(`/how-to-play/${editStep.id}`, payload)
       await fetchSteps()
       handleCloseEditModal()
     } catch (error) {
@@ -142,7 +142,7 @@ const HowToPlay = () => {
   const handleDeleteStep = async (id) => {
     if (!id) return
     try {
-      await axios.delete(`https://macstormbattle-backend.onrender.com/api/how-to-play/${id}`)
+      await axiosInstance.delete(`/how-to-play/${id}`)
       setSteps(prev => prev.filter(step => step.id !== id))
     } catch (error) {
       console.error("Failed to delete step:", error.response?.data || error.message)

@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import axios from "axios"
+import axiosInstance from "../../utils/axios"
 import {
   Box,
   Card,
@@ -42,7 +42,7 @@ const FAQComponent = () => {
   useEffect(() => {
     const fetchFAQs = async () => {
       try {
-        const res = await axios.get("https://macstormbattle-backend.onrender.com/api/faqs")
+        const res = await axiosInstance.get("/faqs")
         setFaqs(res.data)
       } catch (err) {
         console.error("Error fetching FAQs:", err)
@@ -59,7 +59,7 @@ const FAQComponent = () => {
     const { question, answer } = newFAQ
     if (question.trim() && answer.trim()) {
       try {
-        const res = await axios.post("https://macstormbattle-backend.onrender.com/api/faqs", {
+        const res = await axiosInstance.post("/faqs", {
           question: question.trim(),
           answer: answer.trim(),
         })
@@ -76,7 +76,7 @@ const FAQComponent = () => {
   // Delete FAQ
   const handleDeleteFAQ = async (id) => {
     try {
-      await axios.delete(`https://macstormbattle-backend.onrender.com/api/faqs/${id}`)
+      await axiosInstance.delete(`/faqs/${id}`)
       setFaqs(faqs.filter((faq) => faq.id !== id))
     } catch (err) {
       console.error("Error deleting FAQ:", err)
@@ -89,7 +89,7 @@ const FAQComponent = () => {
     const { id, question, answer } = editFAQ
     if (question.trim() && answer.trim()) {
       try {
-      await axios.put(`https://macstormbattle-backend.onrender.com/api/faqs/${id}`, {
+      await axiosInstance.put(`/faqs/${id}`, {
         question: question.trim(),
         answer: answer.trim()
       })

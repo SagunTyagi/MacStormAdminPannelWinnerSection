@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import axios from "axios"
+import axiosInstance from "../../utils/axios"
 import {
   Box,
   Card,
@@ -46,7 +46,7 @@ const Integration = () => {
   useEffect(() => {
     const fetchIntegrationSettings = async () => {
       try {
-        const res = await axios.get("https://macstormbattle-backend.onrender.com/api/integrations")
+        const res = await axiosInstance.get("/integrations")
         const settings = res.data.settings
 
         const newFormData = {
@@ -139,7 +139,7 @@ const Integration = () => {
     const payload = { settings }
 
     try {
-      const res = await axios.post("https://macstormbattle-backend.onrender.com/api/integrations", payload, {
+      const res = await axiosInstance.post("/integrations", payload, {
         headers: {
           'Content-Type': 'application/json',
         },
