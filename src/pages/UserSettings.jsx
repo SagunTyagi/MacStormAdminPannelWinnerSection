@@ -4,18 +4,14 @@ import {
   Mail,
   Phone,
   Lock,
-  Globe,
   Gift,
   Plus,
-  Trash2,
   Edit2,
   RefreshCw,
   Ban,
 } from "lucide-react";
-import axios from "axios";
-import { toast } from "react-toastify";
 
-// CreateUserModal component remains the same as in your original code
+// CreateUserModal component
 const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
   const [formData, setFormData] = useState({
     first_name: "",
@@ -400,12 +396,6 @@ const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
   );
 };
 
-const permissions = {
-  Admin: { edit: true, ban: true, reset: true },
-  Moderator: { edit: true, ban: false, reset: true },
-  User: { edit: false, ban: false, reset: false },
-};
-
 function UserSettings() {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -418,7 +408,6 @@ function UserSettings() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const itemsPerPage = 5;
-  const [expandedUserId, setExpandedUserId] = useState(null);
 
   const authToken = localStorage.getItem("authToken");
 
@@ -426,7 +415,7 @@ function UserSettings() {
     const fetchUsers = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(
+        const response = await fetch(
           "https://macstormbattle-backend.onrender.com/api/auth/user",
           {
             headers: {
@@ -435,24 +424,27 @@ function UserSettings() {
           }
         );
 
+        const data = await response.json();
+
         // Transform the API response to match our expected format
-        const transformedUsers = response.data.users.map((user) => ({
-          id: user._id || user.id,
-          name: `${user.first_name} ${user.last_name}`,
+        const transformedUsers = data.users.map((user) => ({
+          id: user.member_id,
+          name: `${user.first_name} ${user.last_name || ''}`.trim(),
           username: user.user_name,
-          email: user.email_id,
+          email: user.email_id || 'No email',
           role: user.role || "User",
-          status: user.status || "Active",
+          status: user.member_status === 1 ? "Active" : "Banned",
           created: user.createdAt
             ? new Date(user.createdAt).toISOString().split("T")[0]
             : new Date().toISOString().split("T")[0],
-          editedBy: user.editedBy || null,
-          history: user.history || [],
+          editedBy: null,
+          history: [],
           first_name: user.first_name,
           last_name: user.last_name,
           user_name: user.user_name,
           email_id: user.email_id,
           mobile_no: user.mobile_no,
+          member_id: user.member_id
         }));
 
         setUsers(transformedUsers);
@@ -485,19 +477,6 @@ function UserSettings() {
   );
 
   const openModal = (user, type) => {
-    const role = user.role;
-    if (type === "edit" && !permissions[role].edit) {
-      toast.error("Edit access is only allowed for Admins or Moderators.");
-      return;
-    }
-    if (type === "ban" && !permissions[role].ban) {
-      toast.error("Cannot ban Admins or Moderators.");
-      return;
-    }
-    if (type === "reset" && !permissions[role].reset) {
-      toast.error("Reset not allowed for this role.");
-      return;
-    }
     setSelectedUser(user);
     setModalType(type);
   };
@@ -516,22 +495,28 @@ function UserSettings() {
 
     try {
       setIsLoading(true);
-      const response = await axios.put(
-        `https://macstormbattle-backend.onrender.com/api/auth/user/${selectedUser.id}`,
+      const response = await fetch(
+        `https://macstormbattle-backend.onrender.com/api/auth/user/${selectedUser.member_id}`,
         {
-          first_name: editedName.split(" ")[0],
-          last_name: editedName.split(" ")[1] || "",
-          user_name: editedUsername,
-          email_id: editedEmail,
-          role: editedRole,
-          status: editedStatus,
-        },
-        {
+          method: 'PUT',
           headers: {
             Authorization: `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            first_name: editedName.split(" ")[0],
+            last_name: editedName.split(" ")[1] || "",
+            user_name: editedUsername,
+            email_id: editedEmail,
+            role: editedRole,
+            member_status: editedStatus === 'Active' ? 1 : 0,
+          }),
         }
       );
+
+      if (!response.ok) {
+        throw new Error('Failed to update user');
+      }
 
       // Update local state with the edited user
       setUsers(
@@ -544,11 +529,11 @@ function UserSettings() {
                 email: editedEmail,
                 role: editedRole,
                 status: editedStatus,
-                editedBy: `Edited by ${selectedUser.role}`,
+                editedBy: `Edited by Admin`,
                 history: [
                   ...u.history,
                   {
-                    editedBy: selectedUser.role,
+                    editedBy: "Admin",
                     date: new Date().toISOString(),
                     changes: {
                       name: editedName !== u.name ? editedName : undefined,
@@ -580,15 +565,25 @@ function UserSettings() {
   const handleReset = async () => {
     try {
       setIsLoading(true);
-      await axios.post(
+      const response = await fetch(
         `https://macstormbattle-backend.onrender.com/api/auth/user/reset-password`,
-        { email: selectedUser.email },
         {
+          method: 'POST',
           headers: {
             Authorization: `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ 
+            member_id: selectedUser.member_id,
+            email: selectedUser.email 
+          }),
         }
       );
+
+      if (!response.ok) {
+        throw new Error('Failed to send reset link');
+      }
+
       alert(`Password reset link sent to ${selectedUser.email}`);
       closeModal();
     } catch (err) {
@@ -600,28 +595,31 @@ function UserSettings() {
   };
 
   const handleBan = async () => {
-    if (!permissions[selectedUser.role].ban) {
-      alert("You cannot ban this user.");
-      return;
-    }
-
     try {
       setIsLoading(true);
-      const newStatus = selectedUser.status === "Active" ? "Banned" : "Active";
+      const newStatus = selectedUser.status === "Active" ? 0 : 1;
 
-      await axios.put(
-        `https://macstormbattle-backend.onrender.com/api/auth/user/${selectedUser.id}`,
-        { status: newStatus },
+      const response = await fetch(
+        `https://macstormbattle-backend.onrender.com/api/auth/user/${selectedUser.member_id}`,
         {
+          method: 'PUT',
           headers: {
             Authorization: `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({ member_status: newStatus }),
         }
       );
 
+      if (!response.ok) {
+        throw new Error('Failed to update user status');
+      }
+
       setUsers(
         users.map((u) =>
-          u.id === selectedUser.id ? { ...u, status: newStatus } : u
+          u.id === selectedUser.id 
+            ? { ...u, status: newStatus === 1 ? "Active" : "Banned" } 
+            : u
         )
       );
 
@@ -643,7 +641,7 @@ function UserSettings() {
   const selectAll = () => {
     const visibleIds = paginatedUsers.map((u) => u.id);
     const allSelected = visibleIds.every((id) => selectedUsers.includes(id));
-    setSelectedUsers(allSelected ? [] : visibleIds);
+    setSelectedUsers(allSelected ? [] : [...selectedUsers.filter(id => !visibleIds.includes(id)), ...visibleIds]);
   };
 
   const handleBulkBan = async () => {
@@ -653,24 +651,31 @@ function UserSettings() {
     try {
       setIsLoading(true);
       await Promise.all(
-        selectedUsers.map((id) =>
-          axios.put(
-            `https://macstormbattle-backend.onrender.com/api/auth/user/${id}`,
-            { status: "Banned" },
-            {
-              headers: {
-                Authorization: `Bearer ${authToken}`,
-              },
+        selectedUsers.map(async (id) => {
+          const user = users.find(u => u.id === id);
+          if (user) {
+            const response = await fetch(
+              `https://macstormbattle-backend.onrender.com/api/auth/user/${user.member_id}`,
+              {
+                method: 'PUT',
+                headers: {
+                  Authorization: `Bearer ${authToken}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ member_status: 0 }),
+              }
+            );
+            
+            if (!response.ok) {
+              throw new Error(`Failed to ban user ${user.name}`);
             }
-          )
-        )
+          }
+        })
       );
 
       setUsers(
         users.map((u) =>
-          selectedUsers.includes(u.id) && permissions[u.role].ban
-            ? { ...u, status: "Banned" }
-            : u
+          selectedUsers.includes(u.id) ? { ...u, status: "Banned" } : u
         )
       );
       setSelectedUsers([]);
@@ -685,7 +690,7 @@ function UserSettings() {
   const handleExport = () => {
     const header = [
       "Name",
-      "Username",
+      "Username", 
       "Email",
       "Role",
       "Status",
@@ -714,44 +719,46 @@ function UserSettings() {
   const handleCreateUser = async (newUserData) => {
     try {
       setIsLoading(true);
-      const response = await axios.post(
+      const response = await fetch(
         "https://macstormbattle-backend.onrender.com/api/auth/user/register",
-        newUserData,
         {
+          method: 'POST',
           headers: {
             Authorization: `Bearer ${authToken}`,
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify(newUserData),
         }
       );
 
-      // Update the local state with the new user
-      setUsers((prev) => [
-        ...prev,
-        {
-          id: response.data._id || response.data.id,
-          name: `${newUserData.first_name} ${newUserData.last_name}`,
-          username: newUserData.user_name,
-          email: newUserData.email_id,
-          role: "User",
-          status: "Active",
-          created: new Date().toISOString().split("T")[0],
-          editedBy: null,
-          history: [],
-          ...newUserData,
-        },
-      ]);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to create user');
+      }
 
-      return response.data;
+      const responseData = await response.json();
+
+      // Update the local state with the new user
+      const newUser = {
+        id: responseData.member_id || responseData._id,
+        name: `${newUserData.first_name} ${newUserData.last_name}`,
+        username: newUserData.user_name,
+        email: newUserData.email_id,
+        role: "User",
+        status: "Active",
+        created: new Date().toISOString().split("T")[0],
+        editedBy: null,
+        history: [],
+        ...newUserData,
+        member_id: responseData.member_id || responseData._id
+      };
+
+      setUsers((prev) => [...prev, newUser]);
+
+      return responseData;
     } catch (error) {
-      console.error(
-        "Error creating user:",
-        error.response ? error.response.data : error.message
-      );
-      throw new Error(
-        error.response?.data?.message ||
-          "Failed to create user. Check your form data."
-      );
+      console.error("Error creating user:", error);
+      throw new Error(error.message || "Failed to create user. Check your form data.");
     } finally {
       setIsLoading(false);
     }
@@ -946,100 +953,93 @@ function UserSettings() {
         </table>
       </div>
 
-{/* Mobile View */}
-<div className="block sm:hidden space-y-3">
-  {isLoading ? (
-    <div className="flex justify-center py-6">
-      <svg
-        className="animate-spin h-5 w-5 text-blue-500"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <circle
-          className="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth="4"
-        ></circle>
-        <path
-          className="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 
-          0 12h4zm2 5.291A7.962 7.962 0 
-          014 12H0c0 3.042 1.135 5.824 3 
-          7.938l3-2.647z"
-        ></path>
-      </svg>
-    </div>
-  ) : paginatedUsers.length === 0 ? (
-    <p className="text-center text-gray-500">No users found</p>
-  ) : (
-    paginatedUsers.map((user) => {
-      return (
-        <div
-          key={user.id}
-          className="bg-white dark:bg-zinc-800 rounded shadow p-4"
-        >
-          
-            <div className="mt-3 space-y-1 text-sm text-gray-700 dark:text-gray-300">
-              <p>
-                <strong>Name:</strong> {user.name}
-              </p>
-              <p>
-                <strong>Username:</strong> {user.username}
-              </p>
-              <p>
-                <strong>Email:</strong> {user.email}
-              </p>
-              <p>
-                <strong>Role:</strong> {user.role}
-              </p>
-              <p>
-                <strong>Status:</strong> {user.status}
-              </p>
-              <p>
-                <strong>Created:</strong> {user.created}
-              </p>
-              <p>
-                <strong>Edited By:</strong> {user.editedBy || "-"}
-              </p>
+      {/* Mobile View */}
+      <div className="block sm:hidden space-y-3">
+        {isLoading ? (
+          <div className="flex justify-center py-6">
+            <svg
+              className="animate-spin h-5 w-5 text-blue-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </div>
+        ) : paginatedUsers.length === 0 ? (
+          <p className="text-center text-gray-500">No users found</p>
+        ) : (
+          paginatedUsers.map((user) => (
+            <div
+              key={user.id}
+              className="bg-white dark:bg-zinc-800 rounded shadow p-4"
+            >
+              <div className="mt-3 space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                <p>
+                  <strong>Name:</strong> {user.name}
+                </p>
+                <p>
+                  <strong>Username:</strong> {user.username}
+                </p>
+                <p>
+                  <strong>Email:</strong> {user.email}
+                </p>
+                <p>
+                  <strong>Role:</strong> {user.role}
+                </p>
+                <p>
+                  <strong>Status:</strong> {user.status}
+                </p>
+                <p>
+                  <strong>Created:</strong> {user.created}
+                </p>
+                <p>
+                  <strong>Edited By:</strong> {user.editedBy || "-"}
+                </p>
 
-              <div className="flex gap-2 mt-3">
-                <button
-                  onClick={() => openModal(user, "edit")}
-                  className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => openModal(user, "reset")}
-                  className="bg-yellow-500 text-white px-2 py-1 rounded text-xs"
-                >
-                  Reset
-                </button>
-                <button
-                  onClick={() => openModal(user, "ban")}
-                  className={`px-2 py-1 rounded text-xs ${
-                    user.status === "Active"
-                      ? "bg-red-500"
-                      : "bg-green-500"
-                  } text-white`}
-                >
-                  {user.status === "Active" ? "Ban" : "Activate"}
-                </button>
+                <div className="flex gap-2 mt-3">
+                  <button
+                    onClick={() => openModal(user, "edit")}
+                    className="bg-blue-500 text-white px-2 py-1 rounded text-xs"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => openModal(user, "reset")}
+                    className="bg-yellow-500 text-white px-2 py-1 rounded text-xs"
+                  >
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => openModal(user, "ban")}
+                    className={`px-2 py-1 rounded text-xs ${
+                      user.status === "Active"
+                        ? "bg-red-500"
+                        : "bg-green-500"
+                    } text-white`}
+                  >
+                    {user.status === "Active" ? "Ban" : "Activate"}
+                  </button>
+                </div>
               </div>
             </div>
+          ))
+        )}
+      </div>
 
-        </div>
-      );
-    })
-  )}
-</div>
-
-
+      {/* Edit Modal */}
       {selectedUser && modalType === "edit" && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-zinc-800 p-6 rounded shadow w-full max-w-sm">
@@ -1047,16 +1047,19 @@ function UserSettings() {
             <input
               id="editName"
               defaultValue={selectedUser.name}
+              placeholder="Full Name"
               className="w-full mb-2 px-3 py-2 border rounded dark:bg-zinc-700"
             />
             <input
               id="editUsername"
               defaultValue={selectedUser.username}
+              placeholder="Username"
               className="w-full mb-2 px-3 py-2 border rounded dark:bg-zinc-700"
             />
             <input
               id="editEmail"
               defaultValue={selectedUser.email}
+              placeholder="Email"
               className="w-full mb-2 px-3 py-2 border rounded dark:bg-zinc-700"
             />
             <select
@@ -1093,12 +1096,76 @@ function UserSettings() {
         </div>
       )}
 
+      {/* Reset Password Modal */}
+      {selectedUser && modalType === "reset" && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-zinc-800 p-6 rounded shadow w-full max-w-sm">
+            <h2 className="text-lg font-semibold mb-4">Reset Password</h2>
+            <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+              Are you sure you want to send a password reset link to{" "}
+              <strong>{selectedUser.email}</strong>?
+            </p>
+            <button
+              onClick={handleReset}
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded"
+              disabled={isLoading}
+            >
+              {isLoading ? "Sending..." : "Send Reset Link"}
+            </button>
+            <button
+              onClick={closeModal}
+              className="mt-3 text-sm underline text-center w-full text-gray-600 dark:text-gray-300"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Ban/Activate Modal */}
+      {selectedUser && modalType === "ban" && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-zinc-800 p-6 rounded shadow w-full max-w-sm">
+            <h2 className="text-lg font-semibold mb-4">
+              {selectedUser.status === "Active" ? "Ban User" : "Activate User"}
+            </h2>
+            <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">
+              Are you sure you want to{" "}
+              {selectedUser.status === "Active" ? "ban" : "activate"}{" "}
+              <strong>{selectedUser.name}</strong>?
+            </p>
+            <button
+              onClick={handleBan}
+              className={`w-full px-4 py-2 rounded text-white ${
+                selectedUser.status === "Active"
+                  ? "bg-red-500 hover:bg-red-600"
+                  : "bg-green-500 hover:bg-green-600"
+              }`}
+              disabled={isLoading}
+            >
+              {isLoading
+                ? "Processing..."
+                : selectedUser.status === "Active"
+                ? "Ban User"
+                : "Activate User"}
+            </button>
+            <button
+              onClick={closeModal}
+              className="mt-3 text-sm underline text-center w-full text-gray-600 dark:text-gray-300"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
       <CreateUserModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreate={handleCreateUser}
       />
 
+      {/* Pagination */}
       <div className="flex justify-center mt-4 space-x-2">
         {Array.from({ length: totalPages }, (_, i) => (
           <button

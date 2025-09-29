@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Save, X, Eye, EyeOff, Upload } from 'lucide-react';
+import { Plus, Edit, Trash2, Save, X, Eye, EyeOff, Upload, Play } from 'lucide-react';
 
 const AdsAdmin = () => {
   const [ads, setAds] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [selectedVideoUrl, setSelectedVideoUrl] = useState('');
+  const [selectedVideoTitle, setSelectedVideoTitle] = useState('');
   const [editingAd, setEditingAd] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
@@ -306,6 +309,13 @@ const AdsAdmin = () => {
     setShowForm(true);
   };
 
+  // View video
+  const viewVideo = (videoUrl, title) => {
+    setSelectedVideoUrl(videoUrl);
+    setSelectedVideoTitle(title);
+    setShowVideoModal(true);
+  };
+
   // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return 'Not set';
@@ -569,6 +579,39 @@ const AdsAdmin = () => {
             </div>
           )}
 
+          {/* Video Modal */}
+          {showVideoModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+                <div className="p-4 border-b border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <h2 className="text-xl font-semibold text-gray-900">
+                      {selectedVideoTitle}
+                    </h2>
+                    <button
+                      onClick={() => setShowVideoModal(false)}
+                      className="text-gray-400 hover:text-gray-600"
+                    >
+                      <X size={24} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4">
+                  <div className="w-full h-96">
+                    <video
+                      src={selectedVideoUrl}
+                      controls
+                      className="w-full h-full object-contain bg-black rounded"
+                    >
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Ads Table */}
           <div className="p-6">
             {loading && (
@@ -607,6 +650,9 @@ const AdsAdmin = () => {
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Period
+                      </th>
+                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Views
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -664,7 +710,23 @@ const AdsAdmin = () => {
                           <div>{formatDate(ad.startsAt)}</div>
                           <div>to {formatDate(ad.endsAt)}</div>
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <div>{ad.viewCount || 0}</div>
+                          <div className="text-xs text-gray-500">
+                            Unique: {ad.uniqueViewers || 0}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          {ad.videoUrl && (
+                            <button
+                              onClick={() => viewVideo(ad.videoUrl, ad.title)}
+                              disabled={loading}
+                              className="text-green-600 hover:text-green-900 mr-3 disabled:opacity-50 p-1"
+                              title="View video"
+                            >
+                              <Play size={16} />
+                            </button>
+                          )}
                           <button
                             onClick={() => editAd(ad)}
                             disabled={loading}

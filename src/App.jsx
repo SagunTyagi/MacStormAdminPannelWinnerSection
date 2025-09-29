@@ -82,6 +82,9 @@ import BlogDetailPage from "./pages/BlogDetailpage";
 import WatchEarn from "./pages/Watch&Earn";
 import PaymentGateway from "./pages/PaymentGateway";
 import AdsManagement from "./pages/AdsManagement";
+import ReferEarn from "./pages/Refer&Earn"
+import PhonePayGateway from "./pages/PhonePayGateway";
+import UserWaletLeger from "./pages/UserWaletLeger";
 
 // ✅ ProtectedRoute component
 function ProtectedRoute({ children }) {
@@ -236,6 +239,9 @@ function App() {
             <Route path="/watch-earn" element={<WatchEarn />} />
             <Route path="/payment-gateway" element={<PaymentGateway />} />
             <Route path="/ads-management" element={<AdsManagement />} />
+            <Route path="/refer-earns" element={<ReferEarn />} />
+            <Route path="/phonepay-gateway" element={<PhonePayGateway />} />
+            <Route path="/user-wallet-ledger" element={<UserWaletLeger />} />
 
 
             <Route path="*" element={<Navigate to="/" />} />

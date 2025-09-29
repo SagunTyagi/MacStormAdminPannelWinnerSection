@@ -1,338 +1,139 @@
-import { useState, useEffect } from "react";
-import { Upload, Smartphone, Tag, Hash, RefreshCw, Edit3 } from "lucide-react";
+// src/components/revenue/RevenueManagement.jsx
+import React, { useState } from "react";
+import {
+  Tabs,
+  Tab,
+  Box,
+  Paper,
+  MenuItem,
+  Select,
+  useMediaQuery,
+  useTheme,
+  Typography,
+  Divider,
+} from "@mui/material";
+import { PlayCircle } from "lucide-react";
+import AppUpdates from "../pages/AppUpdates";
+import AppLogoUpdate from "../pages/AppLogoUpdate";
 
-export default function ApkUploadForm() {
-  const [formData, setFormData] = useState({
-    apkFile: null,
-    apkName: '',
-    appVersion: ''
-  });
-  
-  const [dragActive, setDragActive] = useState(false);
-  const [existingApps, setExistingApps] = useState([]);
-  const [selectedAppId, setSelectedAppId] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [isUpdating, setIsUpdating] = useState(false);
+const TabPanel = ({ children, value, index }) => (
+  <div hidden={value !== index} role="tabpanel">
+    {value === index && <Box sx={{ p: { xs: 2, sm: 4 } }}>{children}</Box>}
+  </div>
+);
 
-  // Fetch existing apps on component mount
-  useEffect(() => {
-    fetchExistingApps();
-  }, []);
+const RevenueManagement = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [value, setValue] = useState(0);
 
-  const fetchExistingApps = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('https://macstormbattle-backend-2.onrender.com/api/app-updates');
-      if (response.ok) {
-        const data = await response.json();
-        setExistingApps(data.items || []);
-      } else {
-        console.error('Failed to fetch existing apps');
-      }
-    } catch (error) {
-      console.error('Error fetching existing apps:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAppSelect = (e) => {
-    const appId = e.target.value;
-    if (appId) {
-      const selectedApp = existingApps.find(app => app.id === appId);
-      if (selectedApp) {
-        setSelectedAppId(appId);
-        setFormData({
-          apkFile: null,
-          apkName: selectedApp.app_name,
-          appVersion: selectedApp.app_version
-        });
-        setIsUpdating(true);
-      }
-    } else {
-      resetForm();
-    }
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && file.name.endsWith('.apk')) {
-      setFormData(prev => ({
-        ...prev,
-        apkFile: file
-      }));
-    }
-  };
-
-  const handleDrag = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const file = e.dataTransfer.files[0];
-      if (file.name.endsWith('.apk')) {
-        setFormData(prev => ({
-          ...prev,
-          apkFile: file
-        }));
-      }
-    }
-  };
-
-  const handleSubmit = async () => {
-    // if (!formData.apkFile || !formData.apkName || !formData.appVersion) {
-    //   alert('Please fill in all required fields.');
-    //   return;
-    // }
-
-    if (!isUpdating || !selectedAppId) {
-      alert('Please select an existing app to update.');
-      return;
-    }
-
-    setLoading(true);
-    
-    try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('app_name', formData.apkName);
-      formDataToSend.append('app_version', formData.appVersion);
-      formDataToSend.append('apk', formData.apkFile);
-
-      const response = await fetch(`https://macstormbattle-backend-2.onrender.com/api/app-updates/${selectedAppId}`, {
-        method: 'PUT',
-        body: formDataToSend,
-      });
-
-      if (response.ok) {
-        alert('App updated successfully!');
-        // Reset form and refresh the list
-        setFormData({ apkFile: null, apkName: '', appVersion: '' });
-        setSelectedAppId('');
-        setIsUpdating(false);
-        await fetchExistingApps();
-      } else {
-        const errorData = await response.json();
-        alert(`Update failed: ${errorData.message || 'Unknown error'}`);
-      }
-    } catch (error) {
-      console.error('Error updating app:', error);
-      alert('Network error occurred while updating the app.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({ apkFile: null, apkName: '', appVersion: '' });
-    setSelectedAppId('');
-    setIsUpdating(false);
-  };
+  const tabs = [
+    { label: "App Updates", icon: <PlayCircle size={18} />, component: <AppUpdates /> },
+    { label: "App Logo & Theme", icon: <PlayCircle size={18} />, component: <AppLogoUpdate /> },
+  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex justify-center items-start py-6">
+      <Paper
+        elevation={3}
+        className="w-full max-w-5xl mx-auto rounded-2xl shadow-lg"
+        sx={{
+          background: "white",
+          borderRadius: "1.5rem",
+          overflow: "hidden",
+           width: "95%", 
+            maxWidth: "1400px",
+        }}
+      >
         {/* Header */}
-        <div className="text-left mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            App Updates
-          </h1>
-        </div>
+        <Box
+          sx={{
+            p: { xs: 2, sm: 3 },
+            borderBottom: "1px solid",
+            borderColor: "divider",
+            background: "linear-gradient(to right, #f9fafb, #f3f4f6)",
+          }}
+        >
+          <Typography
+            variant="h5"
+            sx={{
+              fontWeight: "bold",
+              mb: 3,
+              color: "black",
+            }}
+          >
+            App Settings
+          </Typography>
 
-
-
-        {/* Form */}
-        <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-          <div className="p-6 sm:p-8 lg:p-12">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Update App</h2>
-              <button
-                onClick={fetchExistingApps}
-                disabled={loading}
-                className="flex items-center gap-2 px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh Apps
-              </button>
-            </div>
-            
-            <div className="space-y-8">
-              
-              {/* App Selection Dropdown */}
-              <div className="space-y-3">
-                <label className="block text-lg font-semibold text-gray-900 flex items-center gap-3">
-                  <Smartphone className="w-5 h-5 text-blue-600" />
-                  Select App to Update
-                </label>
-                {loading && existingApps.length === 0 ? (
-                  <div className="w-full px-6 py-4 text-lg border border-gray-300 rounded-2xl bg-gray-50 text-gray-500">
-                    Loading existing apps...
-                  </div>
-                ) : (
-                  <select
-                    value={selectedAppId}
-                    onChange={handleAppSelect}
-                    className="w-full px-6 py-4 text-lg border border-gray-300 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                  >
-                    <option value="">Choose an app to update</option>
-                    {existingApps.map((app) => (
-                      <option key={app.id} value={app.id}>
-                        {app.app_name} - v{app.app_version} (Updated: {new Date(app.updatedAt).toLocaleDateString()})
-                      </option>
-                    ))}
-                  </select>
-                )}
-                {existingApps.length === 0 && !loading && (
-                  <p className="text-sm text-gray-500 mt-2">No existing apps found</p>
-                )}
-              </div>
-              
-              {/* APK File Upload */}
-              <div className="space-y-3">
-                <label className="block text-lg font-semibold text-gray-900 flex items-center gap-3">
-                  <Upload className="w-5 h-5 text-blue-600" />
-                  Upload APK File
-                </label>
-                <div
-                  className={`relative border-2 border-dashed rounded-2xl p-6 sm:p-8 lg:p-12 text-center transition-all duration-300 ${
-                    dragActive 
-                      ? 'border-blue-500 bg-blue-50 scale-105' 
-                      : formData.apkFile 
-                        ? 'border-green-500 bg-green-50' 
-                        : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
-                  }`}
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
-                >
-                  <input
-                    type="file"
-                    accept=".apk"
-                    onChange={handleFileChange}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
-                  <div className="space-y-4">
-                    {formData.apkFile ? (
-                      <>
-                        <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center">
-                          <Upload className="w-8 h-8 text-green-600" />
-                        </div>
-                        <div>
-                          <p className="text-lg font-medium text-green-700">{formData.apkFile.name}</p>
-                          <p className="text-sm text-green-600">
-                            {(formData.apkFile.size / (1024 * 1024)).toFixed(2)} MB
-                          </p>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-16 h-16 mx-auto bg-blue-100 rounded-full flex items-center justify-center">
-                          <Upload className="w-8 h-8 text-blue-600" />
-                        </div>
-                        <div>
-                          <p className="text-lg font-medium text-gray-900">
-                            Drop your APK file here or click to browse
-                          </p>
-                          <p className="text-sm text-gray-500 mt-2">
-                            Only .apk files are supported
-                          </p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* APK Name */}
-              <div className="space-y-3">
-                <label htmlFor="apkName" className="block text-lg font-semibold text-gray-900 flex items-center gap-3">
-                  <Tag className="w-5 h-5 text-blue-600" />
-                  APK Name
-                  {isUpdating && <span className="text-sm font-normal text-gray-500">(from API)</span>}
-                </label>
-                <input
-                  type="text"
-                  id="apkName"
-                  name="apkName"
-                  value={formData.apkName}
-                  onChange={handleInputChange}
-                  placeholder={isUpdating ? "App name loaded from API" : "Enter your app name"}
-                  className="w-full px-6 py-4 text-lg border border-gray-300 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white"
+          {isMobile ? (
+            <Select
+              fullWidth
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              displayEmpty
+              sx={{
+                bgcolor: "white",
+                borderRadius: "12px",
+                boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+              }}
+            >
+              {tabs.map((tab, index) => (
+                <MenuItem key={index} value={index}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    {tab.icon}
+                    {tab.label}
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          ) : (
+            <Tabs
+              value={value}
+              onChange={(e, newValue) => setValue(newValue)}
+              variant="scrollable"
+              scrollButtons="auto"
+              allowScrollButtonsMobile
+              textColor="primary"
+              indicatorColor="primary"
+              sx={{
+                "& .MuiTab-root": {
+                  textTransform: "none",
+                  fontWeight: 500,
+                  fontSize: "1rem",
+                  minHeight: "48px",
+                  borderRadius: "8px",
+                  mx: 0.5,
+                  "&.Mui-selected": {
+                    bgcolor: theme.palette.action.hover,
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                  },
+                },
+              }}
+            >
+              {tabs.map((tab, index) => (
+                <Tab
+                  key={index}
+                  label={tab.label}
+                  icon={tab.icon}
+                  iconPosition="start"
                 />
-              </div>
+              ))}
+            </Tabs>
+          )}
+        </Box>
 
-              {/* App Version */}
-              <div className="space-y-3">
-                <label htmlFor="appVersion" className="block text-lg font-semibold text-gray-900 flex items-center gap-3">
-                  <Hash className="w-5 h-5 text-blue-600" />
-                  App Version
-                  {isUpdating && <span className="text-sm font-normal text-gray-500">(from API)</span>}
-                </label>
-                <input
-                  type="text"
-                  id="appVersion"
-                  name="appVersion"
-                  value={formData.appVersion}
-                  onChange={handleInputChange}
-                  placeholder={isUpdating ? "Version loaded from API" : "e.g., 1.0.0 or 2.3.1"}
-                  className="w-full px-6 py-4 text-lg border border-gray-300 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white"
-                />
-              </div>
+        {/* Divider */}
+        <Divider />
 
-              {/* Submit Button */}
-              <div className="pt-4">
-                <button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={loading || !isUpdating}
-                  className={`w-50 font-bold py-4 px-8 rounded-2xl text-lg transition-all duration-200 transform hover:scale-[1.02] hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-blue-100 active:scale-[0.98] ${
-                    loading || !isUpdating
-                      ? 'bg-gray-400 cursor-not-allowed text-white'
-                      : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white'
-                  }`}
-                >
-                  {loading ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <RefreshCw className="w-5 h-5 animate-spin" />
-                      Updating...
-                    </span>
-                  ) : isUpdating ? (
-                    'Update App'
-                  ) : (
-                    'Select an App to Update'
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center mt-8 text-gray-500">
-          <p className="text-sm sm:text-base">
-            Supported file types: APK • Maximum file size: 100MB
-          </p>
-        </div>
-      </div>
+        {/* Tab Panels */}
+        {tabs.map((tab, index) => (
+          <TabPanel key={index} value={value} index={index}>
+            {tab.component}
+          </TabPanel>
+        ))}
+      </Paper>
     </div>
   );
-}
+};
+
+export default RevenueManagement;

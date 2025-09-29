@@ -24,6 +24,7 @@ import {
   Trophy,
   Globe,
   Wallet,
+  Coins,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -80,7 +81,22 @@ const menuItems = [
     label: "Payment Gateway",
     icon: Wallet,
     path: "/payment-gateway",
+    submenuKey: "paymentGateway",
+    subItems: [
+      { label: "PhonePay Gateway", path: "/phonepay-gateway" },
+      { label: "User Wallet Ledger", path: "/user-wallet-ledger"},
+    ],
   },
+  //  {
+  //   label: "PhonePay Gateway",
+  //   icon: Coins,
+  //   path: "/phonepay-gateway",
+  // },
+  // {
+  //   label: "User Wallet Ledger",
+  //   icon: Coins,
+  //   path: "/user-wallet-ledger",
+  // },
   {
     label: "Tournaments",
     icon: Trophy,
@@ -178,6 +194,11 @@ const menuItems = [
     label: "Watch & Earn",
     icon: Gift,
     path: "/watch-earn",
+  },
+   {
+    label: "Refer & Earn",
+    icon: Gift,
+    path: "/refer-earns",
   },
   {
     label: "Ads Management",
