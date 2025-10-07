@@ -23,7 +23,7 @@ const AdsAdmin = () => {
   });
 
   const API_BASE = 'https://macstormbattle-backend-2.onrender.com/api/admin/ads';
-  const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjMsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU4MTg0MDU1LCJleHAiOjE3NTk0ODAwNTV9.T3EoD6-3d7yCz7hLSJGTTSRowC3Ic3UotQ5coY7pa_k';
+  const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQ0LCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3NTk0ODQzNzUsImV4cCI6MTc2MDc4MDM3NX0.OFj8dTuFDAeUho39ZsciOxqswK2RgQCoV3doJsQWq-8';
   
   // Note: Don't include Content-Type for FormData - browser will set it automatically
   const getHeaders = (isFormData = false) => {

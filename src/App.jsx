@@ -85,8 +85,13 @@ import AdsManagement from "./pages/AdsManagement";
 import ReferEarn from "./pages/Refer&Earn"
 import PhonePayGateway from "./pages/PhonePayGateway";
 import UserWaletLeger from "./pages/UserWaletLeger";
+import DiamondPacks from "./pages/DiamondPack";
+import BundlesManager from "./pages/BundleManager";
+import SpinRewardRules from "./pages/SpinRewardRules";
+import ExchangeRate from "./pages/ExchangeRate";
+import UserRedemptionLogs from "./pages/UserRedemptionLogs";
 
-// ✅ ProtectedRoute component
+//  ProtectedRoute component
 function ProtectedRoute({ children }) {
   const authToken = localStorage.getItem("authToken");
   if (!authToken) {
@@ -242,6 +247,11 @@ function App() {
             <Route path="/refer-earns" element={<ReferEarn />} />
             <Route path="/phonepay-gateway" element={<PhonePayGateway />} />
             <Route path="/user-wallet-ledger" element={<UserWaletLeger />} />
+            <Route path="/diamond-packs" element={<DiamondPacks />} />
+            <Route path="/budles-manage" element={<BundlesManager />} />
+            <Route path="/spin-reward-rules" element={<SpinRewardRules />} />
+            <Route path="/exchange-rate" element={<ExchangeRate />} />
+            <Route path="/user-redemption-logs" element={<UserRedemptionLogs />} />
 
 
             <Route path="*" element={<Navigate to="/" />} />

@@ -198,11 +198,22 @@ export default function ApkUploadForm() {
                     className="w-full px-6 py-4 text-lg border border-gray-300 rounded-2xl focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-200 bg-gray-50 focus:bg-white"
                   >
                     <option value="">Choose an app to update</option>
-                    {existingApps.map((app) => (
+                    {/* {existingApps.map((app) => (
                       <option key={app.id} value={app.id}>
                         {app.app_name} - v{app.app_version} (Updated: {new Date(app.updated_at).toLocaleDateString()})
                       </option>
-                    ))}
+                    ))} */}
+                    {existingApps.map((app) => {
+                      const updatedDate = app.updated_at ? new Date(app.updated_at) : null;
+                      const isValidDate = updatedDate && !isNaN(updatedDate);
+                      return (
+                        <option key={app.id} value={app.id}>
+                          {app.app_name} - v{app.app_version}
+                          {isValidDate && ` (Updated: ${updatedDate.toLocaleDateString()})`}
+                        </option>
+                      );
+                    })}
+
                   </select>
                 )}
                 {existingApps.length === 0 && !loading && (

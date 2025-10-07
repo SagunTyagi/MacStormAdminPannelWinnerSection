@@ -49,37 +49,12 @@ const AdminRoles = () => {
     email: "",
     password: "",
     phone: "",
-    role: "Admin", // Auto-select Admin by default
-    permissions: {
-      manageUsers: true,
-      manageFinance: true,
-      viewReports: true,
-      manageTournaments: false,
-      manageSettings: false,
-      deleteBids: false,
-    },
+    role: "Admin",
+    permissions: [
+      { permission: "", granted: true }
+    ],
   })
   const [admins, setAdmins] = useState([])
-
-  // Permission mapping for API
-  const permissionMapping = {
-    manageUsers: "manage_users",
-    manageFinance: "manage_finance", 
-    viewReports: "view_reports",
-    manageTournaments: "manage_tournaments",
-    manageSettings: "manage_settings",
-    deleteBids: "delete_bids"
-  }
-
-  // Reverse mapping for loading data from API
-  const reversePermissionMapping = {
-    manage_users: "manageUsers",
-    manage_finance: "manageFinance",
-    view_reports: "viewReports", 
-    manage_tournaments: "manageTournaments",
-    manage_settings: "manageSettings",
-    delete_bids: "deleteBids"
-  }
 
   // Fetch admins from API
   const fetchAdmins = async () => {
@@ -94,12 +69,12 @@ const AdminRoles = () => {
         name: admin.name,
         email: admin.email,
         role: admin.role,
-        status: "active", // Default since API doesn't provide status
+        status: "active",
         permissions: admin.permissions.length,
         lastLogin: admin.sessions.length > 0 
           ? new Date(admin.sessions[admin.sessions.length - 1].expiresAt).toLocaleString()
           : "Never",
-        avatar: null, // Remove problematic avatar URL
+        avatar: null,
         phone: admin.phone,
         createdAt: admin.createdAt,
         updatedAt: admin.updatedAt,
@@ -157,13 +132,31 @@ const AdminRoles = () => {
     setFormData(prev => ({ ...prev, role: value }))
   }, [])
 
-  const handlePermissionChange = useCallback((permission, checked) => {
+  const handlePermissionChange = useCallback((index, field, value) => {
+    setFormData((prev) => {
+      const newPermissions = [...prev.permissions]
+      newPermissions[index] = {
+        ...newPermissions[index],
+        [field]: value
+      }
+      return {
+        ...prev,
+        permissions: newPermissions
+      }
+    })
+  }, [])
+
+  const handleAddPermission = useCallback(() => {
     setFormData((prev) => ({
       ...prev,
-      permissions: {
-        ...prev.permissions,
-        [permission]: checked,
-      },
+      permissions: [...prev.permissions, { permission: "", granted: true }]
+    }))
+  }, [])
+
+  const handleRemovePermission = useCallback((index) => {
+    setFormData((prev) => ({
+      ...prev,
+      permissions: prev.permissions.filter((_, i) => i !== index)
     }))
   }, [])
 
@@ -174,14 +167,9 @@ const AdminRoles = () => {
       password: "",
       phone: "",
       role: "Admin",
-      permissions: {
-        manageUsers: true,
-        manageFinance: true,
-        viewReports: true,
-        manageTournaments: false,
-        manageSettings: false,
-        deleteBids: false,
-      },
+      permissions: [
+        { permission: "", granted: true }
+      ],
     })
   }, [])
 
@@ -190,11 +178,13 @@ const AdminRoles = () => {
       setSubmitting(true)
       setError(null)
 
-      // Transform permissions to API format
-      const apiPermissions = Object.entries(formData.permissions).map(([key, value]) => ({
-        permission: permissionMapping[key],
-        granted: value
-      }))
+      // Filter out empty permissions and format for API
+      const apiPermissions = formData.permissions
+        .filter(p => p.permission.trim() !== '')
+        .map(p => ({
+          permission: p.permission.trim(),
+          granted: p.granted
+        }))
 
       const payload = {
         name: formData.fullName,
@@ -209,7 +199,7 @@ const AdminRoles = () => {
       setSuccess("Admin created successfully!")
       setShowCreateModal(false)
       resetForm()
-      fetchAdmins() // Refresh the list
+      fetchAdmins()
     } catch (err) {
       console.error('Error creating admin:', err)
       setError(err.response?.data?.message || 'Failed to create admin')
@@ -221,45 +211,36 @@ const AdminRoles = () => {
   const handleEditAdmin = useCallback((admin) => {
     setEditingAdmin(admin)
     
-    // Convert API permissions back to form format
-    const permissionsObj = {
-      manageUsers: false,
-      manageFinance: false,
-      viewReports: false,
-      manageTournaments: false,
-      manageSettings: false,
-      deleteBids: false,
-    }
-    
-    admin.permissionsData.forEach(perm => {
-      const formKey = reversePermissionMapping[perm.permission]
-      if (formKey) {
-        permissionsObj[formKey] = perm.granted
-      }
-    })
+    // Convert API permissions to form format
+    const permissionsArray = admin.permissionsData.map(perm => ({
+      permission: perm.permission,
+      granted: perm.granted
+    }))
 
     setFormData({
       fullName: admin.name,
       email: admin.email,
-      password: "", // Don't pre-fill password for security
+      password: "",
       phone: admin.phone || "",
       role: admin.role,
-      permissions: permissionsObj
+      permissions: permissionsArray.length > 0 ? permissionsArray : [{ permission: "", granted: true }]
     })
     
     setShowEditModal(true)
-  }, [reversePermissionMapping])
+  }, [])
 
   const handleUpdateAdmin = async () => {
     try {
       setSubmitting(true)
       setError(null)
 
-      // Transform permissions to API format
-      const apiPermissions = Object.entries(formData.permissions).map(([key, value]) => ({
-        permission: permissionMapping[key],
-        granted: value
-      }))
+      // Filter out empty permissions and format for API
+      const apiPermissions = formData.permissions
+        .filter(p => p.permission.trim() !== '')
+        .map(p => ({
+          permission: p.permission.trim(),
+          granted: p.granted
+        }))
 
       const payload = {
         name: formData.fullName,
@@ -279,7 +260,7 @@ const AdminRoles = () => {
       setShowEditModal(false)
       setEditingAdmin(null)
       resetForm()
-      fetchAdmins() // Refresh the list
+      fetchAdmins()
     } catch (err) {
       console.error('Error updating admin:', err)
       setError(err.response?.data?.message || 'Failed to update admin')
@@ -298,7 +279,7 @@ const AdminRoles = () => {
       await axiosInstance.delete(`/auth/admin/deleteadmin/${id}`)
       
       setSuccess("Admin deleted successfully!")
-      fetchAdmins() // Refresh the list
+      fetchAdmins()
     } catch (err) {
       console.error('Error deleting admin:', err)
       setError(err.response?.data?.message || 'Failed to delete admin')
@@ -614,116 +595,107 @@ const AdminRoles = () => {
 
         {/* Permissions */}
         <Box>
-          <Typography
-            variant="subtitle2"
-            sx={{
-              mb: 2,
-              fontWeight: 600,
-              color: "#111827",
-              fontSize: "1rem",
-            }}
-          >
-            Permissions
-          </Typography>
-          <Stack spacing={1}>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.permissions.manageUsers}
-                    onChange={(e) => handlePermissionChange("manageUsers", e.target.checked)}
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                fontWeight: 600,
+                color: "#111827",
+                fontSize: "1rem",
+              }}
+            >
+              Permissions
+            </Typography>
+            <Button
+              size="small"
+              startIcon={<Plus size={16} />}
+              onClick={handleAddPermission}
+              sx={{
+                textTransform: "none",
+                fontSize: "0.75rem",
+                fontWeight: 500,
+                color: "#3b82f6",
+                "&:hover": {
+                  backgroundColor: "#eff6ff",
+                },
+              }}
+            >
+              Add Permission
+            </Button>
+          </Stack>
+          <Stack spacing={2}>
+            {formData.permissions.map((perm, index) => (
+              <Stack
+                key={index}
+                direction="row"
+                spacing={2}
+                alignItems="flex-start"
+              >
+                <TextField
+                  fullWidth
+                  label="Permission Name"
+                  placeholder="e.g., user_management, analytics, content_management"
+                  value={perm.permission}
+                  onChange={(e) => handlePermissionChange(index, 'permission', e.target.value)}
+                  size="medium"
+                  sx={{
+                    flex: 1,
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: 1.5,
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#3b82f6",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#3b82f6",
+                      },
+                    },
+                    "& .MuiInputLabel-root.Mui-focused": {
+                      color: "#3b82f6",
+                    },
+                  }}
+                />
+                <FormControl size="medium" sx={{ minWidth: 120 }}>
+                  <InputLabel
                     sx={{
-                      color: "#d1d5db",
-                      "&.Mui-checked": {
+                      "&.Mui-focused": {
                         color: "#3b82f6",
                       },
                     }}
-                  />
-                }
-                label={<Typography sx={{ fontSize: "0.875rem", color: "#374151" }}>Manage Users</Typography>}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.permissions.manageTournaments}
-                    onChange={(e) => handlePermissionChange("manageTournaments", e.target.checked)}
+                  >
+                    Access
+                  </InputLabel>
+                  <Select
+                    value={perm.granted}
+                    label="Access"
+                    onChange={(e) => handlePermissionChange(index, 'granted', e.target.value)}
                     sx={{
-                      color: "#d1d5db",
-                      "&.Mui-checked": {
-                        color: "#3b82f6",
+                      borderRadius: 1.5,
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#3b82f6",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "#3b82f6",
                       },
                     }}
-                  />
-                }
-                label={
-                  <Typography sx={{ fontSize: "0.875rem", color: "#374151" }}>Manage Tournaments</Typography>
-                }
-              />
-            </Stack>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.permissions.manageFinance}
-                    onChange={(e) => handlePermissionChange("manageFinance", e.target.checked)}
+                  >
+                    <MenuItem value={true}>Granted</MenuItem>
+                    <MenuItem value={false}>Denied</MenuItem>
+                  </Select>
+                </FormControl>
+                {formData.permissions.length > 1 && (
+                  <IconButton
+                    onClick={() => handleRemovePermission(index)}
                     sx={{
-                      color: "#d1d5db",
-                      "&.Mui-checked": {
-                        color: "#3b82f6",
-                      },
+                      mt: 1,
+                      color: "#ef4444",
+                      "&:hover": { backgroundColor: "#fef2f2" },
                     }}
-                  />
-                }
-                label={<Typography sx={{ fontSize: "0.875rem", color: "#374151" }}>Manage Finance</Typography>}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.permissions.manageSettings}
-                    onChange={(e) => handlePermissionChange("manageSettings", e.target.checked)}
-                    sx={{
-                      color: "#d1d5db",
-                      "&.Mui-checked": {
-                        color: "#3b82f6",
-                      },
-                    }}
-                  />
-                }
-                label={<Typography sx={{ fontSize: "0.875rem", color: "#374151" }}>Manage Settings</Typography>}
-              />
-            </Stack>
-            <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.permissions.viewReports}
-                    onChange={(e) => handlePermissionChange("viewReports", e.target.checked)}
-                    sx={{
-                      color: "#d1d5db",
-                      "&.Mui-checked": {
-                        color: "#3b82f6",
-                      },
-                    }}
-                  />
-                }
-                label={<Typography sx={{ fontSize: "0.875rem", color: "#374151" }}>View Reports</Typography>}
-              />
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={formData.permissions.deleteBids}
-                    onChange={(e) => handlePermissionChange("deleteBids", e.target.checked)}
-                    sx={{
-                      color: "#d1d5db",
-                      "&.Mui-checked": {
-                        color: "#3b82f6",
-                      },
-                    }}
-                  />
-                }
-                label={<Typography sx={{ fontSize: "0.875rem", color: "#374151" }}>Delete Bids</Typography>}
-              />
-            </Stack>
+                  >
+                    <Trash2 size={18} />
+                  </IconButton>
+                )}
+              </Stack>
+            ))}
           </Stack>
         </Box>
       </Stack>

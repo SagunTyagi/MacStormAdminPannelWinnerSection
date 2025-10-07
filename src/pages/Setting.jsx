@@ -42,8 +42,8 @@ const Setting = () => {
     { label: 'Security', icon: <Security />, component: <SecuritySettings /> },
     { label: 'Roles', icon: <Group />, component: <AdminRoles /> },
     { label: 'Integration', icon: <IntegrationInstructions />, component: <Integration /> },
-    { label: 'Bonus', icon: <Gift />, component: <Bonus /> },
-    { label: 'Backup', icon: <Backup />, component: <BackupRecovery /> },
+    // { label: 'Bonus', icon: <Gift />, component: <Bonus /> },
+    // { label: 'Backup', icon: <Backup />, component: <BackupRecovery /> },
   ];
 
   return (
