@@ -90,6 +90,9 @@ import BundlesManager from "./pages/BundleManager";
 import SpinRewardRules from "./pages/SpinRewardRules";
 import ExchangeRate from "./pages/ExchangeRate";
 import UserRedemptionLogs from "./pages/UserRedemptionLogs";
+import GatewayStatus from "./pages/GatewayStatus";
+import GroupManagement from "./pages/GroupManagement";
+import EmailNotificationControl from "./pages/EmailNotificationControl";
 
 //  ProtectedRoute component
 function ProtectedRoute({ children }) {
@@ -252,7 +255,9 @@ function App() {
             <Route path="/spin-reward-rules" element={<SpinRewardRules />} />
             <Route path="/exchange-rate" element={<ExchangeRate />} />
             <Route path="/user-redemption-logs" element={<UserRedemptionLogs />} />
-
+            <Route path="/gateway-status" element={<GatewayStatus />} />
+            <Route path="/group-management" element={<GroupManagement />} />
+            <Route path="/email-controls" element={<EmailNotificationControl />} />
 
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

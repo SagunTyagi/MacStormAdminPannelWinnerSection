@@ -53,13 +53,6 @@ const AdminManagement = () => {
       minute: "numeric",
     });
 
-  const allPermissions = [
-    "user_management",
-    "content_management",
-    "gameplay_management",
-    "transaction_access",
-  ]; // add as needed
-
   const [newAdmin, setNewAdmin] = useState({
     name: "",
     email: "",
@@ -68,6 +61,13 @@ const AdminManagement = () => {
     role: "Admin",
     permissions: [],
   });
+
+  const [permissionInput, setPermissionInput] = useState("");
+  const [subPermissionInput, setSubPermissionInput] = useState("");
+  const [selectedParentIndex, setSelectedParentIndex] = useState(null);
+  const [editPermissionInput, setEditPermissionInput] = useState("");
+  const [editSubPermissionInput, setEditSubPermissionInput] = useState("");
+  const [editSelectedParentIndex, setEditSelectedParentIndex] = useState(null);
 
   const token = localStorage.getItem("authToken");
 
@@ -95,12 +95,180 @@ const AdminManagement = () => {
     setShowPermissionsModal(true);
   };
 
-  const togglePermission = (permission) => {
-    setEditingPermissions((prev) =>
-      prev.map((p) =>
-        p.permission === permission ? { ...p, granted: !p.granted } : p
-      )
+  const addPermission = () => {
+    if (!permissionInput.trim()) {
+      toast.error("Permission name cannot be empty");
+      return;
+    }
+
+    const exists = newAdmin.permissions.find(
+      (p) => p.permission.toLowerCase() === permissionInput.trim().toLowerCase()
     );
+
+    if (exists) {
+      toast.error("Permission already exists");
+      return;
+    }
+
+    setNewAdmin({
+      ...newAdmin,
+      permissions: [
+        ...newAdmin.permissions,
+        {
+          permission: permissionInput.trim(),
+          granted: true,
+          subPermissions: [],
+        },
+      ],
+    });
+    setPermissionInput("");
+  };
+
+  const removePermission = (index) => {
+    const updated = newAdmin.permissions.filter((_, i) => i !== index);
+    setNewAdmin({ ...newAdmin, permissions: updated });
+  };
+
+  const addSubPermission = (parentIndex) => {
+    if (!subPermissionInput.trim()) {
+      toast.error("Sub-permission name cannot be empty");
+      return;
+    }
+
+    const updated = [...newAdmin.permissions];
+    const parent = updated[parentIndex];
+
+    const exists = parent.subPermissions?.find(
+      (sp) =>
+        sp.permission.toLowerCase() === subPermissionInput.trim().toLowerCase()
+    );
+
+    if (exists) {
+      toast.error("Sub-permission already exists");
+      return;
+    }
+
+    if (!parent.subPermissions) {
+      parent.subPermissions = [];
+    }
+
+    parent.subPermissions.push({
+      permission: subPermissionInput.trim(),
+      granted: true,
+    });
+
+    setNewAdmin({ ...newAdmin, permissions: updated });
+    setSubPermissionInput("");
+    setSelectedParentIndex(null);
+  };
+
+  const removeSubPermission = (parentIndex, subIndex) => {
+    const updated = [...newAdmin.permissions];
+    updated[parentIndex].subPermissions = updated[
+      parentIndex
+    ].subPermissions.filter((_, i) => i !== subIndex);
+    setNewAdmin({ ...newAdmin, permissions: updated });
+  };
+
+  const togglePermissionGranted = (index) => {
+    const updated = [...newAdmin.permissions];
+    updated[index].granted = !updated[index].granted;
+    setNewAdmin({ ...newAdmin, permissions: updated });
+  };
+
+  const toggleSubPermissionGranted = (parentIndex, subIndex) => {
+    const updated = [...newAdmin.permissions];
+    updated[parentIndex].subPermissions[subIndex].granted =
+      !updated[parentIndex].subPermissions[subIndex].granted;
+    setNewAdmin({ ...newAdmin, permissions: updated });
+  };
+
+  // Edit form permission functions
+  const addEditPermission = () => {
+    if (!editPermissionInput.trim()) {
+      toast.error("Permission name cannot be empty");
+      return;
+    }
+
+    const exists = editingPermissions.find(
+      (p) =>
+        p.permission.toLowerCase() === editPermissionInput.trim().toLowerCase()
+    );
+
+    if (exists) {
+      toast.error("Permission already exists");
+      return;
+    }
+
+    setEditingPermissions([
+      ...editingPermissions,
+      {
+        permission: editPermissionInput.trim(),
+        granted: true,
+        subPermissions: [],
+      },
+    ]);
+    setEditPermissionInput("");
+  };
+
+  const removeEditPermission = (index) => {
+    const updated = editingPermissions.filter((_, i) => i !== index);
+    setEditingPermissions(updated);
+  };
+
+  const addEditSubPermission = (parentIndex) => {
+    if (!editSubPermissionInput.trim()) {
+      toast.error("Sub-permission name cannot be empty");
+      return;
+    }
+
+    const updated = [...editingPermissions];
+    const parent = updated[parentIndex];
+
+    const exists = parent.subPermissions?.find(
+      (sp) =>
+        sp.permission.toLowerCase() ===
+        editSubPermissionInput.trim().toLowerCase()
+    );
+
+    if (exists) {
+      toast.error("Sub-permission already exists");
+      return;
+    }
+
+    if (!parent.subPermissions) {
+      parent.subPermissions = [];
+    }
+
+    parent.subPermissions.push({
+      permission: editSubPermissionInput.trim(),
+      granted: true,
+    });
+
+    setEditingPermissions(updated);
+    setEditSubPermissionInput("");
+    setEditSelectedParentIndex(null);
+  };
+
+  const removeEditSubPermission = (parentIndex, subIndex) => {
+    const updated = [...editingPermissions];
+    updated[parentIndex].subPermissions = updated[
+      parentIndex
+    ].subPermissions.filter((_, i) => i !== subIndex);
+    setEditingPermissions(updated);
+  };
+
+  const toggleEditPermissionGranted = (index) => {
+    const updated = [...editingPermissions];
+    updated[index].granted = !updated[index].granted;
+    setEditingPermissions(updated);
+  };
+
+  const toggleEditSubPermissionGranted = (parentIndex, subIndex) => {
+    const updated = [...editingPermissions];
+    updated[parentIndex].subPermissions[subIndex].granted =
+      !updated[parentIndex].subPermissions[subIndex].granted;
+    setEditingPermissions(updated);
   };
 
   const submitEditPermissions = async () => {
@@ -125,6 +293,9 @@ const AdminManagement = () => {
       toast.success("Admin updated successfully");
       setEditPermissionsModal(false);
       setEditingAdminId(null);
+      setEditPermissionInput("");
+      setEditSubPermissionInput("");
+      setEditSelectedParentIndex(null);
       fetchAdmins();
     } catch (error) {
       toast.error("Failed to update admin");
@@ -140,6 +311,7 @@ const AdminManagement = () => {
     const perms = (admin.permissions || []).map((p) => ({
       permission: p.permission,
       granted: p.granted,
+      subPermissions: p.subPermissions || [],
     }));
     setEditingPermissions(perms);
     setSelectedAdmin(admin);
@@ -319,6 +491,16 @@ const AdminManagement = () => {
                 {(selectedAdmin.permissions || []).map((perm, i) => (
                   <li key={i}>
                     {perm.permission} - {perm.granted ? "Granted" : "Revoked"}
+                    {perm.subPermissions && perm.subPermissions.length > 0 && (
+                      <ul className="list-circle pl-5">
+                        {perm.subPermissions.map((sub, j) => (
+                          <li key={j}>
+                            {sub.permission} -{" "}
+                            {sub.granted ? "Granted" : "Revoked"}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -337,154 +519,321 @@ const AdminManagement = () => {
 
       {/* Create Admin Modal */}
       {isCreateOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-zinc-800 dark:text-white p-6 rounded-lg w-full max-w-md mx-4">
-            <h2 className="text-lg font-bold mb-4">Create New Admin</h2>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-zinc-800 dark:text-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6 rounded-t-xl">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Crown className="w-6 h-6" />
+                Create New Admin
+              </h2>
+              <p className="text-sm text-purple-100 mt-1">
+                Set up a new administrator with custom permissions
+              </p>
+            </div>
 
-            <input
-              type="text"
-              placeholder="Name"
-              value={newAdmin.name}
-              onChange={(e) =>
-                setNewAdmin({ ...newAdmin, name: e.target.value })
-              }
-              className="border dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white w-full mb-3 px-2 py-1 rounded"
-            />
-
-            <input
-              type="email"
-              placeholder="Email"
-              value={newAdmin.email}
-              onChange={(e) =>
-                setNewAdmin({ ...newAdmin, email: e.target.value })
-              }
-              className="border dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white w-full mb-3 px-2 py-1 rounded"
-            />
-            <input
-              type="text"
-              placeholder="Phone"
-              value={newAdmin.phone}
-              onChange={(e) =>
-                setNewAdmin({ ...newAdmin, phone: e.target.value })
-              }
-              className="border dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white w-full mb-3 px-2 py-1 rounded"
-            />
-            <input
-              type="password"
-              placeholder="Password"
-              value={newAdmin.password}
-              onChange={(e) =>
-                setNewAdmin({ ...newAdmin, password: e.target.value })
-              }
-              className="border dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white w-full mb-3 px-2 py-1 rounded"
-            />
-
-            <label className="block font-medium mb-1">Permissions:</label>
-            {["user_management", "content_management", "settings_access"].map(
-              (perm) => {
-                const existing = newAdmin.permissions.find(
-                  (p) => p.permission === perm
-                );
-                return (
-                  <label key={perm} className="block text-sm">
+            <div className="p-6">
+              {/* Basic Info Section */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-700 dark:text-gray-200">
+                  <ShieldCheck className="w-5 h-5" />
+                  Basic Information
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                      Full Name *
+                    </label>
                     <input
-                      type="checkbox"
-                      className="mr-2"
-                      checked={existing?.granted || false}
-                      onChange={(e) => {
-                        const updated = [...newAdmin.permissions];
-                        const index = updated.findIndex(
-                          (p) => p.permission === perm
-                        );
-
-                        if (index !== -1) {
-                          updated[index].granted = e.target.checked;
-                        } else {
-                          updated.push({
-                            permission: perm,
-                            granted: e.target.checked,
-                          });
-                        }
-
-                        setNewAdmin({ ...newAdmin, permissions: updated });
-                      }}
-                    />
-                    {perm.replace(/_/g, " ").toUpperCase()}
-                  </label>
-                );
-              }
-            )}
-
-            <div className="flex justify-end mt-4 gap-2">
-              <button
-                className="bg-gray-300 dark:bg-zinc-600 px-3 py-1 rounded"
-                onClick={() => setIsCreateOpen(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-                onClick={async () => {
-                  if (
-                    !newAdmin.name ||
-                    !newAdmin.email ||
-                    !newAdmin.phone ||
-                    !newAdmin.password
-                  ) {
-                    toast.error("Please fill in all fields");
-                    return;
-                  }
-
-                  const allPermissions = [
-                    "user_management",
-                    "content_management",
-                    "settings_access",
-                  ];
-                  const selectedPermissions = newAdmin.permissions
-                    .filter((p) => p.granted)
-                    .map((p) => p.permission);
-
-                  const payload = {
-                    name: newAdmin.name,
-                    email: newAdmin.email,
-                    phone: newAdmin.phone,
-                    password: newAdmin.password,
-                    role: newAdmin.role,
-                    permissions: allPermissions.map((p) => ({
-                      permission: p,
-                      granted: selectedPermissions.includes(p),
-                    })),
-                  };
-
-                  try {
-                    await axiosInstance.post(
-                      "/auth/admin/createadmin",
-                      payload,
-                      {
-                        headers: {
-                          Authorization: `Bearer ${token}`,
-                          "Content-Type": "application/json",
-                        },
+                      type="text"
+                      placeholder="Enter admin name"
+                      value={newAdmin.name}
+                      onChange={(e) =>
+                        setNewAdmin({ ...newAdmin, name: e.target.value })
                       }
-                    );
+                      className="border dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    />
+                  </div>
 
-                    toast.success("Admin created successfully!");
-                    fetchAdmins();
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                      Email Address *
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="admin@example.com"
+                      value={newAdmin.email}
+                      onChange={(e) =>
+                        setNewAdmin({ ...newAdmin, email: e.target.value })
+                      }
+                      className="border dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                      Phone Number *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="+1234567890"
+                      value={newAdmin.phone}
+                      onChange={(e) =>
+                        setNewAdmin({ ...newAdmin, phone: e.target.value })
+                      }
+                      className="border dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                      Password *
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={newAdmin.password}
+                      onChange={(e) =>
+                        setNewAdmin({ ...newAdmin, password: e.target.value })
+                      }
+                      className="border dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-white w-full px-4 py-2.5 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Permissions Section */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-700 dark:text-gray-200">
+                  <ShieldCheck className="w-5 h-5" />
+                  Permissions Management
+                </h3>
+
+                {/* Add Permission Input */}
+                <div className="bg-gray-50 dark:bg-zinc-700 p-4 rounded-lg mb-4">
+                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                    Add New Permission
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g., Dashboard, Users, Analytics"
+                      value={permissionInput}
+                      onChange={(e) => setPermissionInput(e.target.value)}
+                      onKeyPress={(e) => e.key === "Enter" && addPermission()}
+                      className="flex-1 border dark:border-zinc-600 bg-white dark:bg-zinc-800 text-black dark:text-white px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      onClick={addPermission}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+
+                {/* Permissions List */}
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {newAdmin.permissions.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <ShieldCheck className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                      <p>No permissions added yet</p>
+                      <p className="text-sm">
+                        Add permissions to control admin access
+                      </p>
+                    </div>
+                  ) : (
+                    newAdmin.permissions.map((perm, index) => (
+                      <div
+                        key={index}
+                        className="bg-white dark:bg-zinc-700 border dark:border-zinc-600 rounded-lg p-4"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="checkbox"
+                              checked={perm.granted}
+                              onChange={() => togglePermissionGranted(index)}
+                              className="w-4 h-4 accent-blue-600"
+                            />
+                            <span className="font-medium text-gray-800 dark:text-gray-200">
+                              {perm.permission}
+                            </span>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${
+                                perm.granted
+                                  ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                                  : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                              }`}
+                            >
+                              {perm.granted ? "Granted" : "Revoked"}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => removePermission(index)}
+                            className="text-red-500 hover:text-red-700 p-1"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Sub-permissions */}
+                        <div className="ml-7 mt-3">
+                          <div className="flex gap-2 mb-2">
+                            {selectedParentIndex === index ? (
+                              <>
+                                <input
+                                  type="text"
+                                  placeholder="Add sub-permission"
+                                  value={subPermissionInput}
+                                  onChange={(e) =>
+                                    setSubPermissionInput(e.target.value)
+                                  }
+                                  onKeyPress={(e) =>
+                                    e.key === "Enter" &&
+                                    addSubPermission(index)
+                                  }
+                                  className="flex-1 border dark:border-zinc-600 bg-white dark:bg-zinc-800 text-black dark:text-white px-3 py-1.5 rounded text-sm"
+                                  autoFocus
+                                />
+                                <button
+                                  onClick={() => addSubPermission(index)}
+                                  className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700"
+                                >
+                                  Add
+                                </button>
+                                <button
+                                  onClick={() => setSelectedParentIndex(null)}
+                                  className="bg-gray-400 text-white px-3 py-1.5 rounded text-sm hover:bg-gray-500"
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={() => setSelectedParentIndex(index)}
+                                className="text-blue-600 dark:text-blue-400 text-sm hover:underline"
+                              >
+                                + Add Sub-permission
+                              </button>
+                            )}
+                          </div>
+
+                          {perm.subPermissions?.map((sub, subIndex) => (
+                            <div
+                              key={subIndex}
+                              className="flex items-center justify-between bg-gray-50 dark:bg-zinc-800 p-2 rounded mb-1"
+                            >
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={sub.granted}
+                                  onChange={() =>
+                                    toggleSubPermissionGranted(index, subIndex)
+                                  }
+                                  className="w-3 h-3 accent-blue-600"
+                                />
+                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                  {sub.permission}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() =>
+                                  removeSubPermission(index, subIndex)
+                                }
+                                className="text-red-500 hover:text-red-700 p-1"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t dark:border-zinc-700">
+                <button
+                  className="bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 px-6 py-2.5 rounded-lg hover:bg-gray-300 dark:hover:bg-zinc-600 transition font-medium"
+                  onClick={() => {
                     setIsCreateOpen(false);
                     setNewAdmin({
                       name: "",
                       email: "",
                       phone: "",
                       password: "",
+                      role: "Admin",
                       permissions: [],
                     });
-                  } catch (err) {
-                    toast.error("Failed to create admin");
-                  }
-                }}
-              >
-                Create
-              </button>
+                    setPermissionInput("");
+                    setSubPermissionInput("");
+                    setSelectedParentIndex(null);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2.5 rounded-lg hover:from-purple-700 hover:to-blue-700 transition font-medium shadow-lg"
+                  onClick={async () => {
+                    if (
+                      !newAdmin.name ||
+                      !newAdmin.email ||
+                      !newAdmin.phone ||
+                      !newAdmin.password
+                    ) {
+                      toast.error("Please fill in all required fields");
+                      return;
+                    }
+
+                    const payload = {
+                      name: newAdmin.name,
+                      email: newAdmin.email,
+                      phone: newAdmin.phone,
+                      password: newAdmin.password,
+                      role: newAdmin.role,
+                      permissions: newAdmin.permissions,
+                    };
+
+                    try {
+                      await axiosInstance.post(
+                        "/auth/admin/createadmin",
+                        payload,
+                        {
+                          headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "application/json",
+                          },
+                        }
+                      );
+
+                      toast.success("Admin created successfully!");
+                      fetchAdmins();
+                      setIsCreateOpen(false);
+                      setNewAdmin({
+                        name: "",
+                        email: "",
+                        phone: "",
+                        password: "",
+                        role: "Admin",
+                        permissions: [],
+                      });
+                      setPermissionInput("");
+                      setSubPermissionInput("");
+                      setSelectedParentIndex(null);
+                    } catch (err) {
+                      toast.error(
+                        err.response?.data?.message ||
+                          "Failed to create admin"
+                      );
+                    }
+                  }}
+                >
+                  Create Admin
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -511,6 +860,24 @@ const AdminManagement = () => {
                     >
                       : {perm.granted ? "Granted" : "Revoked"}
                     </span>
+                    {perm.subPermissions && perm.subPermissions.length > 0 && (
+                      <ul className="list-circle pl-5">
+                        {perm.subPermissions.map((sub, j) => (
+                          <li key={j}>
+                            {sub.permission}{" "}
+                            <span
+                              className={
+                                sub.granted
+                                  ? "text-green-600 dark:text-green-400"
+                                  : "text-red-500 dark:text-red-400"
+                              }
+                            >
+                              : {sub.granted ? "Granted" : "Revoked"}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -533,56 +900,215 @@ const AdminManagement = () => {
 
       {/* Edit Permissions Modal */}
       {editPermissionsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-[400px] shadow-lg">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-              Edit Admin Details
-            </h2>
-
-            <label className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
-              Name:
-              <input
-                type="text"
-                value={editingName}
-                onChange={(e) => setEditingName(e.target.value)}
-                className="w-full mt-1 p-2 border rounded dark:bg-gray-700 dark:text-white"
-              />
-            </label>
-
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold text-gray-800 dark:text-white mb-2">
-                Permissions:
-              </h3>
-              <div className="grid gap-2">
-                {editingPermissions.map((perm, index) => (
-                  <label
-                    key={index}
-                    className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={perm.granted}
-                      onChange={() => togglePermission(perm.permission)}
-                    />
-                    {perm.permission.replace(/_/g, " ")}
-                  </label>
-                ))}
-              </div>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-zinc-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 rounded-t-xl">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Pencil className="w-6 h-6" />
+                Edit Admin Details
+              </h2>
+              <p className="text-sm text-blue-100 mt-1">
+                Update administrator information and permissions
+              </p>
             </div>
 
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setEditPermissionsModal(false)}
-                className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-black dark:text-white rounded"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={submitEditPermissions}
-                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Save
-              </button>
+            <div className="p-6">
+              {/* Basic Info */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                  Admin Name *
+                </label>
+                <input
+                  type="text"
+                  value={editingName}
+                  onChange={(e) => setEditingName(e.target.value)}
+                  className="w-full px-4 py-2.5 border dark:border-zinc-600 rounded-lg dark:bg-zinc-700 dark:text-white focus:ring-2 focus:ring-blue-500 transition"
+                  placeholder="Enter admin name"
+                />
+              </div>
+
+              {/* Permissions Section */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-gray-700 dark:text-gray-200">
+                  <ShieldCheck className="w-5 h-5" />
+                  Permissions Management
+                </h3>
+
+                {/* Add Permission Input */}
+                <div className="bg-gray-50 dark:bg-zinc-700 p-4 rounded-lg mb-4">
+                  <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                    Add New Permission
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g., Dashboard, Users, Analytics"
+                      value={editPermissionInput}
+                      onChange={(e) => setEditPermissionInput(e.target.value)}
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && addEditPermission()
+                      }
+                      className="flex-1 border dark:border-zinc-600 bg-white dark:bg-zinc-800 text-black dark:text-white px-4 py-2 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      onClick={addEditPermission}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-medium"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+
+                {/* Permissions List */}
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {editingPermissions.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      <ShieldCheck className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                      <p>No permissions assigned</p>
+                      <p className="text-sm">
+                        Add permissions to control admin access
+                      </p>
+                    </div>
+                  ) : (
+                    editingPermissions.map((perm, index) => (
+                      <div
+                        key={index}
+                        className="bg-white dark:bg-zinc-700 border dark:border-zinc-600 rounded-lg p-4"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="checkbox"
+                              checked={perm.granted}
+                              onChange={() => toggleEditPermissionGranted(index)}
+                              className="w-4 h-4 accent-blue-600"
+                            />
+                            <span className="font-medium text-gray-800 dark:text-gray-200">
+                              {perm.permission}
+                            </span>
+                            <span
+                              className={`text-xs px-2 py-1 rounded-full ${
+                                perm.granted
+                                  ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+                                  : "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                              }`}
+                            >
+                              {perm.granted ? "Granted" : "Revoked"}
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => removeEditPermission(index)}
+                            className="text-red-500 hover:text-red-700 p-1"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Sub-permissions */}
+                        <div className="ml-7 mt-3">
+                          <div className="flex gap-2 mb-2">
+                            {editSelectedParentIndex === index ? (
+                              <>
+                                <input
+                                  type="text"
+                                  placeholder="Add sub-permission"
+                                  value={editSubPermissionInput}
+                                  onChange={(e) =>
+                                    setEditSubPermissionInput(e.target.value)
+                                  }
+                                  onKeyPress={(e) =>
+                                    e.key === "Enter" &&
+                                    addEditSubPermission(index)
+                                  }
+                                  className="flex-1 border dark:border-zinc-600 bg-white dark:bg-zinc-800 text-black dark:text-white px-3 py-1.5 rounded text-sm"
+                                  autoFocus
+                                />
+                                <button
+                                  onClick={() => addEditSubPermission(index)}
+                                  className="bg-green-600 text-white px-3 py-1.5 rounded text-sm hover:bg-green-700"
+                                >
+                                  Add
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    setEditSelectedParentIndex(null)
+                                  }
+                                  className="bg-gray-400 text-white px-3 py-1.5 rounded text-sm hover:bg-gray-500"
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  setEditSelectedParentIndex(index)
+                                }
+                                className="text-blue-600 dark:text-blue-400 text-sm hover:underline"
+                              >
+                                + Add Sub-permission
+                              </button>
+                            )}
+                          </div>
+
+                          {perm.subPermissions?.map((sub, subIndex) => (
+                            <div
+                              key={subIndex}
+                              className="flex items-center justify-between bg-gray-50 dark:bg-zinc-800 p-2 rounded mb-1"
+                            >
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={sub.granted}
+                                  onChange={() =>
+                                    toggleEditSubPermissionGranted(
+                                      index,
+                                      subIndex
+                                    )
+                                  }
+                                  className="w-3 h-3 accent-blue-600"
+                                />
+                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                  {sub.permission}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() =>
+                                  removeEditSubPermission(index, subIndex)
+                                }
+                                className="text-red-500 hover:text-red-700 p-1"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex justify-end gap-3 pt-4 border-t dark:border-zinc-700">
+                <button
+                  onClick={() => {
+                    setEditPermissionsModal(false);
+                    setEditPermissionInput("");
+                    setEditSubPermissionInput("");
+                    setEditSelectedParentIndex(null);
+                  }}
+                  className="bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-gray-300 px-6 py-2.5 rounded-lg hover:bg-gray-300 dark:hover:bg-zinc-600 transition font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={submitEditPermissions}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg hover:from-blue-700 hover:to-purple-700 transition font-medium shadow-lg"
+                >
+                  Save Changes
+                </button>
+              </div>
             </div>
           </div>
         </div>
