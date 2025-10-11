@@ -93,6 +93,10 @@ import UserRedemptionLogs from "./pages/UserRedemptionLogs";
 import GatewayStatus from "./pages/GatewayStatus";
 import GroupManagement from "./pages/GroupManagement";
 import EmailNotificationControl from "./pages/EmailNotificationControl";
+import SubscriptionMembers from "./pages/SubscriptionMembers";
+import LiveStream from "./pages/LiveStream";
+
+import GroupMembers from "./pages/GroupMembers";
 
 //  ProtectedRoute component
 function ProtectedRoute({ children }) {
@@ -258,6 +262,11 @@ function App() {
             <Route path="/gateway-status" element={<GatewayStatus />} />
             <Route path="/group-management" element={<GroupManagement />} />
             <Route path="/email-controls" element={<EmailNotificationControl />} />
+            <Route path="/subscription-members" element={<SubscriptionMembers />} />
+            <Route path="/live/:streamKey" element={<LiveStream />} />
+     
+              <Route path="/group-members/:gameType/:groupId" element={<GroupMembers />} />
+
 
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

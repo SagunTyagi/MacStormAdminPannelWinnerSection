@@ -45,7 +45,7 @@ function MegaContestList() {
     if (!window.confirm("Are you sure you want to delete this contest?")) return;
     try {
       await axiosInstance.delete(
-        `https://macstormbattle-backend-2.onrender.com/api/mega-contests/${contestId}/delete`
+        `https://api-v1.macstrombattle.com/api/mega-contests/${contestId}/delete`
       );
       setContests((prev) =>
         prev.filter((contest) => contest.contest_id !== contestId)

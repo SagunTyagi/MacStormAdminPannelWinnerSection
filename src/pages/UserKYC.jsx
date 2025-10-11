@@ -386,7 +386,7 @@ export default function UserKYC() {
                     Deposits
                   </span>
                   <span className="text-green-600">
-                    ${user.deposits.toFixed(2)}
+                    ₹{user.deposits.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex flex-col items-center">
@@ -394,7 +394,7 @@ export default function UserKYC() {
                     Withdrawals
                   </span>
                   <span className="text-red-600">
-                    ${user.withdrawals.toFixed(2)}
+                    ₹{user.withdrawals.toFixed(2)}
                   </span>
                 </div>
                 <div className="flex flex-col items-center">
@@ -402,7 +402,7 @@ export default function UserKYC() {
                     Balance
                   </span>
                   <span className="text-blue-600">
-                    ${user.balance.toFixed(2)}
+                    ₹{user.balance.toFixed(2)}
                   </span>
                 </div>
                 <div className="text-xs text-center text-gray-600 dark:text-gray-400">

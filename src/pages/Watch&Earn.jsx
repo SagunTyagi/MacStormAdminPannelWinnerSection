@@ -18,14 +18,13 @@ const AdsAdmin = () => {
     totalBudgetCoins: '',
     startsAt: '',
     endsAt: '',
-    videoFile: null, // Changed to file
-    thumbnailFile: null // Changed to file
+    videoFile: null,
+    thumbnailUrl: ''
   });
 
-  const API_BASE = 'https://macstormbattle-backend-2.onrender.com/api/admin/ads';
+  const API_BASE = 'https://api-v1.macstrombattle.com/api/admin/ads';
   const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQ0LCJyb2xlIjoiQWRtaW4iLCJpYXQiOjE3NTk0ODQzNzUsImV4cCI6MTc2MDc4MDM3NX0.OFj8dTuFDAeUho39ZsciOxqswK2RgQCoV3doJsQWq-8';
   
-  // Note: Don't include Content-Type for FormData - browser will set it automatically
   const getHeaders = (isFormData = false) => {
     const headers = {
       'Authorization': `Bearer ${AUTH_TOKEN}`
@@ -36,7 +35,6 @@ const AdsAdmin = () => {
     return headers;
   };
 
-  // Fetch all ads
   const fetchAds = async () => {
     setLoading(true);
     try {
@@ -58,25 +56,21 @@ const AdsAdmin = () => {
     setLoading(false);
   };
 
-  // Helper function to format datetime for API
   const formatDateTimeForAPI = (dateTimeString) => {
     if (!dateTimeString) return null;
     const date = new Date(dateTimeString);
     return date.toISOString();
   };
 
-  // Create new ad with file upload
   const createAd = async () => {
     setLoading(true);
     try {
-      // Check if video file is provided
       if (!formData.videoFile) {
         alert('Video file is required');
         setLoading(false);
         return;
       }
 
-      // Create FormData for file upload
       const formDataToSend = new FormData();
       formDataToSend.append('title', formData.title.trim());
       formDataToSend.append('rewardCoins', parseFloat(formData.rewardCoins));
@@ -92,19 +86,17 @@ const AdsAdmin = () => {
         formDataToSend.append('endsAt', formatDateTimeForAPI(formData.endsAt));
       }
       
-      // Append video file
       formDataToSend.append('video', formData.videoFile);
       
-      // Append thumbnail file if provided
-      if (formData.thumbnailFile) {
-        formDataToSend.append('thumbnail', formData.thumbnailFile);
+      if (formData.thumbnailUrl && formData.thumbnailUrl.trim()) {
+        formDataToSend.append('thumbnailUrl', formData.thumbnailUrl.trim());
       }
 
-      console.log('Sending FormData with files'); // Debug log
+      console.log('Sending FormData with files');
 
       const response = await fetch(API_BASE, {
         method: 'POST',
-        headers: getHeaders(true), // Don't set Content-Type for FormData
+        headers: getHeaders(true),
         body: formDataToSend
       });
 
@@ -124,11 +116,9 @@ const AdsAdmin = () => {
     setLoading(false);
   };
 
-  // Update ad with file upload
   const updateAd = async (id) => {
     setLoading(true);
     try {
-      // For updates, video file might not be required if already exists
       const formDataToSend = new FormData();
       formDataToSend.append('title', formData.title.trim());
       formDataToSend.append('rewardCoins', parseFloat(formData.rewardCoins));
@@ -144,17 +134,15 @@ const AdsAdmin = () => {
         formDataToSend.append('endsAt', formatDateTimeForAPI(formData.endsAt));
       }
       
-      // Append video file if new one is selected
       if (formData.videoFile) {
         formDataToSend.append('video', formData.videoFile);
       }
       
-      // Append thumbnail file if new one is selected
-      if (formData.thumbnailFile) {
-        formDataToSend.append('thumbnail', formData.thumbnailFile);
+      if (formData.thumbnailUrl && formData.thumbnailUrl.trim()) {
+        formDataToSend.append('thumbnailUrl', formData.thumbnailUrl.trim());
       }
 
-      console.log('Updating with FormData'); // Debug log
+      console.log('Updating with FormData');
 
       const response = await fetch(`${API_BASE}/${id}`, {
         method: 'PUT',
@@ -178,7 +166,6 @@ const AdsAdmin = () => {
     setLoading(false);
   };
 
-  // Delete ad
   const deleteAd = async (id) => {
     if (!confirm('Are you sure you want to delete this ad?')) return;
     
@@ -204,9 +191,7 @@ const AdsAdmin = () => {
     setLoading(false);
   };
 
-  // Handle form submission
   const handleSubmit = () => {
-    // Basic validation
     if (!formData.title.trim()) {
       alert('Title is required');
       return;
@@ -232,13 +217,11 @@ const AdsAdmin = () => {
       return;
     }
 
-    // Video file validation for new ads
     if (!editingAd && !formData.videoFile) {
       alert('Video file is required');
       return;
     }
 
-    // Date validation
     if (formData.startsAt && formData.endsAt) {
       const startDate = new Date(formData.startsAt);
       const endDate = new Date(formData.endsAt);
@@ -255,7 +238,6 @@ const AdsAdmin = () => {
     }
   };
 
-  // Reset form
   const resetForm = () => {
     setFormData({
       title: '',
@@ -267,13 +249,12 @@ const AdsAdmin = () => {
       startsAt: '',
       endsAt: '',
       videoFile: null,
-      thumbnailFile: null
+      thumbnailUrl: ''
     });
     setShowForm(false);
     setEditingAd(null);
   };
 
-  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({
@@ -282,7 +263,6 @@ const AdsAdmin = () => {
     }));
   };
 
-  // Handle file changes
   const handleFileChange = (e) => {
     const { name, files } = e.target;
     setFormData(prev => ({
@@ -291,7 +271,6 @@ const AdsAdmin = () => {
     }));
   };
 
-  // Edit ad
   const editAd = (ad) => {
     setEditingAd(ad);
     setFormData({
@@ -303,35 +282,31 @@ const AdsAdmin = () => {
       totalBudgetCoins: ad.totalBudgetCoins?.toString() || '',
       startsAt: ad.startsAt ? new Date(ad.startsAt).toISOString().slice(0, 16) : '',
       endsAt: ad.endsAt ? new Date(ad.endsAt).toISOString().slice(0, 16) : '',
-      videoFile: null, // Reset file inputs for editing
-      thumbnailFile: null
+      videoFile: null,
+      thumbnailUrl: ad.thumbnailUrl || ''
     });
     setShowForm(true);
   };
 
-  // View video
   const viewVideo = (videoUrl, title) => {
     setSelectedVideoUrl(videoUrl);
     setSelectedVideoTitle(title);
     setShowVideoModal(true);
   };
 
-  // Format date for display
   const formatDate = (dateString) => {
     if (!dateString) return 'Not set';
     return new Date(dateString).toLocaleDateString();
   };
 
-  // Load ads on component mount
   useEffect(() => {
     fetchAds();
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-250 p-6">
+    <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-lg shadow-lg">
-          {/* Header */}
           <div className="border-b border-gray-200 p-6">
             <div className="flex justify-between items-center">
               <div>
@@ -349,7 +324,6 @@ const AdsAdmin = () => {
             </div>
           </div>
 
-          {/* Form Modal */}
           {showForm && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -486,7 +460,6 @@ const AdsAdmin = () => {
                     </div>
                   </div>
 
-                  {/* File Upload Section */}
                   <div className="space-y-4 pt-4 border-t border-gray-200">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -523,35 +496,29 @@ const AdsAdmin = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Thumbnail File (Optional)
+                        Thumbnail URL (Optional)
                       </label>
-                      <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                        <div className="space-y-1 text-center">
-                          <Upload className="mx-auto h-8 w-8 text-gray-400" />
-                          <div className="flex text-sm text-gray-600">
-                            <label
-                              htmlFor="thumbnailFile"
-                              className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
-                            >
-                              <span>Upload thumbnail</span>
-                              <input
-                                id="thumbnailFile"
-                                name="thumbnailFile"
-                                type="file"
-                                accept="image/*"
-                                onChange={handleFileChange}
-                                className="sr-only"
-                              />
-                            </label>
-                          </div>
-                          <p className="text-xs text-gray-500">JPG, PNG up to 10MB</p>
-                          {formData.thumbnailFile && (
-                            <p className="text-sm text-green-600 font-medium">
-                              Selected: {formData.thumbnailFile.name}
-                            </p>
-                          )}
+                      <input
+                        type="url"
+                        name="thumbnailUrl"
+                        value={formData.thumbnailUrl}
+                        onChange={handleInputChange}
+                        placeholder="https://example.com/thumbnail.jpg"
+                        className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Enter the URL of the thumbnail image</p>
+                      {formData.thumbnailUrl && (
+                        <div className="mt-2">
+                          <img 
+                            src={formData.thumbnailUrl} 
+                            alt="Thumbnail preview"
+                            className="h-20 w-20 rounded-md object-cover"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                            }}
+                          />
                         </div>
-                      </div>
+                      )}
                     </div>
                   </div>
 
@@ -579,7 +546,6 @@ const AdsAdmin = () => {
             </div>
           )}
 
-          {/* Video Modal */}
           {showVideoModal && (
             <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
@@ -612,7 +578,6 @@ const AdsAdmin = () => {
             </div>
           )}
 
-          {/* Ads Table */}
           <div className="p-6">
             {loading && (
               <div className="text-center py-8">
@@ -639,6 +604,10 @@ const AdsAdmin = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Title
                       </th>
+ {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+  Thumbnail
+</th> */}
+                     
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Reward
                       </th>
@@ -682,6 +651,21 @@ const AdsAdmin = () => {
                             </div>
                           </div>
                         </td>
+{/* <td className="px-6 py-4 whitespace-nowrap">
+  {ad.thumbnailUrl ? (
+    <img
+      src={ad.thumbnailUrl}
+      alt={ad.title}
+      className="h-12 w-12 rounded-md object-cover border"
+      onError={(e) => { e.target.style.display = 'none'; }}
+    />
+  ) : (
+    <div className="h-12 w-12 rounded-md bg-gray-200 flex items-center justify-center text-gray-400 text-xs">
+      No Image
+    </div>
+  )}
+</td> */}
+
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
                             {parseFloat(ad.rewardCoins).toFixed(2)} coins

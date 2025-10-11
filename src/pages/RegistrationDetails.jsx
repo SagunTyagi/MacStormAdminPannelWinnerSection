@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Settings, Save, Eye, X, RefreshCw } from 'lucide-react';
-import axiosInstance from '../utils/axios';
+import axios from 'axios';
+
+// Axios instance configuration
+const axiosInstance = axios.create({
+  baseURL: 'https://api-v1.macstrombattle.com/api',
+  withCredentials: true,
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+  },
+});
 
 export default function FormFieldSettings() {
   const [fields, setFields] = useState([]);
@@ -14,10 +23,7 @@ export default function FormFieldSettings() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [showPreview, setShowPreview] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(null); // Track which field is being deleted
-
-  // Predefined fields that cannot be deleted
-  const predefinedFields = ['game', 'teamName', 'inGameUsername', 'inGameLevel'];
+  const [isDeleting, setIsDeleting] = useState(null);
 
   const fieldTypes = [
     { value: 'text', label: 'Text' },
@@ -30,35 +36,34 @@ export default function FormFieldSettings() {
     { value: 'textarea', label: 'Textarea' }
   ];
 
-  // Fetch existing fields on component mount
   useEffect(() => {
     fetchFields();
   }, []);
 
   const fetchFields = async () => {
-  setIsFetching(true);
-  try {
-    const { data } = await axiosInstance.get("/formfields");
+    setIsFetching(true);
+    try {
+      const { data } = await axiosInstance.get("/formfields");
 
-    // Remove duplicates by field_name, keeping the latest one
-    const uniqueFields = data.reduce((acc, field) => {
-      const existingIndex = acc.findIndex(f => f.field_name === field.field_name);
-      if (existingIndex === -1) {
-        acc.push(field);
-      } else if (new Date(field.createdAt) > new Date(acc[existingIndex].createdAt)) {
-        acc[existingIndex] = field;
-      }
-      return acc;
-    }, []);
+      // Remove duplicates by field_name, keeping the latest one
+      const uniqueFields = data.reduce((acc, field) => {
+        const existingIndex = acc.findIndex(f => f.field_name === field.field_name);
+        if (existingIndex === -1) {
+          acc.push(field);
+        } else if (new Date(field.createdAt) > new Date(acc[existingIndex].createdAt)) {
+          acc[existingIndex] = field;
+        }
+        return acc;
+      }, []);
 
-    setFields(uniqueFields);
-  } catch (error) {
-    console.error("Error fetching fields:", error);
-    alert("Error loading fields");
-  } finally {
-    setIsFetching(false);
-  }
-};
+      setFields(uniqueFields);
+    } catch (error) {
+      console.error("Error fetching fields:", error);
+      alert("Error loading fields");
+    } finally {
+      setIsFetching(false);
+    }
+  };
 
   const handleFieldChange = (fieldId, property, value) => {
     setFields(prev =>
@@ -74,14 +79,13 @@ export default function FormFieldSettings() {
       return;
     }
 
-    // Check if field name already exists
     if (fields.some(field => field.field_name === newField.field_name)) {
       alert('Field name already exists. Please choose a different name.');
       return;
     }
 
     const field = {
-      id: Date.now(), // Temporary ID for new fields
+      id: Date.now(),
       ...newField,
       field_name: newField.field_name.replace(/\s+/g, '').toLowerCase(),
       createdAt: new Date().toISOString(),
@@ -99,38 +103,20 @@ export default function FormFieldSettings() {
   };
 
   const removeField = async (fieldId) => {
-    const field = fields.find(f => f.id === fieldId);
-    if (field && predefinedFields.includes(field.field_name)) {
-      alert('Cannot delete predefined fields');
-      return;
-    }
-    
     if (!confirm('Are you sure you want to delete this field?')) {
       return;
     }
 
-    // Check if this is a newly added field (temporary ID) or existing field from server
-    const isNewField = typeof fieldId === 'number' && fieldId > 1000000000000; // Temp IDs are timestamps
+    const isNewField = typeof fieldId === 'number' && fieldId > 1000000000000;
     
     if (isNewField) {
-      // For newly added fields, just remove from state
       setFields(prev => prev.filter(field => field.id !== fieldId));
     } else {
-      // For existing fields from server, make API call to delete
       setIsDeleting(fieldId);
       try {
-        const response = await fetch(`https://macstormbattle-backend-2.onrender.com/api/formfields/${fieldId}`, {
-          method: 'DELETE',
-        });
-
-        if (response.ok) {
-          // Remove from state after successful deletion
-          setFields(prev => prev.filter(field => field.id !== fieldId));
-          alert('Field deleted successfully!');
-        } else {
-          const error = await response.text();
-          throw new Error(`Failed to delete field: ${response.status} - ${error}`);
-        }
+        await axiosInstance.delete(`/formfields/${fieldId}`);
+        setFields(prev => prev.filter(field => field.id !== fieldId));
+        alert('Field deleted successfully!');
       } catch (error) {
         console.error('Error deleting field:', error);
         alert(`Failed to delete field: ${error.message}`);
@@ -153,24 +139,9 @@ export default function FormFieldSettings() {
         fields: fields.map(({ id, createdAt, updatedAt, ...field }) => field)
       };
 
-      const response = await fetch('https://macstormbattle-backend-2.onrender.com/api/formfields/fields', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        alert('Form fields saved successfully!');
-        console.log('API Response:', result);
-        // Refresh the fields after successful save
-        await fetchFields();
-      } else {
-        const error = await response.text();
-        throw new Error(`API Error: ${response.status} - ${error}`);
-      }
+      await axiosInstance.post('/formfields/fields', payload);
+      alert('Form fields saved successfully!');
+      await fetchFields();
     } catch (error) {
       console.error('Error saving fields:', error);
       alert(`Failed to save fields: ${error.message}`);
@@ -181,10 +152,6 @@ export default function FormFieldSettings() {
 
   const generateFieldName = (label) => {
     return label.replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
-  };
-
-  const isPredefinedField = (fieldName) => {
-    return predefinedFields.includes(fieldName);
   };
 
   return (
@@ -223,7 +190,7 @@ export default function FormFieldSettings() {
         </div>
 
         {/* Main Content */}
-        <div  className="rounded-xl shadow-lg p-6">
+        <div className="rounded-xl shadow-lg p-6">
           {isFetching ? (
             <div className="flex justify-center items-center py-12">
               <div className="flex items-center space-x-3">
@@ -257,26 +224,19 @@ export default function FormFieldSettings() {
                             Required
                           </span>
                         )}
-                        {isPredefinedField(field.field_name) && (
-                          <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded">
-                            Default
-                          </span>
-                        )}
                       </div>
-                      {!isPredefinedField(field.field_name) && (
-                        <button
-                          onClick={() => removeField(field.id)}
-                          disabled={isDeleting === field.id}
-                          className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Remove field"
-                        >
-                          {isDeleting === field.id ? (
-                            <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                          ) : (
-                            <Trash2 className="w-4 h-4" />
-                          )}
-                        </button>
-                      )}
+                      <button
+                        onClick={() => removeField(field.id)}
+                        disabled={isDeleting === field.id}
+                        className="text-red-500 hover:text-red-700 p-1 hover:bg-red-50 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Remove field"
+                      >
+                        {isDeleting === field.id ? (
+                          <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
+                      </button>
                     </div>
                     
                     <div className="space-y-4">
@@ -287,9 +247,7 @@ export default function FormFieldSettings() {
                           value={field.label}
                           onChange={(e) => {
                             handleFieldChange(field.id, 'label', e.target.value);
-                            if (!isPredefinedField(field.field_name)) {
-                              handleFieldChange(field.id, 'field_name', generateFieldName(e.target.value));
-                            }
+                            handleFieldChange(field.id, 'field_name', generateFieldName(e.target.value));
                           }}
                           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                           placeholder="Field label"
@@ -302,9 +260,8 @@ export default function FormFieldSettings() {
                           type="text"
                           value={field.field_name}
                           onChange={(e) => handleFieldChange(field.id, 'field_name', e.target.value)}
-                          className={`w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${isPredefinedField(field.field_name) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                           placeholder="fieldName"
-                          readOnly={isPredefinedField(field.field_name)}
                         />
                       </div>
                       
@@ -432,16 +389,6 @@ export default function FormFieldSettings() {
             </>
           )}
         </div>
-
-        {/* JSON Preview */}
-        {/* <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">API Payload Preview</h3>
-          <pre className="bg-gray-100 rounded-lg p-4 text-sm text-gray-700 overflow-auto max-h-60">
-{JSON.stringify({
-  fields: fields.map(({ id, createdAt, updatedAt, ...field }) => field)
-}, null, 2)}
-          </pre>
-        </div> */}
       </div>
 
       {/* Preview Modal */}

@@ -16,7 +16,7 @@ const ReferEarn = () => {
   });
 
   const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU4Nzg0NzM5LCJleHAiOjE3NjAwODA3Mzl9.XYvdilXiq85bii3hm4pMCMlSa0Gw1u4gwb70-Vt9Jto';
-  const BASE_URL = 'https://macstormbattle-backend-2.onrender.com/api/referral-split';
+  const BASE_URL = 'https://api-v1.macstrombattle.com/api/referral-split';
 
   const fetchConfig = {
     headers: {

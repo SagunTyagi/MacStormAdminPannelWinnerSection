@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Ban,
 } from "lucide-react";
+import axiosInstance from "../utils/axios";
 
 // CreateUserModal component
 const CreateUserModal = ({ isOpen, onClose, onCreate }) => {
@@ -409,56 +410,118 @@ function UserSettings() {
   const [error, setError] = useState(null);
   const itemsPerPage = 5;
 
-  const authToken = localStorage.getItem("authToken");
-
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch(
-          "https://macstormbattle-backend.onrender.com/api/auth/user",
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          }
-        );
+    // const fetchUsers = async () => {
+    //   try {
+    //     setIsLoading(true);
+    //     const response = await axiosInstance.get("/auth/user");
 
-        const data = await response.json();
+    //     // Transform the API response to match our expected format
+    //     const transformedUsers = response.data.users.map((user) => ({
+    //       id: user.member_id,
+    //       name: `${user.first_name} ${user.last_name || ''}`.trim(),
+    //       username: user.user_name,
+    //       email: user.email_id || 'No email',
+    //       role: user.role || "User",
+    //       status: user.member_status === 1 ? "Active" : "Banned",
+    //       created: user.createdAt
+    //         ? new Date(user.createdAt).toISOString().split("T")[0]
+    //         : new Date().toISOString().split("T")[0],
+    //       editedBy: null,
+    //       history: [],
+    //       first_name: user.first_name,
+    //       last_name: user.last_name,
+    //       user_name: user.user_name,
+    //       email_id: user.email_id,
+    //       mobile_no: user.mobile_no,
+    //       member_id: user.member_id
+    //     }));
 
-        // Transform the API response to match our expected format
-        const transformedUsers = data.users.map((user) => ({
-          id: user.member_id,
-          name: `${user.first_name} ${user.last_name || ''}`.trim(),
-          username: user.user_name,
-          email: user.email_id || 'No email',
-          role: user.role || "User",
-          status: user.member_status === 1 ? "Active" : "Banned",
-          created: user.createdAt
-            ? new Date(user.createdAt).toISOString().split("T")[0]
-            : new Date().toISOString().split("T")[0],
-          editedBy: null,
-          history: [],
-          first_name: user.first_name,
-          last_name: user.last_name,
-          user_name: user.user_name,
-          email_id: user.email_id,
-          mobile_no: user.mobile_no,
-          member_id: user.member_id
-        }));
+    //     setUsers(transformedUsers);
+    //     setError(null);
+    //   } catch (err) {
+    //     console.error("Failed to fetch users:", err);
+    //     setError("Failed to load users. Please try again.");
+    //   } finally {
+    //     setIsLoading(false);
+    //   }
+    // };
 
-        setUsers(transformedUsers);
-        setError(null);
-      } catch (err) {
-        console.error("Failed to fetch users:", err);
-        setError("Failed to load users. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+const fetchUsers = async () => {
+  try {
+    setIsLoading(true);
+    const response = await axiosInstance.get("/auth/user");
+
+    console.log("API Response:", response.data);
+
+    // The actual users data is in response.data.data
+    const usersData = response.data.data;
+
+    if (!Array.isArray(usersData)) {
+      console.error("Unexpected response format:", response.data);
+      setError("Unexpected data format received from server");
+      setUsers([]);
+      return;
+    }
+
+    // Transform the API response to match our expected format
+    // const transformedUsers = usersData.map((user) => ({
+    //   id: user.member_id,
+    //   name: `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.user_name || 'Unknown',
+    //   username: user.user_name || 'No username',
+    //   email: user.email_id || user.email || 'No email',
+    //   role: user.role || "User",
+    //   status: user.member_status === 1 ? "Active" : "Banned",
+    //   created: user.createdAt
+    //     ? new Date(user.createdAt).toISOString().split("T")[0]
+    //     : new Date().toISOString().split("T")[0],
+    //   editedBy: null,
+    //   history: [],
+    //   first_name: user.first_name,
+    //   last_name: user.last_name,
+    //   user_name: user.user_name,
+    //   email_id: user.email_id,
+    //   mobile_no: user.mobile_no,
+    //   member_id: user.member_id
+    // }));
+    // Transform the API response to match our expected format
+    const transformedUsers = usersData.map((user) => ({
+      id: user.member_id,
+      name: user.user_name || 'Unknown',
+      username: user.user_name || 'No username',
+      email: user.email_id || 'No email',
+      role: user.role || "User",
+      // Since member_status is not in GET response, default to Active
+      // We'll fetch individual status when needed
+      status: "Active",
+      created: user.createdAt
+        ? new Date(user.createdAt).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0],
+      editedBy: null,
+      history: [],
+      first_name: null,
+      last_name: null,
+      user_name: user.user_name,
+      email_id: user.email_id,
+      mobile_no: user.mobile_no,
+      member_id: user.member_id,
+      wallet_balance: user.wallet_balance,
+      shear_referral_code: user.shear_referral_code
+    }));
+
+    setUsers(transformedUsers);
+    setError(null);
+  } catch (err) {
+    console.error("Failed to fetch users:", err);
+    setError("Failed to load users. Please try again.");
+    setUsers([]);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
     fetchUsers();
-  }, [authToken]);
+  }, []);
 
   const filteredUsers = users
     .filter((u) =>
@@ -495,28 +558,17 @@ function UserSettings() {
 
     try {
       setIsLoading(true);
-      const response = await fetch(
-        `https://macstormbattle-backend.onrender.com/api/auth/user/${selectedUser.member_id}`,
+      const response = await axiosInstance.put(
+        `/auth/user/${selectedUser.member_id}`,
         {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            first_name: editedName.split(" ")[0],
-            last_name: editedName.split(" ")[1] || "",
-            user_name: editedUsername,
-            email_id: editedEmail,
-            role: editedRole,
-            member_status: editedStatus === 'Active' ? 1 : 0,
-          }),
+          first_name: editedName.split(" ")[0],
+          last_name: editedName.split(" ")[1] || "",
+          user_name: editedUsername,
+          email_id: editedEmail,
+          role: editedRole,
+          member_status: editedStatus === 'Active' ? 1 : 0,
         }
       );
-
-      if (!response.ok) {
-        throw new Error('Failed to update user');
-      }
 
       // Update local state with the edited user
       setUsers(
@@ -565,24 +617,13 @@ function UserSettings() {
   const handleReset = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(
-        `https://macstormbattle-backend.onrender.com/api/auth/user/reset-password`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            member_id: selectedUser.member_id,
-            email: selectedUser.email 
-          }),
+      await axiosInstance.post(
+        `/auth/user/reset-password`,
+        { 
+          member_id: selectedUser.member_id,
+          email: selectedUser.email 
         }
       );
-
-      if (!response.ok) {
-        throw new Error('Failed to send reset link');
-      }
 
       alert(`Password reset link sent to ${selectedUser.email}`);
       closeModal();
@@ -599,21 +640,10 @@ function UserSettings() {
       setIsLoading(true);
       const newStatus = selectedUser.status === "Active" ? 0 : 1;
 
-      const response = await fetch(
-        `https://macstormbattle-backend.onrender.com/api/auth/user/${selectedUser.member_id}`,
-        {
-          method: 'PUT',
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ member_status: newStatus }),
-        }
+      await axiosInstance.put(
+        `/auth/user/${selectedUser.member_id}`,
+        { member_status: newStatus }
       );
-
-      if (!response.ok) {
-        throw new Error('Failed to update user status');
-      }
 
       setUsers(
         users.map((u) =>
@@ -654,21 +684,10 @@ function UserSettings() {
         selectedUsers.map(async (id) => {
           const user = users.find(u => u.id === id);
           if (user) {
-            const response = await fetch(
-              `https://macstormbattle-backend.onrender.com/api/auth/user/${user.member_id}`,
-              {
-                method: 'PUT',
-                headers: {
-                  Authorization: `Bearer ${authToken}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ member_status: 0 }),
-              }
+            await axiosInstance.put(
+              `/auth/user/${user.member_id}`,
+              { member_status: 0 }
             );
-            
-            if (!response.ok) {
-              throw new Error(`Failed to ban user ${user.name}`);
-            }
           }
         })
       );
@@ -719,28 +738,14 @@ function UserSettings() {
   const handleCreateUser = async (newUserData) => {
     try {
       setIsLoading(true);
-      const response = await fetch(
-        "https://macstormbattle-backend.onrender.com/api/auth/user/register",
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(newUserData),
-        }
+      const response = await axiosInstance.post(
+        "/auth/user/register",
+        newUserData
       );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create user');
-      }
-
-      const responseData = await response.json();
 
       // Update the local state with the new user
       const newUser = {
-        id: responseData.member_id || responseData._id,
+        id: response.data.member_id || response.data._id,
         name: `${newUserData.first_name} ${newUserData.last_name}`,
         username: newUserData.user_name,
         email: newUserData.email_id,
@@ -750,15 +755,15 @@ function UserSettings() {
         editedBy: null,
         history: [],
         ...newUserData,
-        member_id: responseData.member_id || responseData._id
+        member_id: response.data.member_id || response.data._id
       };
 
       setUsers((prev) => [...prev, newUser]);
 
-      return responseData;
+      return response.data;
     } catch (error) {
       console.error("Error creating user:", error);
-      throw new Error(error.message || "Failed to create user. Check your form data.");
+      throw new Error(error.response?.data?.message || "Failed to create user. Check your form data.");
     } finally {
       setIsLoading(false);
     }

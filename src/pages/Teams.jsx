@@ -18,10 +18,12 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import ThemeContext from '../contexts/ThemeContext';
 
-const API_BASE_URL = "https://macstormbattle-backend-2.onrender.com/api";
+import ThemeContext from '../contexts/ThemeContext';
+import axiosInstance from "../utils/axios";
+
+
+const API_BASE_URL = "https://api-v1.macstrombattle.com/api";
 
 // Dark Mode Toggle Component
 const DarkModeToggle = () => {
@@ -288,7 +290,7 @@ const TeamEditModal = ({ team, onClose, onSave }) => {
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center z-50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-md p-6">
         <div className="flex justify-between items-center border-b border-gray-200 dark:border-gray-600 pb-4 mb-4">
-          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Edit Team Info</h3>
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Edit Tournament Info</h3>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
             <X size={24} />
           </button>
@@ -301,7 +303,7 @@ const TeamEditModal = ({ team, onClose, onSave }) => {
         <div className="space-y-4">
           <div>
             <label htmlFor="teamName" className="block text-gray-700 dark:text-gray-300 mb-1 font-medium">
-              Team Name
+              Tournament Name
             </label>
             <input
               id="teamName"
@@ -391,8 +393,8 @@ const BenefitsHowToPlayModal = ({ team, onClose, onSave }) => {
           setHowToPlay(howToPlayData.map((item) => item.text));
         }
       } catch (error) {
-        console.error("Failed to fetch team details:", error);
-        setError("Failed to load team details. Please try again.");
+        console.error("Failed to fetch Tournament details:", error);
+        setError("Failed to load Tournament details. Please try again.");
       }
     };
     fetchTeamDetails();
@@ -438,7 +440,7 @@ const BenefitsHowToPlayModal = ({ team, onClose, onSave }) => {
       });
       if (!howToPlayResponse.ok) throw new Error("Failed to update how to play");
 
-      setSuccess("Team details updated successfully!");
+      setSuccess("Tournament details updated successfully!");
       setTimeout(() => {
         onSave({ ...team, benefits: benefits.map((text) => ({ text })), howToPlay: howToPlay.map((text) => ({ text })) });
       }, 1000);
@@ -614,7 +616,6 @@ const Teams = () => {
   const [confirmAction, setConfirmAction] = useState(null);
   const [toasts, setToasts] = useState([]);
 
-  const navigate = useNavigate();
 
   // Toast management functions
   const addToast = (message, type = "success") => {
@@ -626,32 +627,53 @@ const Teams = () => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
+
+
   const fetchTeams = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/admin/teams`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      const teamsData = Array.isArray(data) ? data : [data];
+      // const response = await fetch(`${API_BASE_URL}/admin/teams`);
+      // if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      // const data = await response.json();
+      // const teamsData = Array.isArray(data) ? data : [data];
+const { data } = await axiosInstance.get("/admin/teams");
+const teamsData = Array.isArray(data) ? data : [data];
+
 
       // Fetch benefits and how-to-play for each team
       const teamsWithDetails = await Promise.all(
         teamsData.map(async (team) => {
           try {
-            const benefitsResponse = await fetch(
-              `${API_BASE_URL}/admin/teams/${team.id}/benefits`
-            );
-            const benefitsData = benefitsResponse.ok
-              ? await benefitsResponse.json()
-              : [];
+            // const benefitsResponse = await fetch(
+            //   `${API_BASE_URL}/admin/teams/${team.id}/benefits`
+            // );
+            // const benefitsData = benefitsResponse.ok
+            //   ? await benefitsResponse.json()
+            //   : [];
 
-            const howToPlayResponse = await fetch(
-              `${API_BASE_URL}/admin/teams/${team.id}/how-to-play`
-            );
-            const howToPlayData = howToPlayResponse.ok
-              ? await howToPlayResponse.json()
-              : [];
+            let benefitsData = [];
+try {
+  const res = await axiosInstance.get(`/admin/teams/${team.id}/benefits`);
+  benefitsData = res.data;
+} catch (e) {
+  benefitsData = [];
+}
+
+            // const howToPlayResponse = await fetch(
+            //   `${API_BASE_URL}/admin/teams/${team.id}/how-to-play`
+            // );
+            // const howToPlayData = howToPlayResponse.ok
+            //   ? await howToPlayResponse.json()
+            //   : [];
+
+let howToPlayData = [];
+try {
+  const res = await axiosInstance.get(`/admin/teams/${team.id}/how-to-play`);
+  howToPlayData = res.data;
+} catch (e) {
+  howToPlayData = [];
+}
 
             return {
               ...team,
@@ -659,7 +681,7 @@ const Teams = () => {
               howToPlay: howToPlayData,
             };
           } catch (e) {
-            console.error(`Failed to fetch details for team ${team.id}:`, e);
+            console.error(`Failed to fetch details for Tournament ${team.id}:`, e);
             return { ...team, benefits: [], howToPlay: [] };
           }
         })
@@ -684,7 +706,7 @@ const Teams = () => {
         const response = await fetch(`${API_BASE_URL}/admin/teams/${id}`, { method: "DELETE" });
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         setTeams((prev) => prev.filter((team) => team.id !== id));
-        addToast("Team deleted successfully!", "success");
+        addToast("Tournament deleted successfully!", "success");
       } catch (e) {
         console.error("Failed to delete team:", e);
         addToast("Failed to delete team. Please try again.", "error");
@@ -709,7 +731,7 @@ const Teams = () => {
   const handleSaveBenefits = (updatedTeam) => {
     setTeams((prev) => prev.map((team) => (team.id === updatedTeam.id ? updatedTeam : team)));
     setShowBenefitsModal(false);
-    addToast("Team benefits and instructions updated successfully!", "success");
+    addToast("Tournament benefits and instructions updated successfully!", "success");
   };
 
   const handleSaveEdit = (updatedTeam) => {
@@ -728,7 +750,7 @@ const Teams = () => {
       )
     );
     setShowEditModal(false);
-    addToast("Team information updated successfully!", "success");
+    addToast("Tournament information updated successfully!", "success");
   };
 
   const filteredTeams = teams.filter((team) =>
@@ -777,32 +799,32 @@ const Teams = () => {
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center">
-              <Users className="mr-3 text-indigo-600 dark:text-indigo-400" /> Team Management
+              <Users className="mr-3 text-indigo-600 dark:text-indigo-400" /> Tournaments Management
             </h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage team details, registration, benefits and rules</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Manage tournament details, registration, benefits and rules</p>
           </div>
           <div className="mt-4 md:mt-0 flex flex-wrap gap-3">
             <button className="flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm rounded-md shadow-sm bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors duration-200">
               <Download className="w-4 h-4 mr-2" />
-              Export Teams
+              Export Tournament
             </button>
             <Link to="/add-teams" className="flex items-center px-4 py-2 bg-indigo-600 text-white text-sm rounded-md shadow-sm hover:bg-indigo-700 transition-colors duration-200">
               <Plus className="w-4 h-4 mr-2" />
-              Create Team
+              Create Tournament
             </Link>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-sm overflow-hidden p-6 transition-colors duration-300">
           <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">Team Details</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white">Tournament Details</h2>
             <div className="relative w-full md:w-64">
               <Search className="absolute top-1/2 left-3 -translate-y-1/2 text-gray-400 dark:text-gray-500" size={16} />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search teams..."
+                placeholder="Search tournaments..."
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 transition-colors duration-200"
               />
             </div>

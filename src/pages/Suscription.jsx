@@ -46,7 +46,7 @@ const AdminPanel = () => {
     features: {},
   })
 
-  const API_BASE_URL = "https://macstormbattle-backend-2.onrender.com/api/subscriptions"
+  const API_BASE_URL = "https://api-v1.macstrombattle.com/api/subscriptions"
 
   // Initialize features object based on available features
   const initializeFeatures = () => {

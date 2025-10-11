@@ -43,28 +43,23 @@ const menuItems = [
     subItems: [
       { label: "All Users", path: "/users", permissionKey: "All Users" },
       { label: "User Settings", path: "/user-settings", permissionKey: "User Settings" },
-      {
-        label: "User KYC",
-        path: "/user-kyc",
-        submenuKey: "userKyc",
-        permissionKey: "User KYC",
-        subItems: [{ label: "KYC", path: "/kyc", permissionKey: "KYC" }],
-      },
+      { label: "User KYC",path: "/user-kyc",permissionKey: "User KYC"},
+      { label: "KYC Status", path: "/kyc", permissionKey: "KYC Status" },
       { label: "All Withdraw", path: "/all-withdraw", permissionKey: "All Withdraw" },
     ],
   },
   {
-    label: "Teams",
+    label: "Tournaments Info",
     icon: Users,
     submenuKey: "teams",
-    permissionKey: "Teams",
+    permissionKey: "Tournaments Info",
     subItems: [
-      { label: "All Teams", path: "/teams", permissionKey: "All Teams" },
-      { label: "Add Teams", path: "/add-teams", permissionKey: "Add Teams" },
+      { label: "All Tournaments", path: "/teams", permissionKey: "All Tournaments" },
+      { label: "Add Tournament", path: "/add-teams", permissionKey: "Add Tournament" },
       { label: "Games Registration", path: "/games-registation", permissionKey: "Games Registration" },
       { label: "Registration Form Controls", path: "/registation-details", permissionKey: "Registration Form Controls" },
       { label: "Group Management", path: "/group-management", permissionKey: "Group Management" },
-      { label: "Prize Distribution", path: "/prize-distribution", permissionKey: "Prize Distribution" },
+      // { label: "Prize Distribution", path: "/prize-distribution", permissionKey: "Prize Distribution" },
       { label: "Rules&Regulations", path: "/rules-regulations", permissionKey: "Rules&Regulations" },
     ],
   },
@@ -91,7 +86,11 @@ const menuItems = [
     icon: Gamepad2,
     submenuKey: "games",
     permissionKey: "Games",
-    subItems: [{ label: "All Games", path: "/games", permissionKey: "All Games" }],
+    subItems: [
+      { label: "All Games", path: "/games", permissionKey: "All Games" },
+      { label: "Mega Contest", path: "/mega", permissionKey: "Mega Contest" },
+
+    ],
   },
   {
     label: "Website",
@@ -165,8 +164,13 @@ const menuItems = [
   {
     label: "Suscription",
     icon: Radio,
-    path: "/suscription",
-    permissionKey: "Suscription"
+    // path: "/suscription",
+    permissionKey: "Suscription",
+    subItems: [
+
+      { label: "Subscription Plans", path: "/suscription", permissionKey: "Subscription Plans" },
+      { label: "Subscription Members", path: "/subscription-members", permissionKey: "Subscription Members" },
+    ],
   },
   {
     label: "Bonus",
@@ -228,7 +232,7 @@ const Sidebar = () => {
           console.log("Fetching permissions for Admin ID:", userId);
           
           const response = await fetch(
-            `https://macstormbattle-backend-2.onrender.com/api/auth/admin/getadminpermissions/${userId}`,
+            `https://api-v1.macstrombattle.com/api/auth/admin/getadminpermissions/${userId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,

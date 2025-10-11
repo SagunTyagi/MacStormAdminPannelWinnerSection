@@ -34,7 +34,7 @@ const socialMediaPlatforms = [
     label: "YouTube Channel",
     icon: <YouTubeIcon sx={{ color: "#FF0000", fontSize: 24 }} />,
     placeholder: "https://youtube.com/@yourchannel",
-    validator: (url) => url.startsWith("https://youtube.com/"),
+    validator: (url) => /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/i.test(url),
     description: "Your YouTube channel URL",
   },
   {
@@ -42,7 +42,7 @@ const socialMediaPlatforms = [
     label: "Instagram Profile",
     icon: <InstagramIcon sx={{ color: "#E1306C", fontSize: 24 }} />,
     placeholder: "https://instagram.com/yourprofile",
-    validator: (url) => url.startsWith("https://instagram.com/"),
+    validator: (url) => /^(https?:\/\/)?(www\.)?instagram\.com\/.+$/i.test(url),
     description: "Your Instagram profile URL",
   },
   {
@@ -50,7 +50,7 @@ const socialMediaPlatforms = [
     label: "Facebook Page",
     icon: <FacebookIcon sx={{ color: "#1877F2", fontSize: 24 }} />,
     placeholder: "https://facebook.com/yourpage",
-    validator: (url) => url.startsWith("https://facebook.com/"),
+    validator: (url) => /^(https?:\/\/)?(www\.)?facebook\.com\/.+$/i.test(url),
     description: "Your Facebook page URL",
   },
   {
@@ -58,7 +58,7 @@ const socialMediaPlatforms = [
     label: "Twitter Profile",
     icon: <TwitterIcon sx={{ color: "#1DA1F2", fontSize: 24 }} />,
     placeholder: "https://twitter.com/yourhandle",
-    validator: (url) => url.startsWith("https://twitter.com/"),
+    validator: (url) => /^(https?:\/\/)?(www\.)?(twitter\.com|x\.com)\/.+$/i.test(url),
     description: "Your Twitter profile URL",
   },
   {
@@ -71,7 +71,7 @@ const socialMediaPlatforms = [
       </svg>
     ),
     placeholder: "https://discord.gg/yourinvite",
-    validator: (url) => url.startsWith("https://discord.gg/"),
+    validator: (url) => /^(https?:\/\/)?(www\.)?discord\.gg\/.+$/i.test(url),
     description: "Your Discord server invite URL",
   },
 ]
@@ -126,20 +126,19 @@ const SocialMedia = () => {
   }, [])
 
   const validateUrl = (platformId, url) => {
-    const platform = socialMediaPlatforms.find((p) => p.id === platformId)
     if (!url.trim()) {
-      return "URL cannot be empty."
+      return "" // Allow empty URLs
     }
-    if (platform && !platform.validator(url)) {
+    const platform = socialMediaPlatforms.find((p) => p.id === platformId)
+    if (!platform.validator(url)) {
       return `Invalid ${platform.label} URL format.`
     }
     try {
-      new URL(url)
+      new URL(url.startsWith("http") ? url : `https://${url}`)
+      return ""
     } catch (error) {
-      console.log(error)
       return "Invalid URL format."
     }
-    return ""
   }
 
   const handleInputChange = (platformId) => (event) => {

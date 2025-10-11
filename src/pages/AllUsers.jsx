@@ -91,7 +91,7 @@ function UsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axiosInstance.get("auth/user");
+      const res = await axiosInstance.get("/auth/user");
       const data = Array.isArray(res.data.data) ? res.data.data : [];
       const formattedUsers = data.map((user, index) => ({
         ...user,
@@ -153,7 +153,7 @@ function UsersPage() {
       return;
     }
     try {
-      await axiosInstance.put(`auth/user/${selectedUser.member_id}`, {
+      await axiosInstance.put(`/auth/user/${selectedUser.member_id}`, {
         user_name: newUserName,
       });
       setUsers((prevUsers) =>
@@ -178,7 +178,7 @@ function UsersPage() {
 
   const confirmDelete = async () => {
     try {
-      await axiosInstance.delete(`auth/user/${selectedUser.member_id}`);
+      await axiosInstance.delete(`/auth/user/${selectedUser.member_id}`);
       const updatedUsers = users.filter(
         (user) => user.member_id !== selectedUser.member_id
       );

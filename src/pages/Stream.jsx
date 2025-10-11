@@ -1,5 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Play, Square, RefreshCw, Wifi, WifiOff, Clock, Calendar } from "lucide-react";
+import {
+  Play,
+  Square,
+  RefreshCw,
+  Wifi,
+  WifiOff,
+  Clock,
+  Calendar,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../utils/axios";
 
 const StreamManager = () => {
@@ -7,6 +16,7 @@ const StreamManager = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [error, setError] = useState(null);
+  const navigate = useNavigate(); // ✅ for navigation
 
   // Fetch all streams
   const fetchStreams = async () => {
@@ -198,7 +208,8 @@ const StreamManager = () => {
           {streams.map((stream) => (
             <div
               key={stream.id}
-              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden"
+              onClick={() => navigate(`/live/${stream.streamKey}`)} // ✅ open LiveStream.jsx
+              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 overflow-hidden cursor-pointer"
             >
               {/* Card Header */}
               <div className="p-6 border-b border-gray-100">
@@ -254,7 +265,10 @@ const StreamManager = () => {
 
                 {stream.status === "live" && (
                   <button
-                    onClick={() => handleStopStream(stream.streamKey)}
+                    onClick={(e) => {
+                      e.stopPropagation(); // ✅ prevent card click navigation
+                      handleStopStream(stream.streamKey);
+                    }}
                     disabled={actionLoading === stream.streamKey}
                     className="w-full flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-all shadow-md hover:shadow-lg"
                   >
@@ -263,7 +277,9 @@ const StreamManager = () => {
                     ) : (
                       <Square className="w-4 h-4 mr-2" />
                     )}
-                    {actionLoading === stream.streamKey ? "Stopping..." : "Stop Stream"}
+                    {actionLoading === stream.streamKey
+                      ? "Stopping..."
+                      : "Stop Stream"}
                   </button>
                 )}
               </div>
@@ -283,7 +299,6 @@ const StreamManager = () => {
             </p>
             <button
               onClick={handleStartStream}
-              // disabled={actionLoading === "start"}
               className="inline-flex items-center px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-xl"
             >
               <Play className="w-5 h-5 mr-2" />
@@ -300,7 +315,9 @@ const StreamManager = () => {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
               <div className="p-4 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">{streams.length}</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {streams.length}
+                </div>
                 <div className="text-sm text-blue-800">Total Streams</div>
               </div>
               <div className="p-4 bg-green-50 rounded-lg">

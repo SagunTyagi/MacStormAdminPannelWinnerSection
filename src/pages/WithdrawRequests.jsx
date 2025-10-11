@@ -4,7 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 // Directly hardcoded for now (not recommended for production)
-const API_BASE = "https://macstormbattle-backend.onrender.com";
+const API_BASE = "https://api-v1.macstrombattle.com";
 const token = localStorage.getItem("authToken") || "";
 
 function WithdrawRequests() {

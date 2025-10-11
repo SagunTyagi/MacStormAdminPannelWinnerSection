@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import axiosInstance from "../utils/axios"
 
-// Main Team Admin Form Component
+// Main Tournament Admin Form Component
 export default function AddTeam() {
   // State to hold the form data
   const [formData, setFormData] = useState({
@@ -107,10 +107,10 @@ const handleSubmit = async (e) => {
         },
       });
 
-      console.log("Team created successfully:", response.data);
+      console.log("Tournament created successfully:", response.data);
       setStatusMessage({
         type: "success",
-        message: "Team created successfully!",
+        message: "Tournament created successfully!",
       });
       setFormData({
         teamImageFile: null,
@@ -144,7 +144,7 @@ const handleSubmit = async (e) => {
         <div className="text-center mb-10">
           
           <h1 className="text-4xl md:text-5xl font-bold mb-2">
-             <span className="gradient-text">Create a New Team</span>
+             <span className="gradient-text">Create a New Tournament</span>
             
           </h1>
              
@@ -166,11 +166,11 @@ const handleSubmit = async (e) => {
           )}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-             {/* Team Name */}
+             {/* Tournament Name */}
             <div className="relative">
                
               <label htmlFor="teamName" className={labelClasses}>
-                Team Name
+                Tournament Name
               </label>
                 <Users size={20} className={iconClasses} />
                
@@ -189,7 +189,7 @@ const handleSubmit = async (e) => {
             <div className="relative">
                
               <label htmlFor="teamImage" className={labelClasses}>
-                Team Image
+                Tournament Image
               </label>
                 <ImageIcon size={20} className={iconClasses} />
                
@@ -212,7 +212,7 @@ const handleSubmit = async (e) => {
                    
                   <img
                     src={formData.teamImagePreview}
-                    alt="Team Preview"
+                    alt="Tournament Preview"
                     className="max-h-40 max-w-full rounded-md object-contain"
                   />
                   
@@ -331,7 +331,7 @@ const handleSubmit = async (e) => {
               </>
             ) : (
               <>
-                 <Plus size={20} /> Create Team 
+                 <Plus size={20} /> Create Tournament 
                 
               </>
             )}
