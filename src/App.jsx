@@ -95,6 +95,7 @@ import GroupManagement from "./pages/GroupManagement";
 import EmailNotificationControl from "./pages/EmailNotificationControl";
 import SubscriptionMembers from "./pages/SubscriptionMembers";
 import LiveStream from "./pages/LiveStream";
+import Invoice from './pages/generate-invoice';
 
 import GroupMembers from "./pages/GroupMembers";
 
@@ -250,6 +251,7 @@ function App() {
             <Route path ="/rules-regulations" element={<RulesRegulations />} />
             <Route path="/watch-earn" element={<WatchEarn />} />
             <Route path="/payment-gateway" element={<PaymentGateway />} />
+            <Route path="/generate-invoice" element={<Invoice />} />
             <Route path="/ads-management" element={<AdsManagement />} />
             <Route path="/refer-earns" element={<ReferEarn />} />
             <Route path="/phonepay-gateway" element={<PhonePayGateway />} />
