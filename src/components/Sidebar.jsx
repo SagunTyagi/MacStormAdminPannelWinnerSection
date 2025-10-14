@@ -79,7 +79,7 @@ const menuItems = [
   {
     label: "Payment Invoice",
     icon: Wallet,
-    path: "/payment-invoice",
+    // path: "/payment-invoice",
     submenuKey: "paymentInvoice",
     permissionKey: "Payment Invoice",
     subItems: [
