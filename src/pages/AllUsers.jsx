@@ -91,7 +91,7 @@ function UsersPage() {
 
   const fetchUsers = async () => {
     try {
-      const res = await axiosInstance.get("/auth/user");
+      const res = await axiosInstance.get("/v1/user");
       const data = Array.isArray(res.data.data) ? res.data.data : [];
       const formattedUsers = data.map((user, index) => ({
         ...user,

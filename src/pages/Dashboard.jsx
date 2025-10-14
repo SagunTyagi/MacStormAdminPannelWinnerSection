@@ -32,7 +32,7 @@ const Dashboard = () => {
       teamsRes,
       subscriptionsRes
     ] = await Promise.all([
-      axiosInstance.get("/auth/user"),             
+      axiosInstance.get("/v1/user"),             
       axiosInstance.get("/tournament"),            
       axiosInstance.get("/reports/reports"), 
       axiosInstance.get("/admin/teams"),

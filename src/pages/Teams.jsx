@@ -10,7 +10,7 @@ import {
   Gift,
   BookOpen,
   ChevronDown,
-  ChevronUp, 
+  ChevronUp,
   Save,
   Users,
   CheckCircle,
@@ -21,7 +21,6 @@ import {
 
 import ThemeContext from '../contexts/ThemeContext';
 import axiosInstance from "../utils/axios";
-
 
 const API_BASE_URL = "https://api-v1.macstrombattle.com/api";
 
@@ -250,15 +249,30 @@ const TeamCard = ({ team, onEdit, onDelete, onViewDetails }) => {
   );
 };
 
-// Team Edit Modal Component (Edit basic team info only)
+// Team Edit Modal Component (Edit basic team info and rules)
 const TeamEditModal = ({ team, onClose, onSave }) => {
   const [name, setName] = useState(team.name || "");
   const [registrationAmount, setRegistrationAmount] = useState(team.registrationAmount || "");
   const [lastRegistrationDate, setLastRegistrationDate] = useState(
     team.lastRegistrationDate ? new Date(team.lastRegistrationDate).toISOString().substr(0, 10) : ""
   );
+  const [rules, setRules] = useState(
+    Array.isArray(team.rules) ? team.rules.map((rule) => rule.text) : []
+  );
+  const [newRule, setNewRule] = useState("");
   const [error, setError] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  const addRule = () => {
+    if (newRule.trim()) {
+      setRules([...rules, newRule.trim()]);
+      setNewRule("");
+    }
+  };
+
+  const removeRule = (index) => {
+    setRules(rules.filter((_, i) => i !== index));
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -269,6 +283,14 @@ const TeamEditModal = ({ team, onClose, onSave }) => {
         name,
         registrationAmount: Number(registrationAmount),
         lastRegistrationDate: lastRegistrationDate ? new Date(lastRegistrationDate).toISOString() : null,
+        rules: rules.map((text, order) => ({
+          id: team.rules[order]?.id || null, // Preserve existing rule IDs if they exist
+          teamId: team.id,
+          text: String(text), // Ensure text is a string
+          order,
+          createdAt: team.rules[order]?.createdAt || new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })),
       };
       const response = await fetch(`${API_BASE_URL}/admin/teams/${team.id}`, {
         method: "PUT",
@@ -340,6 +362,54 @@ const TeamEditModal = ({ team, onClose, onSave }) => {
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
+
+          <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
+            <div className="flex items-center mb-4">
+              <BookOpen size={20} className="text-blue-600 dark:text-blue-400 mr-2" />
+              <h4 className="text-lg font-medium text-gray-900 dark:text-white">Rules</h4>
+            </div>
+
+            <div className="flex mb-4">
+              <input
+                type="text"
+                value={newRule}
+                onChange={(e) => setNewRule(e.target.value)}
+                placeholder="Add a new rule..."
+                className="flex-1 rounded-l-md border border-gray-300 dark:border-gray-600 p-2 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+                onKeyPress={(e) => e.key === "Enter" && addRule()}
+              />
+              <button
+                onClick={addRule}
+                className="px-4 py-2 bg-blue-600 text-white rounded-r-md hover:bg-blue-700 transition-colors duration-200"
+              >
+                Add
+              </button>
+            </div>
+
+            <div className="max-h-60 overflow-y-auto">
+              {rules.length > 0 ? (
+                <ol className="space-y-2">
+                  {rules.map((rule, index) => (
+                    <li
+                      key={index}
+                      className="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded-md border border-gray-200 dark:border-gray-600"
+                    >
+                      <span className="text-sm flex-grow text-gray-900 dark:text-white">{rule}</span>
+                      <button
+                        onClick={() => removeRule(index)}
+                        className="text-red-500 hover:text-red-700 ml-2"
+                        title="Remove rule"
+                      >
+                        <X size={16} />
+                      </button>
+                    </li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-4">No rules added yet</p>
+              )}
+            </div>
+          </div>
         </div>
 
         <div className="flex justify-end space-x-3 mt-6 pt-4 border-t border-gray-200 dark:border-gray-600">
@@ -364,7 +434,6 @@ const TeamEditModal = ({ team, onClose, onSave }) => {
 
 // Benefits and How to Play Modal Component
 const BenefitsHowToPlayModal = ({ team, onClose, onSave }) => {
-  // Parse initial text arrays from objects on open
   const [benefits, setBenefits] = useState(
     Array.isArray(team.benefits) ? team.benefits.map((item) => item.text) : []
   );
@@ -378,7 +447,6 @@ const BenefitsHowToPlayModal = ({ team, onClose, onSave }) => {
   const [success, setSuccess] = useState(null);
 
   useEffect(() => {
-    // Refetch full objects on modal open to get latest data
     const fetchTeamDetails = async () => {
       try {
         const benefitsResponse = await fetch(`${API_BASE_URL}/admin/teams/${team.id}/benefits`);
@@ -419,7 +487,6 @@ const BenefitsHowToPlayModal = ({ team, onClose, onSave }) => {
     setHowToPlay(howToPlay.filter((_, i) => i !== index));
   };
 
-  // Save sends only strings as per backend API expectation
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);
@@ -483,7 +550,6 @@ const BenefitsHowToPlayModal = ({ team, onClose, onSave }) => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Benefits Section */}
           <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
             <div className="flex items-center mb-4">
               <Gift size={20} className="text-purple-600 dark:text-purple-400 mr-2" />
@@ -532,7 +598,6 @@ const BenefitsHowToPlayModal = ({ team, onClose, onSave }) => {
             </div>
           </div>
 
-          {/* How to Play Section */}
           <div className="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-gray-50 dark:bg-gray-700">
             <div className="flex items-center mb-4">
               <BookOpen size={20} className="text-green-600 dark:text-green-400 mr-2" />
@@ -616,8 +681,6 @@ const Teams = () => {
   const [confirmAction, setConfirmAction] = useState(null);
   const [toasts, setToasts] = useState([]);
 
-
-  // Toast management functions
   const addToast = (message, type = "success") => {
     const id = Date.now();
     setToasts(prev => [...prev, { id, message, type }]);
@@ -627,53 +690,31 @@ const Teams = () => {
     setToasts(prev => prev.filter(toast => toast.id !== id));
   };
 
-
-
   const fetchTeams = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // const response = await fetch(`${API_BASE_URL}/admin/teams`);
-      // if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      // const data = await response.json();
-      // const teamsData = Array.isArray(data) ? data : [data];
-const { data } = await axiosInstance.get("/admin/teams");
-const teamsData = Array.isArray(data) ? data : [data];
+      const { data } = await axiosInstance.get("/admin/teams");
+      const teamsData = Array.isArray(data) ? data : [data];
 
-
-      // Fetch benefits and how-to-play for each team
       const teamsWithDetails = await Promise.all(
         teamsData.map(async (team) => {
           try {
-            // const benefitsResponse = await fetch(
-            //   `${API_BASE_URL}/admin/teams/${team.id}/benefits`
-            // );
-            // const benefitsData = benefitsResponse.ok
-            //   ? await benefitsResponse.json()
-            //   : [];
-
             let benefitsData = [];
-try {
-  const res = await axiosInstance.get(`/admin/teams/${team.id}/benefits`);
-  benefitsData = res.data;
-} catch (e) {
-  benefitsData = [];
-}
+            try {
+              const res = await axiosInstance.get(`/admin/teams/${team.id}/benefits`);
+              benefitsData = res.data;
+            } catch (e) {
+              benefitsData = [];
+            }
 
-            // const howToPlayResponse = await fetch(
-            //   `${API_BASE_URL}/admin/teams/${team.id}/how-to-play`
-            // );
-            // const howToPlayData = howToPlayResponse.ok
-            //   ? await howToPlayResponse.json()
-            //   : [];
-
-let howToPlayData = [];
-try {
-  const res = await axiosInstance.get(`/admin/teams/${team.id}/how-to-play`);
-  howToPlayData = res.data;
-} catch (e) {
-  howToPlayData = [];
-}
+            let howToPlayData = [];
+            try {
+              const res = await axiosInstance.get(`/admin/teams/${team.id}/how-to-play`);
+              howToPlayData = res.data;
+            } catch (e) {
+              howToPlayData = [];
+            }
 
             return {
               ...team,
@@ -743,6 +784,7 @@ try {
               name: updatedTeam.name,
               registrationAmount: updatedTeam.registrationAmount,
               lastRegistrationDate: updatedTeam.lastRegistrationDate,
+              rules: updatedTeam.rules,
               benefits: team.benefits,
               howToPlay: team.howToPlay,
             }
@@ -759,7 +801,6 @@ try {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-8 font-sans antialiased text-gray-800 dark:text-gray-200 transition-colors duration-300">
-      {/* Toast Container */}
       <div className="fixed top-4 right-4 z-50 space-y-2">
         {toasts.map((toast) => (
           <Toast
@@ -825,7 +866,7 @@ try {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search tournaments..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 transition-colors duration-200"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white dark:bg-gray-700 transition-colors duration-300"
               />
             </div>
           </div>

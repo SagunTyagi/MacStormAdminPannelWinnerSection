@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit, Trash2, Save, X, RefreshCw } from 'lucide-react';
+import axiosInstance from "../utils/axios";
 
 const ReferEarn = () => {
   const [referralSplits, setReferralSplits] = useState([]);
@@ -15,35 +16,25 @@ const ReferEarn = () => {
     secondPartPercentageAmount: ''
   });
 
-  const AUTH_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInJvbGUiOiJTdXBlckFkbWluIiwiaWF0IjoxNzU4Nzg0NzM5LCJleHAiOjE3NjAwODA3Mzl9.XYvdilXiq85bii3hm4pMCMlSa0Gw1u4gwb70-Vt9Jto';
-  const BASE_URL = 'https://api-v1.macstrombattle.com/api/referral-split';
-
-  const fetchConfig = {
-    headers: {
-      'Authorization': `Bearer ${AUTH_TOKEN}`,
-      'Content-Type': 'application/json'
-    }
-  };
-
   // Fetch referral splits
   const fetchReferralSplits = async () => {
     try {
       setLoading(true);
       setError('');
-      const response = await fetch(BASE_URL, fetchConfig);
-      const data = await response.json();
-      if (data.success) {
-        setReferralSplits(data.data);
+      const response = await axiosInstance.get('/referral-split');
+      if (response.data.success) {
+        setReferralSplits(response.data.data);
       } else {
         setError('Failed to fetch referral splits');
       }
     } catch (err) {
-      setError('Failed to fetch referral splits');
       console.error('Fetch error:', err);
+      setError('Failed to fetch referral splits');
     } finally {
       setLoading(false);
     }
   };
+
 
   // Create new referral split
   const createReferralSplit = async () => {
@@ -55,15 +46,9 @@ const ReferEarn = () => {
         secondPartAmount: Number(formData.secondPartAmount),
         secondPartPercentageAmount: Number(formData.secondPartPercentageAmount)
       };
-      
-      const response = await fetch(BASE_URL, {
-        ...fetchConfig,
-        method: 'POST',
-        body: JSON.stringify(payload)
-      });
-      
-      const data = await response.json();
-      if (response.ok || data.success) {
+      const response = await axiosInstance.post('/referral-split', payload);
+
+      if (response.data.success) {
         setSuccess('Referral split created successfully');
         resetForm();
         setShowAddForm(false);
@@ -72,15 +57,15 @@ const ReferEarn = () => {
         setError('Failed to create referral split');
       }
     } catch (err) {
-      setError('Failed to create referral split');
       console.error('Create error:', err);
+      setError('Failed to create referral split');
     } finally {
       setLoading(false);
     }
   };
 
   // Update referral split
-  const updateReferralSplit = async (id) => {
+ const updateReferralSplit = async (id) => {
     try {
       setLoading(true);
       setError('');
@@ -89,15 +74,9 @@ const ReferEarn = () => {
         secondPartAmount: Number(formData.secondPartAmount),
         secondPartPercentageAmount: Number(formData.secondPartPercentageAmount)
       };
-      
-      const response = await fetch(`${BASE_URL}/${id}`, {
-        ...fetchConfig,
-        method: 'PUT',
-        body: JSON.stringify(payload)
-      });
-      
-      const data = await response.json();
-      if (response.ok || data.success) {
+      const response = await axiosInstance.put(`/referral-split/${id}`, payload);
+
+      if (response.data.success) {
         setSuccess('Referral split updated successfully');
         setEditingId(null);
         resetForm();
@@ -106,8 +85,8 @@ const ReferEarn = () => {
         setError('Failed to update referral split');
       }
     } catch (err) {
-      setError('Failed to update referral split');
       console.error('Update error:', err);
+      setError('Failed to update referral split');
     } finally {
       setLoading(false);
     }
@@ -115,28 +94,22 @@ const ReferEarn = () => {
 
   // Delete referral split
   const deleteReferralSplit = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this referral split?')) {
-      return;
-    }
-    
+    if (!window.confirm('Are you sure you want to delete this referral split?')) return;
+
     try {
       setLoading(true);
       setError('');
-      const response = await fetch(`${BASE_URL}/${id}`, {
-        ...fetchConfig,
-        method: 'DELETE'
-      });
-      
-      const data = response.ok ? await response.json().catch(() => ({})) : {};
-      if (response.ok || data.success) {
+      const response = await axiosInstance.delete(`/referral-split/${id}`);
+
+      if (response.data.success) {
         setSuccess('Referral split deleted successfully');
         fetchReferralSplits();
       } else {
         setError('Failed to delete referral split');
       }
     } catch (err) {
-      setError('Failed to delete referral split');
       console.error('Delete error:', err);
+      setError('Failed to delete referral split');
     } finally {
       setLoading(false);
     }

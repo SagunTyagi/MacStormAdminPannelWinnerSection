@@ -70,6 +70,7 @@ const menuItems = [
     submenuKey: "paymentGateway",
     permissionKey: "Payment Gateway",
     subItems: [
+      { label: " IMB Gateway Status", path: "/imb-gateway-status", permissionKey: "IMB Gateway Status" },
       { label: "Gateway Status", path: "/gateway-status", permissionKey: "Gateway Status" },
       { label: "PhonePay Gateway", path: "/phonepay-gateway", permissionKey: "PhonePay Gateway" },
       { label: "User Wallet Ledger", path: "/user-wallet-ledger", permissionKey: "User Wallet Ledger" },
