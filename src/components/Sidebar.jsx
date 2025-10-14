@@ -77,6 +77,16 @@ const menuItems = [
     ],
   },
   {
+    label: "Payment Invoice",
+    icon: Wallet,
+    path: "/payment-invoice",
+    submenuKey: "paymentInvoice",
+    permissionKey: "Payment Invoice",
+    subItems: [
+      { label: "Invoice Details", path: "/generate-invoice", permissionKey: "Generate Invoice" }
+    ],
+  },
+  {
     label: "Images",
     icon: Image,
     path: "/admin/images",
