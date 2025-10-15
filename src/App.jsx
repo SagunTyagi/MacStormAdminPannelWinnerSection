@@ -101,6 +101,7 @@ import GroupMembers from "./pages/GroupMembers";
 import ImbGatewayStatus from "./pages/ImbGatewayStatus";
 import TournamentWinnerGroups from "./pages/TournamentWinnerGroups";
 import WinnerGroupMembers from "./pages/WinnerGroupMembers";
+import AllTransactions from "./pages/AllTrasactions"; 
 
 //  ProtectedRoute component
 function ProtectedRoute({ children }) {
@@ -274,6 +275,7 @@ function App() {
             <Route path="/imb-gateway-status" element={<ImbGatewayStatus />} />
             <Route path="/winner-groups" element={<TournamentWinnerGroups />} />
             <Route path="/winner-group-members/:gameType/:groupId" element={<WinnerGroupMembers />} />
+            <Route path="/all-transactions" element={<AllTransactions />} />  
 
 
             <Route path="*" element={<Navigate to="/" />} />

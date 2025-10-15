@@ -486,9 +486,9 @@ const GroupMembers = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {member.paymentDetails && (
                           <div className="text-xs">
-                            <div>Mode: {member.paymentDetails.mode}</div>
+                            <div>Currency: {member.paymentDetails.currency}</div>
                             <div>Amount: ₹{member.paymentDetails.amount}</div>
-                            <div>Txn: {member.paymentDetails.txnId}</div>
+                            <div>Txn: {member.paymentDetails.txnId || member.paymentDetails.transactionId}</div>
                           </div>
                         )}
                       </td>

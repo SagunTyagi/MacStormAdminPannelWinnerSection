@@ -57,6 +57,7 @@ const menuItems = [
       { label: "All Tournaments", path: "/teams", permissionKey: "All Tournaments" },
       { label: "Add Tournament", path: "/add-teams", permissionKey: "Add Tournament" },
       { label: "Games Registration", path: "/games-registation", permissionKey: "Games Registration" },
+      {label: "All Transactions", path: "/all-transactions", permissionKey: "All Transactions" },
       { label: "Registration Form Controls", path: "/registation-details", permissionKey: "Registration Form Controls" },
       { label: "Group Management", path: "/group-management", permissionKey: "Group Management" },
       // { label: "Prize Distribution", path: "/prize-distribution", permissionKey: "Prize Distribution" },
